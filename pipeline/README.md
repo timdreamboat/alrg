@@ -1,5 +1,38 @@
 # Pipeline — how ALRG data gets collected
 
+## Override: highly-refined frying oil is not an allergen trigger
+
+The account-level `allergen-analyzer` skill's ingredient-matching table
+lists "peanut oil" as a `peanuts` trigger with no exception. That's wrong
+for frying/cooking oil specifically: highly refined peanut oil has the
+allergenic protein removed and is exempt from major-allergen labeling
+under FDA/FALCPA (21 CFR 101.100(a)(3)) — this is exactly why chains that
+fry everything in peanut oil (Chick-fil-A, Five Guys) still publish
+peanut-free menus, and why our own Chick-fil-A data (sourced from their
+official PDF) correctly has zero `peanut` flags despite frying in it.
+
+**When running allergen-analyzer for ALRG, override that one table
+entry:** do not flag `peanuts` on a menu item just because it's noted as
+fried/cooked in peanut oil. Only flag `peanuts` if the source indicates
+unrefined/cold-pressed/gourmet peanut oil specifically, a genuine peanut
+ingredient (butter, pieces, sauce) is present, or the restaurant's own
+official source explicitly calls out peanut for that item anyway (trust
+an explicit official source over this default). The same logic applies
+to sesame oil if it ever comes up — refined sesame oil is a closer call
+(less universally exempt than peanut oil) so default to the cautious
+flag there unless the source is explicit either way.
+
+This was found 2026-09-22 during an owner UI review, before it caused any
+actual bad data (audited the full menu_items table — no published item
+was mis-flagged from this specific pattern yet). It's a latent-bug fix,
+not a data correction. The account skill itself can't be edited from
+here (this repo has no access to claude.ai skill storage) — this note is
+the durable fix for ALRG's pipeline specifically, since the Routine
+already reads this file every run regardless of what the account skill
+says.
+
+---
+
 The service validates and publishes on its own. The owner is not a
 per-batch approval gate — see CLAUDE.md's "Standing conventions" for the
 exact (short) list of things that still escalate. The owner's real
