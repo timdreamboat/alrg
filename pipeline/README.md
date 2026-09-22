@@ -117,28 +117,47 @@ usually just times out), and prints the page's rendered *visible text*
 **Validated 2026-09-22 against 6 previously-blocked chains** — the
 proxy-routing fix works (Chromium now actually reaches and renders these
 pages), but real-world sites still throw a mix of *different* obstacles
-on top, each needing its own handling rather than one generic fix:
-- **Chipotle** — rendered real page content successfully.
+on top:
+- **Chipotle** — rendered real page content successfully, no extra work
+  needed.
 - **Starbucks** — rendered a real page, but landed on a cookie-consent
-  interstitial instead of the allergen content. Next step: have the
-  script detect a consent/cookie overlay and click through it (common
-  button text: "Agree", "Accept", "Accept All") before extracting text.
+  interstitial instead of the allergen content.
 - **Burger King** — rendered but visible text came back empty; not yet
   diagnosed, don't assume it's the same issue as Starbucks.
-- **Taco Bell, Domino's** — `net::ERR_TOO_MANY_RETRIES`. Possibly the
-  sandbox's shared proxy IP getting rate-limited/blocked after repeated
-  hits in a short window (both domains had also been hit by earlier
-  plain WebFetch attempts in the same session) — try spacing out
-  repeated attempts at the same domain within one run, or treat a
-  second `ERR_TOO_MANY_RETRIES` on the same domain within a run as a
-  sign to stop retrying that domain this pass.
-- **McDonald's** — still "Access Denied" (Akamai WAF), even through the
-  proxy with a real rendered browser. This looks like real bot/IP-
-  reputation detection, not a config problem — likely not fixable
-  without a residential-style egress IP, which is out of scope for now.
-  Don't keep re-attempting McDonald's every single pass once it's been
-  logged blocked; retry only occasionally (e.g. once every several
-  passes) in case Akamai's rules change.
+- **Taco Bell, Domino's** — `net::ERR_TOO_MANY_RETRIES`. Looked like the
+  sandbox's shared proxy IP getting rate-limited after repeated hits in a
+  short window (both domains had also been hit by earlier plain WebFetch
+  attempts in the same session).
+- **McDonald's** — "Access Denied" (Akamai WAF), even through the proxy
+  with a real rendered browser. This looks like real bot/IP-reputation
+  detection, not a config problem — likely not fixable without a
+  residential-style egress IP, which is out of scope for now. Don't keep
+  re-attempting McDonald's every single pass once it's been logged
+  blocked; retry only occasionally (e.g. once every several passes) in
+  case Akamai's rules change.
+
+**Fixed 2026-09-22, same day** — `fetch_rendered.js` now handles two of
+those automatically, no caller changes needed:
+- **Cookie-consent overlays** (the Starbucks pattern): after the settle
+  wait, it checks a short list of known consent-platform selectors
+  (OneTrust, Cookiebot, TrustArc, Quantcast) plus a text-based fallback
+  (button labeled "Accept"/"Agree"/"Allow All"/etc.), clicks through if
+  found, waits briefly, and re-reads the page. A stderr line
+  (`dismissed a cookie-consent overlay...`) confirms when this fired.
+- **Transient network errors** (the Taco Bell/Domino's pattern): `goto`
+  now retries up to 3 times with backoff (0s, 3s, 8s) specifically for
+  the error codes seen in practice (`ERR_TOO_MANY_RETRIES`,
+  `ERR_CONNECTION_RESET`, `ERR_CONNECTION_CLOSED`, etc.) before giving
+  up on that URL for the pass. A genuinely non-retryable error (like
+  McDonald's "Access Denied", which is an HTTP 403 page, not a network
+  failure) is not retried — it fails fast instead of wasting time.
+
+Not yet fixed, still needs live diagnosis in the sandbox: **Burger
+King's empty-text result** — unclear if it's a slower-loading SPA (needs
+a longer settle wait), a different consent platform not in the known
+list, or something else. Next run that tries Burger King should capture
+more diagnostic detail (e.g. a screenshot or the raw HTML length) rather
+than just re-logging "still empty."
 
 If a chain's allergen page still comes back genuinely empty/blocked
 after a real attempt, treat it as blocked for that pass — don't
