@@ -80,3 +80,37 @@ cost, explicitly the kind of source CLAUDE.md already prefers) is the
 better fit than a paid vendor API, but needs real engineering work
 (DuckDB + spatial queries against Overture's S3/Azure release) that
 hasn't been built yet.
+
+## Chain allergen pages that are JS-rendered SPAs — use fetch_rendered.js
+
+Most big chains (McDonald's, Starbucks, Taco Bell, Burger King,
+Chick-fil-A, Domino's, and likely most of the remaining unanalyzed
+`chains` rows) publish their real per-item allergen matrix through a
+React/JS nutrition tool, not static HTML — plain WebFetch/curl only see
+an empty app shell, which reads as "blocked" but isn't actually a hard
+wall. **This is not a missing-tool problem.** The Routine's cloud sandbox
+already has Chromium + Playwright preinstalled at `/opt/pw-browsers`; the
+first attempt to use it (2026-09-22 run) failed only because Playwright
+doesn't automatically route through the sandbox's egress proxy the way
+curl/WebFetch do, so Chromium tried to connect directly and hit TLS/
+timeout errors.
+
+Use `pipeline/fetch_rendered.js` instead of hand-rolling a fetch script
+each run:
+```
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node pipeline/fetch_rendered.js "<url>" [extraWaitMs]
+```
+It launches Chromium pointed at the sandbox's proxy (`$HTTPS_PROXY`, or
+`http://127.0.0.1:37265` if unset — check `curl -s "$HTTPS_PROXY/__agentproxy/status"`
+if that default ever stops matching), trusts the proxy's MITM cert
+(`ignoreHTTPSErrors`), waits for DOM content plus a fixed settle window
+(SPAs keep background XHR alive forever, so waiting for `networkidle`
+usually just times out), and prints the page's rendered *visible text*
+(not raw HTML) to stdout.
+
+If a chain's allergen page still comes back near-empty after this, treat
+it as genuinely blocked for that pass — don't retry-loop indefinitely,
+log it to `ops_log`, and move on. If this script's proxy defaults ever
+stop working (sandbox changes), fix the script and note the fix here
+rather than reverting to guessing chain allergen data from third-party
+aggregators, which remains a hard no per `chain-menu-importer`.
