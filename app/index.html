@@ -9,6 +9,8 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <style>
 :root{--ink:#1E2B26;--ink-soft:#4A5B54;--paper:#FAF9F4;--paper-deep:#F1EFE6;--pine:#0E6E5C;--pine-deep:#0A4F42;--mint:#EAF3EE;--safe:#2FA36B;--care:#E8A33D;--risk:#D95D4E;--line:#E3E0D4;--fd:"Bricolage Grotesque",serif;--fb:"Instrument Sans",sans-serif;--fm:"Space Mono",monospace}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -28,7 +30,17 @@ button{font-family:var(--fb);cursor:pointer}
 .list-head{padding:12px 16px 8px;flex:none}
 .list-head h2{font-family:var(--fd);font-size:1rem;font-weight:700}
 .list-head p{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
+.loc-filter{display:flex;align-items:center;gap:6px;margin:9px 0 2px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:7px 8px 7px 13px}
+.loc-filter svg{flex:none}
+.loc-filter input{flex:1;border:none;background:none;outline:none;font-family:var(--fb);font-size:.82rem;min-width:0}
+.loc-filter button{flex:none;border:none;background:var(--pine);color:#fff;font-family:var(--fm);font-size:.6rem;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:6px 12px}
+.loc-filter .clear{background:none;color:var(--ink-soft);padding:6px 8px;font-size:.9rem}
+.loc-active{display:none;align-items:center;gap:6px;margin-top:7px;font-size:.74rem;color:var(--pine-deep);background:var(--mint);border-radius:8px;padding:6px 10px}
+.loc-active.on{display:flex}
+.loc-active button{margin-left:auto;flex:none;border:none;background:none;color:var(--pine-deep);font-family:var(--fm);font-size:.85rem;line-height:1}
 .list-scroll{flex:1;overflow-y:auto;padding:0 10px 14px}
+.empty-state{padding:28px 16px;text-align:center;color:var(--ink-soft);font-size:.85rem;line-height:1.6}
+.empty-state strong{display:block;color:var(--ink);font-family:var(--fd);font-size:.98rem;margin-bottom:6px}
 .rcard{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:none;border:1.5px solid transparent;border-radius:13px;padding:11px;transition:all .15s}
 .rcard:hover{background:var(--paper)}
 .rcard.sel{background:var(--mint);border-color:var(--pine)}
@@ -86,7 +98,16 @@ button{font-family:var(--fb);cursor:pointer}
 
 <div class="main">
   <aside class="list">
-    <div class="list-head"><h2>Near you</h2><p id="listMeta">Loading…</p></div>
+    <div class="list-head">
+      <h2>Near you</h2>
+      <div class="loc-filter">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="#4A5B54" stroke-width="1.6"/><circle cx="12" cy="9" r="2.4" stroke="#4A5B54" stroke-width="1.6"/></svg>
+        <input id="locBox" type="text" placeholder="City, state, or ZIP" inputmode="search">
+        <button id="locGo" type="button">GO</button>
+      </div>
+      <div class="loc-active" id="locActive"><span id="locActiveText"></span><button id="locClear" aria-label="Clear location filter">✕</button></div>
+      <p id="listMeta">Loading…</p>
+    </div>
     <div class="list-scroll" id="listScroll"></div>
   </aside>
   <div class="map-area">
@@ -109,6 +130,7 @@ button{font-family:var(--fb);cursor:pointer}
 
 <script src="config.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
 /* ================= ALRG PWA v1 =================
    Reads live data from Supabase (public read-only anon key + RLS).
@@ -128,7 +150,7 @@ const tierLabel={safe:"HIGH CONFIDENCE",care:"PROCEED WITH CARE",risk:"HIGH RISK
 const statusMeta={clear:{l:"CLEAR",c:"t-safe"},may:{l:"MAY CONTAIN",c:"t-care"},shared:{l:"SHARED EQUIP",c:"t-care"},contains:{l:"CONTAINS",c:"t-risk"}};
 
 let profile=JSON.parse(localStorage.getItem("alrg_profile")||'["peanut","dairy"]');
-let DATA=[],selected=null,map,markers={};
+let DATA=[],selected=null,map,markers={},clusterGroup,boundsFit=false,locFilter=null;
 
 /* ---------- Supabase REST ---------- */
 const C=window.ALRG_CONFIG||{};
@@ -177,11 +199,26 @@ for(const a of ALLERGENS){
   bar.appendChild(b);
 }
 
-/* ---------- map (Leaflet + OpenStreetMap, free) ---------- */
+/* ---------- map (Leaflet + CARTO Voyager basemap, free, no key) ---------- */
 function initMap(){
-  const first=DATA.find(r=>r.lat&&r.lng);
-  map=L.map("map",{zoomControl:true}).setView(first?[first.lat,first.lng]:[39.74,-104.99],12);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
+  map=L.map("map",{zoomControl:true}).setView([39.5,-98.35],4); // continental US default until bounds are known
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
+    maxZoom:20,subdomains:"abcd",
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(map);
+  clusterGroup=L.markerClusterGroup({
+    maxClusterRadius:50,
+    spiderfyOnMaxZoom:true,
+    iconCreateFunction:clusterIcon
+  });
+  map.addLayer(clusterGroup);
+}
+function clusterIcon(cluster){
+  const count=cluster.getChildCount();
+  const size=count<10?38:count<50?46:56;
+  const fs=count<100?13:11;
+  return L.divIcon({className:"",iconSize:[size,size],iconAnchor:[size/2,size/2],
+    html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:#0E6E5C;display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${fs}px;border:3px solid #fff;box-shadow:0 4px 14px rgba(14,110,92,.45)">${count}</div>`});
 }
 function pinIcon(score,tier,sel){
   return L.divIcon({className:"",iconSize:[38,38],iconAnchor:[19,19],
@@ -192,9 +229,69 @@ function renderPins(){
     if(!r.lat||!r.lng)continue;
     const s=scoreRestaurant(r,profile),t=s===null?null:tierOf(s);
     if(markers[r.id])markers[r.id].setIcon(pinIcon(s,t,selected===r.id));
-    else{markers[r.id]=L.marker([r.lat,r.lng],{icon:pinIcon(s,t,false)}).addTo(map).on("click",()=>openDrawer(r.id));}
+    else{
+      const m=L.marker([r.lat,r.lng],{icon:pinIcon(s,t,false)}).on("click",()=>openDrawer(r.id));
+      markers[r.id]=m;clusterGroup.addLayer(m);
+    }
+  }
+  if(!boundsFit){
+    const pts=Object.values(markers);
+    if(pts.length){map.fitBounds(L.featureGroup(pts).getBounds().pad(0.25),{maxZoom:13});boundsFit=true;}
   }
 }
+
+/* ---------- location filter (city / state / zip) ---------- */
+function matchesLocation(r,loc){
+  if(!loc)return true;
+  const zip=(r.zip||"").trim();
+  const city=(r.city||"").toLowerCase();
+  const state=(r.state||"").toLowerCase();
+  if(loc.zip)return zip===loc.zip;
+  if(loc.city&&loc.state)return city===loc.city&&state===loc.state;
+  if(loc.city)return city.includes(loc.city);
+  if(loc.state)return state===loc.state;
+  return true;
+}
+function parseLocationQuery(raw){
+  const q=raw.trim();
+  if(!q)return null;
+  if(/^\d{5}$/.test(q))return{zip:q,label:q};
+  const parts=q.split(",").map(s=>s.trim()).filter(Boolean);
+  if(parts.length>=2)return{city:parts[0].toLowerCase(),state:parts[1].toLowerCase(),label:q};
+  if(/^[a-z]{2}$/i.test(q))return{state:q.toLowerCase(),label:q.toUpperCase()};
+  return{city:q.toLowerCase(),label:q};
+}
+const geocodeCache={};
+async function geocodeAndFly(query){
+  if(geocodeCache[query]){map.flyTo(geocodeCache[query],11,{duration:0.6});return;}
+  try{
+    const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:query+", USA",format:"json",limit:1,countrycodes:"us"});
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,11,{duration:0.6});}
+  }catch(e){/* map stays put — list filtering still works without this */}
+}
+function applyLocationFilter(){
+  const raw=document.getElementById("locBox").value;
+  locFilter=parseLocationQuery(raw);
+  const active=document.getElementById("locActive");
+  if(locFilter){
+    active.classList.add("on");
+    document.getElementById("locActiveText").textContent=`Showing: ${locFilter.label}`;
+    geocodeAndFly(raw.trim());
+  }else{
+    active.classList.remove("on");
+  }
+  renderList();
+}
+document.getElementById("locGo").onclick=applyLocationFilter;
+document.getElementById("locBox").addEventListener("keydown",e=>{if(e.key==="Enter")applyLocationFilter();});
+document.getElementById("locClear").onclick=()=>{
+  document.getElementById("locBox").value="";
+  locFilter=null;
+  document.getElementById("locActive").classList.remove("on");
+  renderList();
+};
 
 /* ---------- list ---------- */
 function renderList(){
@@ -202,7 +299,13 @@ function renderList(){
   const wrap=document.getElementById("listScroll");wrap.innerHTML="";
   const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile)}))
     .filter(({r})=>!q||r.name.toLowerCase().includes(q)||(r.cuisine||"").toLowerCase().includes(q))
+    .filter(({r})=>matchesLocation(r,locFilter))
     .sort((a,b)=>(b.s??-1)-(a.s??-1));
+  if(!rows.length){
+    document.getElementById("listMeta").textContent=locFilter?`No matches for "${locFilter.label}"`:"0 places";
+    wrap.innerHTML=`<div class="empty-state"><strong>No restaurants here yet</strong>${locFilter?`ALRG doesn't have coverage in ${locFilter.label} yet — currently live in the Denver, CO and New York, NY metros, with more added regularly.`:"Try a different search."}</div>`;
+    return;
+  }
   document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence`:"Pick allergens above to score";
   for(const{r,s}of rows){
     const t=s===null?null:tierOf(s);
