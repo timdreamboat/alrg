@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ALRG — Dine with confidence</title>
+<meta name="description" content="Allergen confidence scores for restaurants near you.">
+<meta name="theme-color" content="#0E6E5C">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--ink:#1E2B26;--ink-soft:#4A5B54;--paper:#FAF9F4;--paper-deep:#F1EFE6;--pine:#0E6E5C;--pine-deep:#0A4F42;--mint:#EAF3EE;--safe:#2FA36B;--care:#E8A33D;--risk:#D95D4E;--line:#E3E0D4;--fd:"Bricolage Grotesque",serif;--fb:"Instrument Sans",sans-serif;--fm:"Space Mono",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+button{font-family:var(--fb);cursor:pointer}
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);flex:none}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:800;font-size:1.1rem}
+.brand .mark{width:28px;height:28px;border-radius:8px;background:var(--pine);display:grid;place-items:center;color:#fff;font-family:var(--fm);font-size:.7rem;font-weight:700}
+.search{flex:1;max-width:420px;display:flex;align-items:center;gap:8px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:8px 14px}
+.search input{border:none;background:none;outline:none;font-family:var(--fb);font-size:.9rem;width:100%}
+.profile-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--paper-deep);border-bottom:1px solid var(--line);flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.profile-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:.82rem;font-weight:500;color:var(--ink-soft);white-space:nowrap;transition:all .15s;flex:none}
+.chip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:600}
+.main{flex:1;display:grid;grid-template-columns:330px 1fr;min-height:0}
+.list{border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;min-height:0}
+.list-head{padding:12px 16px 8px;flex:none}
+.list-head h2{font-family:var(--fd);font-size:1rem;font-weight:700}
+.list-head p{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
+.list-scroll{flex:1;overflow-y:auto;padding:0 10px 14px}
+.rcard{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:none;border:1.5px solid transparent;border-radius:13px;padding:11px;transition:all .15s}
+.rcard:hover{background:var(--paper)}
+.rcard.sel{background:var(--mint);border-color:var(--pine)}
+.badge{flex:none;width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:.95rem;color:#fff}
+.rcard-name{font-weight:600;font-size:.92rem}
+.rcard-sub{font-size:.75rem;color:var(--ink-soft)}
+.rcard-tier{font-family:var(--fm);font-size:.55rem;letter-spacing:.08em;margin-top:2px;font-weight:700}
+.map-area{position:relative;min-height:0}
+#map{position:absolute;inset:0;z-index:1}
+.map-note{position:absolute;right:12px;top:12px;z-index:400;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;color:var(--ink-soft)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(400px,94%);background:#fff;border-left:1px solid var(--line);box-shadow:-18px 0 44px -22px rgba(30,43,38,.35);transform:translateX(105%);transition:transform .26s ease;display:flex;flex-direction:column;z-index:500}
+.drawer.open{transform:none}
+.drawer-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-family:var(--fm);color:var(--ink-soft);z-index:2}
+.drawer-head{padding:18px 20px 14px;border-bottom:1px solid var(--line);flex:none}
+.dh-top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.ring{position:relative;width:72px;height:72px;flex:none}
+.ring svg{transform:rotate(-90deg);width:72px;height:72px}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:1.15rem}
+.dh-name{font-family:var(--fd);font-weight:700;font-size:1.12rem;line-height:1.15}
+.dh-sub{font-size:.78rem;color:var(--ink-soft);margin-top:2px}
+.dh-tier{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;margin-top:5px;font-weight:700}
+.meta-tag{font-family:var(--fm);font-size:.54rem;letter-spacing:.08em;background:var(--paper-deep);color:var(--ink-soft);border-radius:999px;padding:4px 10px;text-transform:uppercase;display:inline-block;margin-right:6px}
+.meta-tag.verified{background:var(--mint);color:var(--pine-deep)}
+.drawer-body{flex:1;overflow-y:auto;padding:16px 20px 24px}
+.sec-label{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pine);margin:16px 0 8px}
+.sec-label:first-child{margin-top:0}
+.why{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:.83rem;color:var(--ink-soft);line-height:1.5}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--paper-deep)}
+.item:last-child{border-bottom:none}
+.item-name{font-weight:500;font-size:.88rem}
+.item-note{font-size:.71rem;color:var(--ink-soft)}
+.tier{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.56rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.tier::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.t-safe{color:#1D7A4C;background:#E3F4EA}.t-care{color:#9A6A14;background:#FBF0DB}.t-risk{color:#A93B2E;background:#FBE5E1}
+.disclaimer{margin-top:16px;border-left:3px solid var(--care);background:#FBF6EA;border-radius:0 9px 9px 0;padding:10px 12px;font-size:.72rem;color:#6B5A2E;line-height:1.45}
+.banner{position:fixed;inset:0;display:grid;place-items:center;background:var(--paper);z-index:1000;padding:24px}
+.banner .card{max-width:420px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;text-align:center}
+.banner h2{font-family:var(--fd);font-weight:700;margin-bottom:10px}
+.banner p{color:var(--ink-soft);font-size:.92rem;line-height:1.55}
+.banner code{font-family:var(--fm);font-size:.78rem;background:var(--paper-deep);padding:2px 8px;border-radius:6px}
+@media(max-width:820px){.main{grid-template-columns:1fr;grid-template-rows:1fr 42%}.list{order:2;border-right:none;border-top:1px solid var(--line)}.map-area{order:1}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="mark">A</span><span>ALRG</span></div>
+  <div class="search">
+    <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#0E6E5C" stroke-width="2"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="#0E6E5C" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="searchBox" type="text" placeholder="Search restaurants…">
+  </div>
+</header>
+
+<div class="profile-bar" id="profileBar"><span class="profile-label">My allergens →</span></div>
+
+<div class="main">
+  <aside class="list">
+    <div class="list-head"><h2>Near you</h2><p id="listMeta">Loading…</p></div>
+    <div class="list-scroll" id="listScroll"></div>
+  </aside>
+  <div class="map-area">
+    <div id="map"></div>
+    <div class="map-note">SCORES UPDATE WITH YOUR PROFILE</div>
+    <div class="drawer" id="drawer">
+      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">✕</button>
+      <div class="drawer-head" id="drawerHead"></div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="banner" id="setupBanner" style="display:none">
+  <div class="card">
+    <h2>One paste to go live</h2>
+    <p>Open <code>app/config.js</code> and paste your Supabase Project URL and anon key (SETUP.md, step 2). Then refresh — your live database appears here.</p>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ================= ALRG PWA v1 =================
+   Reads live data from Supabase (public read-only anon key + RLS).
+   Scoring runs client-side; logic mirrors scoring spec v1. */
+
+const ALLERGENS=[
+ {id:"peanut",name:"Peanut",em:"🥜"},{id:"treenut",name:"Tree nut",em:"🌰"},
+ {id:"dairy",name:"Dairy",em:"🥛"},{id:"egg",name:"Egg",em:"🥚"},
+ {id:"wheat",name:"Wheat",em:"🌾"},{id:"soy",name:"Soy",em:"🫘"},
+ {id:"fish",name:"Fish",em:"🐟"},{id:"shellfish",name:"Shellfish",em:"🦐"},
+ {id:"sesame",name:"Sesame",em:"🫓"}];
+const RANK={clear:0,may:1,shared:2,contains:3};
+const tierOf=s=>s>=80?"safe":s>=50?"care":"risk";
+const tierHex={safe:"#2FA36B",care:"#E8A33D",risk:"#D95D4E"};
+const tierText={safe:"#1D7A4C",care:"#C58426",risk:"#A93B2E"};
+const tierLabel={safe:"HIGH CONFIDENCE",care:"PROCEED WITH CARE",risk:"HIGH RISK"};
+const statusMeta={clear:{l:"CLEAR",c:"t-safe"},may:{l:"MAY CONTAIN",c:"t-care"},shared:{l:"SHARED EQUIP",c:"t-care"},contains:{l:"CONTAINS",c:"t-risk"}};
+
+let profile=JSON.parse(localStorage.getItem("alrg_profile")||'["peanut","dairy"]');
+let DATA=[],selected=null,map,markers={};
+
+/* ---------- Supabase REST ---------- */
+const C=window.ALRG_CONFIG||{};
+const configured=C.SUPABASE_URL&&!C.SUPABASE_URL.includes("PASTE");
+async function sb(path){
+  const r=await fetch(`${C.SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:C.SUPABASE_ANON_KEY,Authorization:`Bearer ${C.SUPABASE_ANON_KEY}`}});
+  if(!r.ok)throw new Error(`Supabase ${r.status}`);
+  return r.json();
+}
+async function load(){
+  if(!configured){document.getElementById("setupBanner").style.display="grid";return;}
+  try{
+    const rests=await sb("restaurants?select=*&order=name");
+    const items=await sb("menu_items?select=*");
+    const byRest={};
+    for(const it of items)(byRest[it.restaurant_id]??=[]).push(it);
+    DATA=rests.map(r=>({...r,items:byRest[r.id]||[]}));
+    initMap();renderAll();
+  }catch(e){
+    document.getElementById("listMeta").textContent="Couldn't reach database — check config.js values";
+    console.error(e);
+  }
+}
+
+/* ---------- scoring (spec v1 — keep in sync with docs/SCORING.md) ---------- */
+function itemStatus(it,prof){let w="clear";for(const a of prof){const s=(it.flags||{})[a]||"clear";if(RANK[s]>RANK[w])w=s;}return w;}
+function scoreRestaurant(r,prof){
+  if(!prof.length||!r.items.length)return null;
+  const n=r.items.length;let clear=0,caution=0,contains=0;
+  for(const it of r.items){const s=itemStatus(it,prof);if(s==="clear")clear++;else if(s==="contains")contains++;else caution++;}
+  let score=100*(clear+0.45*caution)/n;
+  score-=(contains/n)*22;
+  score+=r.verified?6:-3;
+  return Math.max(4,Math.min(99,Math.round(score)));
+}
+
+/* ---------- profile chips ---------- */
+const bar=document.getElementById("profileBar");
+for(const a of ALLERGENS){
+  const b=document.createElement("button");
+  b.className="chip"+(profile.includes(a.id)?" on":"");
+  b.innerHTML=`<span>${a.em}</span>${a.name}`;
+  b.onclick=()=>{profile=profile.includes(a.id)?profile.filter(x=>x!==a.id):[...profile,a.id];
+    localStorage.setItem("alrg_profile",JSON.stringify(profile));
+    b.classList.toggle("on");renderAll();if(selected)openDrawer(selected);};
+  bar.appendChild(b);
+}
+
+/* ---------- map (Leaflet + OpenStreetMap, free) ---------- */
+function initMap(){
+  const first=DATA.find(r=>r.lat&&r.lng);
+  map=L.map("map",{zoomControl:true}).setView(first?[first.lat,first.lng]:[39.74,-104.99],12);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
+}
+function pinIcon(score,tier,sel){
+  return L.divIcon({className:"",iconSize:[38,38],iconAnchor:[19,19],
+    html:`<div style="width:38px;height:38px;border-radius:50%;background:${tier?tierHex[tier]:"#B9C6BF"};display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:12px;border:${sel?"3px solid #1E2B26":"2px solid #fff"};box-shadow:0 4px 12px rgba(30,43,38,.35)">${score??"–"}</div>`});
+}
+function renderPins(){
+  for(const r of DATA){
+    if(!r.lat||!r.lng)continue;
+    const s=scoreRestaurant(r,profile),t=s===null?null:tierOf(s);
+    if(markers[r.id])markers[r.id].setIcon(pinIcon(s,t,selected===r.id));
+    else{markers[r.id]=L.marker([r.lat,r.lng],{icon:pinIcon(s,t,false)}).addTo(map).on("click",()=>openDrawer(r.id));}
+  }
+}
+
+/* ---------- list ---------- */
+function renderList(){
+  const q=document.getElementById("searchBox").value.toLowerCase().trim();
+  const wrap=document.getElementById("listScroll");wrap.innerHTML="";
+  const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile)}))
+    .filter(({r})=>!q||r.name.toLowerCase().includes(q)||(r.cuisine||"").toLowerCase().includes(q))
+    .sort((a,b)=>(b.s??-1)-(a.s??-1));
+  document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence`:"Pick allergens above to score";
+  for(const{r,s}of rows){
+    const t=s===null?null:tierOf(s);
+    const btn=document.createElement("button");
+    btn.className="rcard"+(selected===r.id?" sel":"");
+    btn.innerHTML=`<span class="badge" style="background:${t?tierHex[t]:"#B9C6BF"}">${s??"–"}</span>
+      <span><span class="rcard-name">${r.name}${r.verified?" <span style='color:var(--pine)'>✓</span>":""}</span>
+      <div class="rcard-sub">${r.cuisine||""} · ${r.city||""}</div>
+      ${t?`<div class="rcard-tier" style="color:${tierText[t]}">${tierLabel[t]}</div>`:""}</span>`;
+    btn.onclick=()=>openDrawer(r.id);
+    wrap.appendChild(btn);
+  }
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(id){
+  selected=id;
+  const r=DATA.find(x=>x.id===id);if(!r)return;
+  const s=scoreRestaurant(r,profile),t=s===null?"care":tierOf(s);
+  const circ=2*Math.PI*29,off=s===null?circ:circ*(1-s/100);
+  let clear=0,caution=0,contains=0;
+  for(const it of r.items){const st=itemStatus(it,profile);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
+  const profNames=profile.map(p=>ALLERGENS.find(a=>a.id===p)?.name).filter(Boolean).join(", ")||"none selected";
+  const reviewed=r.last_reviewed?new Date(r.last_reviewed).toLocaleDateString():"—";
+  document.getElementById("drawerHead").innerHTML=`
+    <div class="dh-top">
+      <div class="ring"><svg viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="29" fill="none" stroke="#EAF3EE" stroke-width="7"/>
+        <circle cx="36" cy="36" r="29" fill="none" stroke="${tierHex[t]}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
+        <span class="num" style="color:${tierText[t]}">${s??"–"}</span></div>
+      <div><div class="dh-name">${r.name}</div>
+        <div class="dh-sub">${r.cuisine||""} · Confidence for: ${profNames}</div>
+        <div class="dh-tier" style="color:${tierText[t]}">${s===null?"SELECT ALLERGENS TO SCORE":tierLabel[t]}</div></div>
+    </div>
+    <div>${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:`<span class="meta-tag">Public menu data</span>`}<span class="meta-tag">Reviewed ${reviewed}</span></div>`;
+  const rows=r.items.map(it=>{const m=statusMeta[itemStatus(it,profile)];
+    return `<div class="item"><div><div class="item-name">${it.name}</div><div class="item-note">${it.note||""}</div></div><span class="tier ${m.c}">${m.l}</span></div>`;}).join("");
+  document.getElementById("drawerBody").innerHTML=`
+    <div class="sec-label">Why this score</div>
+    <div class="why">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${profile.length!==1?"s":""} directly. ${r.verified?"Restaurant-verified data raises certainty.":"Based on public menu data — not yet restaurant-verified."}</div>
+    <div class="sec-label">Menu analysis · your profile</div>${rows}
+    <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> Menus and kitchens change. Always confirm allergen handling with restaurant staff before ordering.</div>`;
+  document.getElementById("drawer").classList.add("open");
+  renderList();renderPins();
+}
+function closeDrawer(){document.getElementById("drawer").classList.remove("open");selected=null;renderList();renderPins();}
+function renderAll(){renderList();renderPins();}
+document.getElementById("searchBox").addEventListener("input",renderList);
+
+/* ---------- PWA ---------- */
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+load();
+</script>
+</body>
+</html>

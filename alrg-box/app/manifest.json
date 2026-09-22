@@ -1,0 +1,12 @@
+{
+  "name": "ALRG — Allergen Lifestyle Restaurant Guide",
+  "short_name": "ALRG",
+  "description": "Allergen confidence scores for restaurants near you.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FAF9F4",
+  "theme_color": "#0E6E5C",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
