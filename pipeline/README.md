@@ -98,19 +98,52 @@ timeout errors.
 Use `pipeline/fetch_rendered.js` instead of hand-rolling a fetch script
 each run:
 ```
-PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node pipeline/fetch_rendered.js "<url>" [extraWaitMs]
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers NODE_PATH=/opt/node22/lib/node_modules node pipeline/fetch_rendered.js "<url>" [extraWaitMs]
 ```
+(Playwright is installed globally in the sandbox, not as a repo
+dependency — `NODE_PATH` is required or `require('playwright')` fails.
+Confirmed working 2026-09-22; if a future sandbox image changes this,
+`npm root -g` finds the real path.)
+
 It launches Chromium pointed at the sandbox's proxy (`$HTTPS_PROXY`, or
-`http://127.0.0.1:37265` if unset — check `curl -s "$HTTPS_PROXY/__agentproxy/status"`
-if that default ever stops matching), trusts the proxy's MITM cert
+`http://127.0.0.1:37265` if unset — the port changes between sandbox
+instances, check `curl -s "$HTTPS_PROXY/__agentproxy/status"` if the
+env var is somehow unset), trusts the proxy's MITM cert
 (`ignoreHTTPSErrors`), waits for DOM content plus a fixed settle window
 (SPAs keep background XHR alive forever, so waiting for `networkidle`
 usually just times out), and prints the page's rendered *visible text*
 (not raw HTML) to stdout.
 
-If a chain's allergen page still comes back near-empty after this, treat
-it as genuinely blocked for that pass — don't retry-loop indefinitely,
-log it to `ops_log`, and move on. If this script's proxy defaults ever
-stop working (sandbox changes), fix the script and note the fix here
-rather than reverting to guessing chain allergen data from third-party
-aggregators, which remains a hard no per `chain-menu-importer`.
+**Validated 2026-09-22 against 6 previously-blocked chains** — the
+proxy-routing fix works (Chromium now actually reaches and renders these
+pages), but real-world sites still throw a mix of *different* obstacles
+on top, each needing its own handling rather than one generic fix:
+- **Chipotle** — rendered real page content successfully.
+- **Starbucks** — rendered a real page, but landed on a cookie-consent
+  interstitial instead of the allergen content. Next step: have the
+  script detect a consent/cookie overlay and click through it (common
+  button text: "Agree", "Accept", "Accept All") before extracting text.
+- **Burger King** — rendered but visible text came back empty; not yet
+  diagnosed, don't assume it's the same issue as Starbucks.
+- **Taco Bell, Domino's** — `net::ERR_TOO_MANY_RETRIES`. Possibly the
+  sandbox's shared proxy IP getting rate-limited/blocked after repeated
+  hits in a short window (both domains had also been hit by earlier
+  plain WebFetch attempts in the same session) — try spacing out
+  repeated attempts at the same domain within one run, or treat a
+  second `ERR_TOO_MANY_RETRIES` on the same domain within a run as a
+  sign to stop retrying that domain this pass.
+- **McDonald's** — still "Access Denied" (Akamai WAF), even through the
+  proxy with a real rendered browser. This looks like real bot/IP-
+  reputation detection, not a config problem — likely not fixable
+  without a residential-style egress IP, which is out of scope for now.
+  Don't keep re-attempting McDonald's every single pass once it's been
+  logged blocked; retry only occasionally (e.g. once every several
+  passes) in case Akamai's rules change.
+
+If a chain's allergen page still comes back genuinely empty/blocked
+after a real attempt, treat it as blocked for that pass — don't
+retry-loop indefinitely, log the specific failure mode to `ops_log` (not
+just "blocked" — note which of the above patterns it was, so the next
+pass doesn't have to rediscover it), and move on. Never fall back to
+guessing chain allergen data from third-party aggregators — that
+remains a hard no per `chain-menu-importer`.
