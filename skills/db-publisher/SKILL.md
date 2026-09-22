@@ -11,6 +11,15 @@ Refuse to publish otherwise and say why.
 ## Procedure
 1. Env needed: SUPABASE_URL, SUPABASE_SERVICE_KEY (service role — writes are
    blocked for anon by RLS). Never embed the service key in any client file.
+1a. Canonical allergen flag keys — the ONLY keys `app/index.html` filters on:
+    `peanut`, `treenut` (no underscore), `dairy`, `egg`, `wheat`, `soy`,
+    `fish`, `shellfish`, `sesame`. Upstream skills (allergen-analyzer,
+    chain-menu-importer) may use their own internal naming (e.g.
+    `tree_nuts`, `crustacean`/`mollusk` for shellfish) — normalize every
+    key to this exact list before insert. A misnamed key is a silent
+    false-CLEAR for that allergen (the app simply won't match it), found
+    and fixed once already (2026-09-22, 409 rows had `tree_nut` instead of
+    `treenut`) — don't reintroduce it.
 2. Upsert restaurants on place_id (or name+zip when no place_id):
    POST /rest/v1/restaurants with Prefer: resolution=merge-duplicates.
    Set data_source, last_reviewed=now.
