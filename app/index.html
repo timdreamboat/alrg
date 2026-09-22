@@ -202,9 +202,15 @@ for(const a of ALLERGENS){
 /* ---------- map (Leaflet + CARTO Voyager basemap, free, no key) ---------- */
 function initMap(){
   map=L.map("map",{zoomControl:true}).setView([39.5,-98.35],4); // continental US default until bounds are known
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-    maxZoom:20,subdomains:"abcd",
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'
+  // Esri Light Gray Canvas — free, no API key, clean modern basemap.
+  // (CARTO's raster tile service now gates behind an API key — verified
+  // by inspecting actual tile image content, not just HTTP status, after
+  // it silently served "API KEY REQUIRED" watermark tiles at 200 OK.)
+  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:16,attribution:"Tiles © Esri"
+  }).addTo(map);
+  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:16
   }).addTo(map);
   clusterGroup=L.markerClusterGroup({
     maxClusterRadius:50,
