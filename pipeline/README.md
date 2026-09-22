@@ -166,3 +166,24 @@ just "blocked" — note which of the above patterns it was, so the next
 pass doesn't have to rediscover it), and move on. Never fall back to
 guessing chain allergen data from third-party aggregators — that
 remains a hard no per `chain-menu-importer`.
+
+## Hard blocks that need a human — pipeline/BLOCKED_SOURCES.md
+
+Some blocks (McDonald's Akamai WAF "Access Denied" is the confirmed case
+so far) are not a rendering or retry problem — no amount of proxy/consent/
+backoff tuning gets past them, because the site is deliberately refusing
+automated traffic before content ever loads. For those, the only real fix
+is a human opening the page in their own browser once and handing Claude
+Code the PDF/page to seed manually — not an ongoing scraping arms race.
+
+`pipeline/BLOCKED_SOURCES.md` is the durable record of these. Read it
+before re-attempting a chain that's blocked before (skip chains already
+listed under "Confirmed hard blocks" — don't burn a pass re-proving what's
+already known; only retry those occasionally, e.g. once every several
+passes, in case the site's rules changed). When a chain hits the *same*
+block signature on a second separate pass (not immediately after a prior
+attempt against the same domain in the same session, which can be
+throttling rather than a real block), move it from "Watching" to
+"Confirmed hard blocks" in that file — append the row, commit, and push.
+This is a repo file specifically so it's easy for the owner to glance at
+and act on, not just another `ops_log` row.
