@@ -33,6 +33,36 @@ says.
 
 ---
 
+## Capture real ingredients, not just allergen flags
+
+The owner wants menu items in the app to expand and show real ingredient
+text (2026-09-22 request), not just the allergen flag badges. Right now
+`menu_items.note` is mostly empty or a bare category/citation label — see
+`pipeline/INGREDIENT_BACKFILL.md` for the full tracked backlog, per-chain
+source status, and the hard rule against fabricating ingredient text.
+
+**For every chain or restaurant worked from now on** (new imports AND
+whenever `INGREDIENT_BACKFILL.md` still lists a chain as not started):
+look for a genuine ingredient-statement document — often called
+"ingredient guide," "ingredient statement," or "product ingredients" —
+**separate from the allergen matrix PDF**. Most chains publish these as
+two different documents; the allergen chart alone usually isn't enough
+(it's a compliance table, item × allergen columns, not prose ingredient
+text). If found, set `note` to the real ingredient text for that item
+(trimmed, not the whole document dumped in). If no such document exists
+publicly after a real search, leave `note` as whatever's already there
+and update the backlog table with "no source found" — never invent
+ingredients from the item name or general knowledge.
+
+Priority: work this backlog interleaved with (not necessarily before)
+the normal chains → metros → maintenance order — an hourly pass with
+nothing new to import in either queue is a good time to pick the next
+"not started" row in `INGREDIENT_BACKFILL.md`. Start with Subway (real
+ingredient PDF already confirmed to exist, URL in that file) since it's
+the cheapest proven win.
+
+---
+
 The service validates and publishes on its own. The owner is not a
 per-batch approval gate — see CLAUDE.md's "Standing conventions" for the
 exact (short) list of things that still escalate. The owner's real
