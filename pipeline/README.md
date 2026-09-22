@@ -54,3 +54,29 @@ C) GITHUB ACTIONS (fallback only, not the default): use only if Routines
 State lives in the database (`metros`, `chains`, `ops_log`), not in chat,
 so all three modes are interchangeable — switch freely without losing
 progress. run_batch.py documents mode C's exact orchestration.
+
+## Restaurant discovery in the cloud Routine — known gap (as of 2026-09-22)
+
+The Routine's cloud sandbox does not have the `places_search` /
+`places_map_display_v0` tools that `restaurant-menu-extractor` normally
+uses, and a single Overpass (OSM) call to `overpass-api.de` failed at the
+network-proxy layer on the first hourly run — not a hard block (other
+domains worked fine), so it's worth retrying rather than skipping straight
+to WebSearch. Priority order for restaurant discovery until this is
+properly fixed:
+1. Overpass API, `overpass-api.de` first (freshest data) — retry 2-3x
+   with a short backoff before giving up on it; a single transient proxy
+   failure isn't grounds to abandon the run's primary source.
+2. Only if Overpass fails outright — fall back to WebSearch + WebFetch
+   per-restaurant (what the first run did). This works but is slow and
+   caps how many restaurants one hourly firing can cover.
+Do not add a paid places API (Google Places, Foursquare, etc.) without
+the owner's explicit approval — see "Standing conventions" in CLAUDE.md
+("everything free-tier unless the owner explicitly approves a cost").
+Google Places' terms also restrict caching/redistributing place data,
+which cuts against this project's own data-licensing rule; if this ever
+gets revisited, Overture Maps' open static dataset (no key, no per-call
+cost, explicitly the kind of source CLAUDE.md already prefers) is the
+better fit than a paid vendor API, but needs real engineering work
+(DuckDB + spatial queries against Overture's S3/Azure release) that
+hasn't been built yet.
