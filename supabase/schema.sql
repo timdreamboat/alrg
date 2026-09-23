@@ -26,7 +26,10 @@ create table chains (
   id             bigint generated always as identity primary key,
   name           text not null unique,
   official_matrix boolean default false,  -- true = published allergen matrix (highest confidence)
-  analyzed_at    timestamptz
+  analyzed_at    timestamptz,
+  source_document text  -- real document/page the allergen data came from (one per chain,
+                         -- not per item — see pipeline/README.md for why this lives here
+                         -- and not in menu_items.note)
 );
 
 -- ---------- restaurants ----------

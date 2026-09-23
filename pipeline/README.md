@@ -1,5 +1,37 @@
 # Pipeline — how ALRG data gets collected
 
+## `chains.source_document` — set this for every chain import, one time
+
+Schema addition (2026-09-23): `chains.source_document` (text) holds the
+real document/page the allergen data was transcribed from — e.g.
+"Official Allergen Guide PDF on media.olivegarden.com
+(media.olivegarden.com/en_us/pdf/allergen_guide.pdf, doc code
+US_083126)". The app's "About this place" card shows this to the user
+as the actual source of the allergen information, per the owner's
+request that this be visible, not just a generic category badge.
+
+**Why chain-level, not per-item:** the obvious place to put a citation
+is `menu_items.note`, and that's where it lived originally — but
+`note` is also where the ingredient backfill (see
+`INGREDIENT_BACKFILL.md`) writes real per-item ingredient text. Those
+two uses collide: as soon as a chain's items get real ingredients, any
+citation that was sitting in `note` gets overwritten and the source
+becomes unrecoverable. A chain's source document is the same for every
+item and every location anyway, so it belongs on `chains`, set once,
+immune to what happens in `menu_items.note` afterward.
+
+**When importing or re-analyzing a chain**, set
+`chains.source_document` to a one-line description of the real
+document/page used — the same detail already captured in the
+`chain_imported` ops_log entry's `source` field, just copied up to a
+queryable column instead of buried in a JSON blob. Backfilled for all
+9 already-analyzed chains from their existing ops_log entries
+(2026-09-23) — this is a real record of what was actually fetched, not
+guessed after the fact. Do the same for every future chain at import
+time, not as a later backfill pass.
+
+---
+
 ## Override: highly-refined frying oil is not an allergen trigger
 
 The account-level `allergen-analyzer` skill's ingredient-matching table
