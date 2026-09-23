@@ -64,6 +64,7 @@ data; a fabricated ingredient list is worse than an honest gap.
 | Dunkin' | not started | needs research | 4,068 |
 | Independent restaurants | partial | `note` already has real short descriptions from original menu extraction for most; 10 of 124 items have none | 124 |
 | Texas Roadhouse | no source found (2026-09-23) | Checked at chain-import time: the official allergen source (Special Diets Wizard on nutritionix.com) is a per-item allergen filter tool, not an ingredient-statement document — no separate "ingredient guide" found on texasroadhouse.com or nutritionix.com. `note` left null per the no-fabrication rule. | 258 |
+| IHOP | no source found (2026-09-23) | Checked at chain-import time: IHOP's Nutritionix-powered data feed (`nix-vue-inm.s3.amazonaws.com/restaurant/ihop/data/menu-latest.json.gz`) has an `ingredientStatement` field on every item, but it's empty (0 of 208 live-menu items populated) — the feed carries full nutrition + allergen data but no prose ingredient text. `note` left null per the no-fabrication rule. | 4,992 (208 items x 24 locations) |
 
 Update this table (status + a one-line note on what was found/done) as
 each chain gets worked — don't just update `menu_items` silently and
