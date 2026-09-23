@@ -114,6 +114,11 @@ async function main() {
   const browser = await chromium.launch({
     headless: true,
     proxy: { server: proxyServer },
+    // ignoreHTTPSErrors on the context isn't enough for some domains
+    // (seen on applebees.com — ERR_CERT_AUTHORITY_INVALID persisted even
+    // with the context option set); this launch flag covers it at the
+    // Chromium-process level instead.
+    args: ['--ignore-certificate-errors'],
   });
 
   try {

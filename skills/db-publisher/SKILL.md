@@ -12,14 +12,25 @@ Refuse to publish otherwise and say why.
 1. Env needed: SUPABASE_URL, SUPABASE_SERVICE_KEY (service role — writes are
    blocked for anon by RLS). Never embed the service key in any client file.
 1a. Canonical allergen flag keys — the ONLY keys `app/index.html` filters on:
-    `peanut`, `treenut` (no underscore), `dairy`, `egg`, `wheat`, `soy`,
-    `fish`, `shellfish`, `sesame`. Upstream skills (allergen-analyzer,
+    `peanut`, `treenut` (no underscore), `dairy` (not `milk`), `egg`,
+    `wheat`, `soy`, `fish`, `shellfish` (never combined as
+    `fish_shellfish`), `sesame`. Upstream skills (allergen-analyzer,
     chain-menu-importer) may use their own internal naming (e.g.
     `tree_nuts`, `crustacean`/`mollusk` for shellfish) — normalize every
     key to this exact list before insert. A misnamed key is a silent
-    false-CLEAR for that allergen (the app simply won't match it), found
-    and fixed once already (2026-09-22, 409 rows had `tree_nut` instead of
-    `treenut`) — don't reintroduce it.
+    false-CLEAR for that allergen (the app simply won't match it). Found
+    and fixed twice now: 2026-09-22, 409 rows had `tree_nut` instead of
+    `treenut`; 2026-09-23, a second instance of the exact same bug class
+    was found confined to Panera Bread's 30 restaurants — 680 rows used
+    `milk` instead of `dairy`, and 35 rows (7 distinct items) used a
+    merged `fish_shellfish` key instead of the correct single canonical
+    key, in both cases silently reading as allergen-CLEAR to any user
+    with that allergen selected. Fixed by key rename (`milk`->`dairy`,
+    value preserved) and by deriving the correct single key per item from
+    its actual ingredient (Caesar dressing/Tuna Salad -> `fish`;
+    Shrimply Baja Salad -> `shellfish`) rather than guessing. Don't
+    reintroduce either pattern — always normalize to this exact key list
+    before insert, never a synonym and never a merged category.
 2. Upsert restaurants on place_id (or name+zip when no place_id):
    POST /rest/v1/restaurants with Prefer: resolution=merge-duplicates.
    Set data_source, last_reviewed=now.
