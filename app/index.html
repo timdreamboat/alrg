@@ -7,97 +7,211 @@
 <meta name="description" content="Allergen confidence scores for restaurants near you.">
 <meta name="theme-color" content="#0E6E5C">
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <style>
-:root{--ink:#1E2B26;--ink-soft:#4A5B54;--paper:#FAF9F4;--paper-deep:#F1EFE6;--pine:#0E6E5C;--pine-deep:#0A4F42;--mint:#EAF3EE;--safe:#2FA36B;--care:#E8A33D;--risk:#D95D4E;--line:#E3E0D4;--fd:"Bricolage Grotesque",serif;--fb:"Instrument Sans",sans-serif;--fm:"Space Mono",monospace}
+:root{
+  --ink:#1B2622;--ink-soft:#57685F;--ink-faint:#8B9A92;
+  --paper:#F7F6F0;--surface:#FFFFFF;--surface-2:#F1EFE6;
+  --pine:#0E6E5C;--pine-deep:#0A4F42;--pine-bright:#14A085;--mint:#E7F3EE;
+  --safe:#1F9D5C;--safe-bg:#E4F5EB;--care:#D98C1F;--care-bg:#FBF1DD;--risk:#D14B3D;--risk-bg:#FCE7E4;
+  --line:#E7E4D9;--line-soft:#F0EEE4;
+  --blue:#2D6FE0;--blue-bg:#E9F0FE;
+  --fd:"Bricolage Grotesque",serif;--fb:"Instrument Sans",sans-serif;--fm:"Space Mono",monospace;
+  --sh-sm:0 1px 2px rgba(20,30,26,.06),0 1px 1px rgba(20,30,26,.04);
+  --sh-md:0 8px 24px -8px rgba(20,30,26,.18),0 2px 8px -2px rgba(20,30,26,.08);
+  --sh-lg:0 24px 60px -16px rgba(20,30,26,.28),0 8px 24px -8px rgba(20,30,26,.14);
+  --sh-glow:0 0 0 4px rgba(14,110,92,.10);
+  --r-sm:10px;--r-md:16px;--r-lg:22px;--r-xl:28px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#EDEFE9;--ink-soft:#AEB8AF;--ink-faint:#727E75;
+    --paper:#12161A;--surface:#1A2019;--surface-2:#20261F;
+    --mint:#16332A;--safe-bg:#173324;--care-bg:#332912;--risk-bg:#361C18;
+    --line:#2A3129;--line-soft:#232922;
+    --blue-bg:#182543;
+    --sh-sm:0 1px 2px rgba(0,0,0,.3);--sh-md:0 8px 24px -8px rgba(0,0,0,.55),0 2px 8px -2px rgba(0,0,0,.3);
+    --sh-lg:0 24px 60px -16px rgba(0,0,0,.65),0 8px 24px -8px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fb);background:var(--paper);color:var(--ink);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-button{font-family:var(--fb);cursor:pointer}
-.topbar{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);flex:none}
-.brand{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:800;font-size:1.1rem}
-.brand .mark{width:28px;height:28px;border-radius:8px;background:var(--pine);display:grid;place-items:center;color:#fff;font-family:var(--fm);font-size:.7rem;font-weight:700}
-.search{flex:1;max-width:420px;display:flex;align-items:center;gap:8px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:8px 14px}
-.search input{border:none;background:none;outline:none;font-family:var(--fb);font-size:.9rem;width:100%}
-.profile-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--paper-deep);border-bottom:1px solid var(--line);flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.profile-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:.82rem;font-weight:500;color:var(--ink-soft);white-space:nowrap;transition:all .15s;flex:none}
-.chip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:600}
-.main{flex:1;display:grid;grid-template-columns:330px 1fr;min-height:0}
-.list{border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;min-height:0}
-.list-head{padding:12px 16px 8px;flex:none}
-.list-head h2{font-family:var(--fd);font-size:1rem;font-weight:700}
-.list-head p{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
-.loc-filter{display:flex;align-items:center;gap:6px;margin:9px 0 2px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:7px 8px 7px 13px}
+html,body{height:100%}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:var(--fb);cursor:pointer;-webkit-tap-highlight-color:transparent}
+input{font-family:var(--fb)}
+::selection{background:var(--pine-bright);color:#fff}
+
+.app{position:relative;height:100dvh;overflow:hidden}
+.map-layer{position:absolute;inset:0}
+#map{position:absolute;inset:0;z-index:1}
+
+/* ---------- floating top chrome ---------- */
+.chrome{position:absolute;top:0;left:0;right:0;z-index:600;padding:14px 16px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.chrome>*{pointer-events:auto}
+.topbar{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--fd);font-weight:800;font-size:1.08rem;background:var(--surface);border-radius:var(--r-md);padding:9px 16px 9px 10px;box-shadow:var(--sh-md);flex:none}
+.brand .mark{width:30px;height:30px;border-radius:10px;background:linear-gradient(155deg,var(--pine-bright),var(--pine-deep));display:grid;place-items:center;color:#fff;font-family:var(--fm);font-size:.72rem;font-weight:700;box-shadow:inset 0 1px 1px rgba(255,255,255,.25)}
+.search{flex:1;max-width:460px;display:flex;align-items:center;gap:9px;background:var(--surface);border-radius:var(--r-md);padding:11px 16px;box-shadow:var(--sh-md);transition:box-shadow .18s}
+.search:focus-within{box-shadow:var(--sh-md),var(--sh-glow)}
+.search input{border:none;background:none;outline:none;font-size:.92rem;width:100%;color:var(--ink)}
+.search input::placeholder{color:var(--ink-faint)}
+.iconbtn{flex:none;width:42px;height:42px;border-radius:var(--r-md);border:none;background:var(--surface);box-shadow:var(--sh-md);display:grid;place-items:center;color:var(--ink-soft);transition:transform .15s,color .15s}
+.iconbtn:hover{color:var(--pine);transform:translateY(-1px)}
+.iconbtn.active{background:var(--pine);color:#fff}
+
+.profile-row{display:flex;align-items:center;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.profile-row::-webkit-scrollbar{display:none}
+.profile-label{font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;background:var(--surface);border-radius:999px;padding:9px 12px;box-shadow:var(--sh-sm);flex:none}
+.chip{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--surface);border-radius:999px;padding:8px 15px;font-size:.83rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;transition:all .16s;flex:none;box-shadow:var(--sh-sm)}
+.chip:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}
+.chip.on{background:linear-gradient(155deg,var(--pine-bright),var(--pine));color:#fff;box-shadow:var(--sh-md)}
+
+.map-note{position:absolute;right:14px;bottom:14px;z-index:400;background:var(--surface);border-radius:999px;padding:7px 14px;font-family:var(--fm);font-size:.55rem;letter-spacing:.09em;color:var(--ink-soft);box-shadow:var(--sh-sm)}
+
+/* ---------- list panel (desktop: floating card; mobile: bottom sheet) ---------- */
+.list-panel{position:absolute;background:var(--surface);box-shadow:var(--sh-lg);z-index:500;display:flex;flex-direction:column;overflow:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.list-head{padding:16px 18px 10px;flex:none;border-bottom:1px solid var(--line-soft)}
+.sheet-handle{display:none}
+.list-head h2{font-family:var(--fd);font-size:1.08rem;font-weight:700}
+.list-head p{font-family:var(--fm);font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+.loc-filter{display:flex;align-items:center;gap:6px;margin:11px 0 2px;background:var(--surface-2);border-radius:999px;padding:8px 8px 8px 14px}
 .loc-filter svg{flex:none}
-.loc-filter input{flex:1;border:none;background:none;outline:none;font-family:var(--fb);font-size:.82rem;min-width:0}
-.loc-filter button{flex:none;border:none;background:var(--pine);color:#fff;font-family:var(--fm);font-size:.6rem;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:6px 12px}
-.loc-filter .clear{background:none;color:var(--ink-soft);padding:6px 8px;font-size:.9rem}
-.loc-active{display:none;align-items:center;gap:6px;margin-top:7px;font-size:.74rem;color:var(--pine-deep);background:var(--mint);border-radius:8px;padding:6px 10px}
+.loc-filter input{flex:1;border:none;background:none;outline:none;font-size:.83rem;min-width:0;color:var(--ink)}
+.loc-filter button{flex:none;border:none;background:var(--pine);color:#fff;font-family:var(--fm);font-size:.6rem;font-weight:700;letter-spacing:.05em;border-radius:999px;padding:7px 13px}
+.loc-active{display:none;align-items:center;gap:6px;margin-top:8px;font-size:.74rem;color:var(--pine-deep);background:var(--mint);border-radius:9px;padding:7px 11px}
 .loc-active.on{display:flex}
 .loc-active button{margin-left:auto;flex:none;border:none;background:none;color:var(--pine-deep);font-family:var(--fm);font-size:.85rem;line-height:1}
-.list-scroll{flex:1;overflow-y:auto;padding:0 10px 14px}
-.empty-state{padding:28px 16px;text-align:center;color:var(--ink-soft);font-size:.85rem;line-height:1.6}
-.empty-state strong{display:block;color:var(--ink);font-family:var(--fd);font-size:.98rem;margin-bottom:6px}
-.rcard{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:none;border:1.5px solid transparent;border-radius:13px;padding:11px;transition:all .15s}
-.rcard:hover{background:var(--paper)}
-.rcard.sel{background:var(--mint);border-color:var(--pine)}
-.badge{flex:none;width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:.95rem;color:#fff}
-.rcard-name{font-weight:600;font-size:.92rem}
-.rcard-sub{font-size:.75rem;color:var(--ink-soft)}
-.rcard-tier{font-family:var(--fm);font-size:.55rem;letter-spacing:.08em;margin-top:2px;font-weight:700}
-.map-area{position:relative;min-height:0}
-#map{position:absolute;inset:0;z-index:1}
-.map-note{position:absolute;right:12px;top:12px;z-index:400;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;color:var(--ink-soft)}
-.drawer{position:absolute;top:0;right:0;bottom:0;width:min(400px,94%);background:#fff;border-left:1px solid var(--line);box-shadow:-18px 0 44px -22px rgba(30,43,38,.35);transform:translateX(105%);transition:transform .26s ease;display:flex;flex-direction:column;z-index:500}
-.drawer.open{transform:none}
-.drawer-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-family:var(--fm);color:var(--ink-soft);z-index:2}
-.drawer-head{padding:18px 20px 14px;border-bottom:1px solid var(--line);flex:none}
-.dh-top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
-.ring{position:relative;width:72px;height:72px;flex:none}
-.ring svg{transform:rotate(-90deg);width:72px;height:72px}
-.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:1.15rem}
-.dh-name{font-family:var(--fd);font-weight:700;font-size:1.12rem;line-height:1.15}
-.dh-sub{font-size:.78rem;color:var(--ink-soft);margin-top:2px}
-.dh-tier{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;margin-top:5px;font-weight:700}
-.meta-tag{font-family:var(--fm);font-size:.54rem;letter-spacing:.08em;background:var(--paper-deep);color:var(--ink-soft);border-radius:999px;padding:4px 10px;text-transform:uppercase;display:inline-block;margin-right:6px}
+.list-scroll{flex:1;overflow-y:auto;padding:8px 10px 16px;overscroll-behavior:contain}
+.empty-state{padding:32px 18px;text-align:center;color:var(--ink-soft);font-size:.85rem;line-height:1.6}
+.empty-state strong{display:block;color:var(--ink);font-family:var(--fd);font-size:1rem;margin-bottom:7px}
+
+.rcard{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:none;border:none;border-radius:var(--r-md);padding:11px;transition:all .15s;position:relative}
+.rcard:hover{background:var(--surface-2)}
+.rcard.sel{background:var(--mint);box-shadow:inset 0 0 0 1.5px var(--pine)}
+.badge{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:1rem;color:#fff;box-shadow:var(--sh-sm)}
+.rcard-name{font-weight:700;font-size:.93rem}
+.rcard-sub{font-size:.76rem;color:var(--ink-soft);margin-top:1px}
+.rcard-tier{font-family:var(--fm);font-size:.55rem;letter-spacing:.07em;margin-top:4px;font-weight:700}
+.src-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+/* ---------- detail sheet ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,20,17,.42);backdrop-filter:blur(2px);z-index:700;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:92dvh;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-lg);z-index:800;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden}
+.sheet.open{transform:translateY(0)}
+.sheet-grip{width:38px;height:4px;border-radius:99px;background:var(--line);margin:10px auto 0;flex:none}
+.sheet-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--surface-2);color:var(--ink-soft);z-index:2;font-size:.9rem;display:grid;place-items:center}
+.sheet-head{padding:20px 22px 16px;flex:none;border-bottom:1px solid var(--line-soft)}
+.dh-top{display:flex;gap:16px;align-items:center;margin-bottom:13px}
+.ring{position:relative;width:78px;height:78px;flex:none}
+.ring svg{transform:rotate(-90deg);width:78px;height:78px}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:1.25rem}
+.dh-name{font-family:var(--fd);font-weight:700;font-size:1.28rem;line-height:1.15}
+.dh-sub{font-size:.8rem;color:var(--ink-soft);margin-top:3px}
+.dh-tier{font-family:var(--fm);font-size:.6rem;letter-spacing:.09em;margin-top:6px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.info-dot{width:14px;height:14px;border-radius:50%;border:1.3px solid currentColor;display:inline-grid;place-items:center;font-size:.62rem;font-family:var(--fb);cursor:pointer;opacity:.7}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px}
+.meta-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.53rem;letter-spacing:.06em;background:var(--surface-2);color:var(--ink-soft);border-radius:999px;padding:5px 11px;text-transform:uppercase}
+.meta-tag.src-official{background:var(--mint);color:var(--pine-deep)}
+.meta-tag.src-ai{background:var(--care-bg);color:#8A5D14}
+.meta-tag.src-verified{background:var(--blue-bg);color:#1D4FB0}
 .meta-tag.verified{background:var(--mint);color:var(--pine-deep)}
-.drawer-body{flex:1;overflow-y:auto;padding:16px 20px 24px}
-.sec-label{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pine);margin:16px 0 8px}
+
+.sheet-body{flex:1;overflow-y:auto;padding:18px 22px 28px;overscroll-behavior:contain}
+.sec-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pine);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
 .sec-label:first-child{margin-top:0}
-.why{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:.83rem;color:var(--ink-soft);line-height:1.5}
-.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--paper-deep)}
-.item:last-child{border-bottom:none}
-.item-name{font-weight:500;font-size:.88rem}
-.item-note{font-size:.71rem;color:var(--ink-soft)}
-.tier{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.56rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.sec-label .line{flex:1;height:1px;background:var(--line)}
+
+.why-card{background:var(--surface-2);border-radius:var(--r-md);padding:14px 16px;font-size:.85rem;color:var(--ink-soft);line-height:1.5;margin-bottom:12px}
+.abd{display:flex;flex-direction:column;gap:1px;border-radius:var(--r-md);overflow:hidden;background:var(--line-soft)}
+.abd-row{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--surface)}
+.abd-em{font-size:1.05rem;flex:none}
+.abd-name{font-weight:600;font-size:.85rem;flex:1}
+.abd-detail{font-size:.7rem;color:var(--ink-faint);margin-top:1px}
+.abd-pill{flex:none}
+
+.item{border-radius:var(--r-md);border:1px solid var(--line-soft);margin-bottom:7px;overflow:hidden;transition:border-color .15s}
+.item.expanded{border-color:var(--line)}
+.item-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 13px;width:100%;background:none;border:none;text-align:left}
+.item-row:hover{background:var(--surface-2)}
+.item-name{font-weight:600;font-size:.88rem}
+.item-note{font-size:.72rem;color:var(--ink-faint);margin-top:2px}
+.item-right{display:flex;align-items:center;gap:8px;flex:none}
+.chev{width:18px;height:18px;color:var(--ink-faint);transition:transform .2s;flex:none}
+.item.expanded .chev{transform:rotate(180deg)}
+.item-detail{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.item.expanded .item-detail{max-height:600px}
+.item-detail-inner{padding:2px 13px 14px}
+.ing-block{background:var(--surface-2);border-radius:var(--r-sm);padding:11px 13px;font-size:.8rem;color:var(--ink-soft);line-height:1.55;margin-bottom:10px}
+.ing-block.missing{background:var(--care-bg);color:#8A5D14;display:flex;gap:9px;align-items:flex-start}
+.ing-label{font-family:var(--fm);font-size:.55rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:5px;display:block}
+.allergen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.ag-chip{display:flex;align-items:center;gap:5px;padding:6px 9px;border-radius:9px;font-size:.72rem;font-weight:600;background:var(--surface-2);color:var(--ink-faint)}
+.ag-chip.flagged{color:inherit}
+
+.tier{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.56rem;font-weight:700;padding:5px 10px;border-radius:999px;white-space:nowrap}
 .tier::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.t-safe{color:#1D7A4C;background:#E3F4EA}.t-care{color:#9A6A14;background:#FBF0DB}.t-risk{color:#A93B2E;background:#FBE5E1}
-.disclaimer{margin-top:16px;border-left:3px solid var(--care);background:#FBF6EA;border-radius:0 9px 9px 0;padding:10px 12px;font-size:.72rem;color:#6B5A2E;line-height:1.45}
+.t-safe{color:#1D7A4C;background:var(--safe-bg)}.t-care{color:#9A6A14;background:var(--care-bg)}.t-risk{color:#A93B2E;background:var(--risk-bg)}
+
+.verify-box{background:var(--surface-2);border-radius:var(--r-md);padding:15px 16px}
+.verify-q{font-size:.85rem;font-weight:600;margin-bottom:10px}
+.verify-actions{display:flex;gap:7px;flex-wrap:wrap}
+.vbtn{flex:1;min-width:100px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 8px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--surface);font-size:.72rem;font-weight:600;color:var(--ink-soft);transition:all .15s}
+.vbtn:hover{border-color:var(--pine);color:var(--pine-deep)}
+.vbtn .vem{font-size:1.15rem}
+.verify-form{margin-top:12px;display:none;flex-direction:column;gap:9px}
+.verify-form.on{display:flex}
+.verify-form select,.verify-form textarea{width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;font-family:var(--fb);font-size:.83rem;background:var(--surface);color:var(--ink);resize:vertical}
+.verify-submit{align-self:flex-start;background:var(--pine);color:#fff;border:none;border-radius:999px;padding:9px 18px;font-size:.8rem;font-weight:700}
+.verify-thanks{font-size:.82rem;color:var(--pine-deep);background:var(--mint);border-radius:var(--r-sm);padding:11px 13px;display:none}
+.verify-thanks.on{display:block}
+
+.disclaimer{margin-top:18px;border-left:3px solid var(--care);background:var(--care-bg);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:11px 14px;font-size:.73rem;color:#6B5A2E;line-height:1.5}
+
 .banner{position:fixed;inset:0;display:grid;place-items:center;background:var(--paper);z-index:1000;padding:24px}
-.banner .card{max-width:420px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;text-align:center}
+.banner .card{max-width:420px;background:var(--surface);border-radius:var(--r-lg);padding:30px;text-align:center;box-shadow:var(--sh-lg)}
 .banner h2{font-family:var(--fd);font-weight:700;margin-bottom:10px}
 .banner p{color:var(--ink-soft);font-size:.92rem;line-height:1.55}
-.banner code{font-family:var(--fm);font-size:.78rem;background:var(--paper-deep);padding:2px 8px;border-radius:6px}
-@media(max-width:820px){.main{grid-template-columns:1fr;grid-template-rows:1fr 42%}.list{order:2;border-right:none;border-top:1px solid var(--line)}.map-area{order:1}}
+.banner code{font-family:var(--fm);font-size:.78rem;background:var(--surface-2);padding:2px 8px;border-radius:6px}
+
+/* ---------- responsive: mobile bottom sheet list, desktop floating panel ---------- */
+.list-panel{left:0;right:0;bottom:0;top:auto;height:46dvh;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.sheet-handle{display:block;width:38px;height:4px;border-radius:99px;background:var(--line);margin:9px auto 4px;flex:none}
+@media(min-width:821px){
+  .list-panel{left:16px;top:112px;bottom:16px;right:auto;width:360px;height:auto;border-radius:var(--r-lg)}
+  .sheet-handle{display:none}
+  .map-note{bottom:16px}
+  .sheet{left:auto;right:16px;top:16px;bottom:16px;width:min(440px,94vw);max-height:none;border-radius:var(--r-lg);transform:translateX(120%)}
+  .sheet.open{transform:translateX(0)}
+  .sheet-grip{display:none}
+}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand"><span class="mark">A</span><span>ALRG</span></div>
-  <div class="search">
-    <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#0E6E5C" stroke-width="2"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="#0E6E5C" stroke-width="2" stroke-linecap="round"/></svg>
-    <input id="searchBox" type="text" placeholder="Search restaurants…">
+<div class="app">
+  <div class="map-layer"><div id="map"></div></div>
+
+  <div class="chrome">
+    <div class="topbar">
+      <div class="brand"><span class="mark">A</span><span>ALRG</span></div>
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#0E6E5C" stroke-width="2"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="#0E6E5C" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="searchBox" type="text" placeholder="Search restaurants…">
+      </div>
+    </div>
+    <div class="profile-row" id="profileBar"><span class="profile-label">MY ALLERGENS</span></div>
   </div>
-</header>
 
-<div class="profile-bar" id="profileBar"><span class="profile-label">My allergens →</span></div>
+  <div class="map-note">SCORES UPDATE WITH YOUR PROFILE</div>
 
-<div class="main">
-  <aside class="list">
+  <aside class="list-panel">
+    <div class="sheet-handle"></div>
     <div class="list-head">
       <h2>Near you</h2>
       <div class="loc-filter">
@@ -110,14 +224,13 @@ button{font-family:var(--fb);cursor:pointer}
     </div>
     <div class="list-scroll" id="listScroll"></div>
   </aside>
-  <div class="map-area">
-    <div id="map"></div>
-    <div class="map-note">SCORES UPDATE WITH YOUR PROFILE</div>
-    <div class="drawer" id="drawer">
-      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">✕</button>
-      <div class="drawer-head" id="drawerHead"></div>
-      <div class="drawer-body" id="drawerBody"></div>
-    </div>
+
+  <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+  <div class="sheet" id="drawer">
+    <div class="sheet-grip"></div>
+    <button class="sheet-close" onclick="closeDrawer()" aria-label="Close">✕</button>
+    <div class="sheet-head" id="drawerHead"></div>
+    <div class="sheet-body" id="drawerBody"></div>
   </div>
 </div>
 
@@ -132,9 +245,10 @@ button{font-family:var(--fb);cursor:pointer}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
-/* ================= ALRG PWA v1 =================
+/* ================= ALRG PWA v2 =================
    Reads live data from Supabase (public read-only anon key + RLS).
-   Scoring runs client-side; logic mirrors scoring spec v1. */
+   Scoring runs client-side; logic mirrors scoring spec v1.
+   Community verifications write to `verifications` (public insert, RLS). */
 
 const ALLERGENS=[
  {id:"peanut",name:"Peanut",em:"🥜"},{id:"treenut",name:"Tree nut",em:"🌰"},
@@ -144,13 +258,19 @@ const ALLERGENS=[
  {id:"sesame",name:"Sesame",em:"🫓"}];
 const RANK={clear:0,may:1,shared:2,contains:3};
 const tierOf=s=>s>=80?"safe":s>=50?"care":"risk";
-const tierHex={safe:"#2FA36B",care:"#E8A33D",risk:"#D95D4E"};
-const tierText={safe:"#1D7A4C",care:"#C58426",risk:"#A93B2E"};
+const tierHex={safe:"#1F9D5C",care:"#D98C1F",risk:"#D14B3D"};
+const tierText={safe:"#1D7A4C",care:"#9A6A14",risk:"#A93B2E"};
 const tierLabel={safe:"HIGH CONFIDENCE",care:"PROCEED WITH CARE",risk:"HIGH RISK"};
 const statusMeta={clear:{l:"CLEAR",c:"t-safe"},may:{l:"MAY CONTAIN",c:"t-care"},shared:{l:"SHARED EQUIP",c:"t-care"},contains:{l:"CONTAINS",c:"t-risk"}};
+const SRC={
+  chain_matrix:{label:"Official chain document",cls:"src-official",dot:"#0E6E5C",short:"Official source"},
+  restaurant_verified:{label:"Confirmed by the restaurant",cls:"src-verified",dot:"#2D6FE0",short:"Restaurant-verified"},
+  ai_pipeline:{label:"AI-analyzed from public menu data",cls:"src-ai",dot:"#D98C1F",short:"AI-analyzed"}
+};
 
 let profile=JSON.parse(localStorage.getItem("alrg_profile")||'["peanut","dairy"]');
 let DATA=[],selected=null,map,markers={},clusterGroup,boundsFit=false,locFilter=null;
+let expandedItems=new Set();
 
 /* ---------- Supabase REST ---------- */
 const C=window.ALRG_CONFIG||{};
@@ -159,6 +279,14 @@ async function sb(path){
   const r=await fetch(`${C.SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:C.SUPABASE_ANON_KEY,Authorization:`Bearer ${C.SUPABASE_ANON_KEY}`}});
   if(!r.ok)throw new Error(`Supabase ${r.status}`);
   return r.json();
+}
+async function sbInsert(path,body){
+  const r=await fetch(`${C.SUPABASE_URL}/rest/v1/${path}`,{
+    method:"POST",
+    headers:{apikey:C.SUPABASE_ANON_KEY,Authorization:`Bearer ${C.SUPABASE_ANON_KEY}`,"Content-Type":"application/json",Prefer:"return=minimal"},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok)throw new Error(`Supabase ${r.status}`);
 }
 async function load(){
   if(!configured){document.getElementById("setupBanner").style.display="grid";return;}
@@ -186,6 +314,34 @@ function scoreRestaurant(r,prof){
   score+=r.verified?6:-3;
   return Math.max(4,Math.min(99,Math.round(score)));
 }
+// Per-allergen breakdown for the "why this score" detail — one row per
+// selected allergen, independent of the others, so a user can see exactly
+// which of their allergens is driving the number instead of one blended figure.
+function allergenBreakdown(r,prof){
+  return prof.map(aid=>{
+    const meta=ALLERGENS.find(a=>a.id===aid);
+    let worst="clear";const counts={clear:0,may:0,shared:0,contains:0};
+    for(const it of r.items){
+      const s=(it.flags||{})[aid]||"clear";
+      counts[s]=(counts[s]||0)+1;
+      if(RANK[s]>RANK[worst])worst=s;
+    }
+    return{meta,worst,counts,total:r.items.length};
+  });
+}
+
+/* ---------- ingredient text heuristics ----------
+   Most published items still only carry a category label or a source
+   citation in `note` (backfill of real ingredient text is in progress,
+   see pipeline/INGREDIENT_BACKFILL.md) — detect the difference so we
+   never present a citation sentence as if it were an ingredient list. */
+function looksLikeIngredients(note){
+  if(!note)return false;
+  if(/^from .*official/i.test(note.trim()))return false;
+  if(note.length<15)return false;
+  if(!note.includes(",")&&note.length<40)return false;
+  return true;
+}
 
 /* ---------- profile chips ---------- */
 const bar=document.getElementById("profileBar");
@@ -199,36 +355,29 @@ for(const a of ALLERGENS){
   bar.appendChild(b);
 }
 
-/* ---------- map (Leaflet + CARTO Voyager basemap, free, no key) ---------- */
+/* ---------- map (Leaflet + Esri Light Gray, free, no key) ---------- */
 function initMap(){
-  map=L.map("map",{zoomControl:true}).setView([39.5,-98.35],4); // continental US default until bounds are known
-  // Esri Light Gray Canvas — free, no API key, clean modern basemap.
-  // (CARTO's raster tile service now gates behind an API key — verified
-  // by inspecting actual tile image content, not just HTTP status, after
-  // it silently served "API KEY REQUIRED" watermark tiles at 200 OK.)
+  map=L.map("map",{zoomControl:true}).setView([39.5,-98.35],4);
   L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
     maxZoom:16,attribution:"Tiles © Esri"
   }).addTo(map);
   L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{
     maxZoom:16
   }).addTo(map);
-  clusterGroup=L.markerClusterGroup({
-    maxClusterRadius:50,
-    spiderfyOnMaxZoom:true,
-    iconCreateFunction:clusterIcon
-  });
+  clusterGroup=L.markerClusterGroup({maxClusterRadius:50,spiderfyOnMaxZoom:true,iconCreateFunction:clusterIcon});
   map.addLayer(clusterGroup);
 }
 function clusterIcon(cluster){
   const count=cluster.getChildCount();
-  const size=count<10?38:count<50?46:56;
+  const size=count<10?40:count<50?48:58;
   const fs=count<100?13:11;
   return L.divIcon({className:"",iconSize:[size,size],iconAnchor:[size/2,size/2],
-    html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:#0E6E5C;display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${fs}px;border:3px solid #fff;box-shadow:0 4px 14px rgba(14,110,92,.45)">${count}</div>`});
+    html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(155deg,#14A085,#0A4F42);display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${fs}px;border:3px solid #fff;box-shadow:0 6px 18px -4px rgba(10,79,66,.55)">${count}</div>`});
 }
 function pinIcon(score,tier,sel){
-  return L.divIcon({className:"",iconSize:[38,38],iconAnchor:[19,19],
-    html:`<div style="width:38px;height:38px;border-radius:50%;background:${tier?tierHex[tier]:"#B9C6BF"};display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:12px;border:${sel?"3px solid #1E2B26":"2px solid #fff"};box-shadow:0 4px 12px rgba(30,43,38,.35)">${score??"–"}</div>`});
+  const bg=tier?tierHex[tier]:"#AEB8AF";
+  return L.divIcon({className:"",iconSize:[sel?46:40,sel?46:40],iconAnchor:[sel?23:20,sel?23:20],
+    html:`<div style="width:100%;height:100%;border-radius:50%;background:${bg};display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${sel?'13px':'12px'};border:${sel?"3px solid #1B2622":"2.5px solid #fff"};box-shadow:0 6px 16px -3px rgba(20,30,26,.45)">${score??"–"}</div>`});
 }
 function renderPins(){
   for(const r of DATA){
@@ -315,49 +464,157 @@ function renderList(){
   document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence`:"Pick allergens above to score";
   for(const{r,s}of rows){
     const t=s===null?null:tierOf(s);
+    const src=SRC[r.data_source]||SRC.ai_pipeline;
     const btn=document.createElement("button");
     btn.className="rcard"+(selected===r.id?" sel":"");
-    btn.innerHTML=`<span class="badge" style="background:${t?tierHex[t]:"#B9C6BF"}">${s??"–"}</span>
+    btn.innerHTML=`<span class="badge" style="background:${t?tierHex[t]:"#AEB8AF"}">${s??"–"}</span>
       <span><span class="rcard-name">${r.name}${r.verified?" <span style='color:var(--pine)'>✓</span>":""}</span>
-      <div class="rcard-sub">${r.cuisine||""} · ${r.city||""}</div>
+      <div class="rcard-sub"><span class="src-dot" style="background:${src.dot}"></span>${r.cuisine||""} · ${r.city||""}</div>
       ${t?`<div class="rcard-tier" style="color:${tierText[t]}">${tierLabel[t]}</div>`:""}</span>`;
     btn.onclick=()=>openDrawer(r.id);
     wrap.appendChild(btn);
   }
 }
 
-/* ---------- drawer ---------- */
+/* ---------- item ingredient / allergen expand ---------- */
+function toggleItem(uid){
+  if(expandedItems.has(uid))expandedItems.delete(uid);else expandedItems.add(uid);
+  if(selected)renderDrawerBody(DATA.find(x=>x.id===selected));
+}
+function renderItemRow(it,uid,prof,srcShort){
+  const m=statusMeta[itemStatus(it,prof)];
+  const expanded=expandedItems.has(uid);
+  const hasReal=looksLikeIngredients(it.note);
+  const ingHtml=hasReal
+    ? `<div class="ing-block"><span class="ing-label">Ingredients</span>${it.note}</div>`
+    : `<div class="ing-block missing"><span>⚠️</span><div><span class="ing-label" style="color:inherit">Not yet available</span>Detailed ingredients haven't been captured for this item yet — the allergen flags come from ${srcShort.toLowerCase()}, but a full ingredient breakdown is still being added. Ask staff to confirm before ordering.</div></div>`;
+  const allFlags=ALLERGENS.map(a=>{
+    const st=(it.flags||{})[a.id]||"clear";
+    const on=st!=="clear";
+    const bg=on?(st==="contains"?"var(--risk-bg)":"var(--care-bg)"):"var(--surface-2)";
+    const fg=on?(st==="contains"?"#A93B2E":"#9A6A14"):"var(--ink-faint)";
+    return `<span class="ag-chip${on?' flagged':''}" style="background:${bg};color:${fg}">${a.em} ${a.name}${on?` · ${st}`:''}</span>`;
+  }).join("");
+  return `<div class="item${expanded?' expanded':''}">
+    <button class="item-row" onclick="toggleItem('${uid}')">
+      <div><div class="item-name">${it.name}</div>${!expanded&&it.note&&!hasReal?`<div class="item-note">${it.note}</div>`:''}</div>
+      <div class="item-right"><span class="tier ${m.c}">${m.l}</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </button>
+    <div class="item-detail"><div class="item-detail-inner">
+      ${ingHtml}
+      <span class="ing-label">All allergens</span>
+      <div class="allergen-grid">${allFlags}</div>
+    </div></div>
+  </div>`;
+}
+
+/* ---------- verification submission ---------- */
+function showVerifyForm(kind){
+  document.querySelectorAll(".verify-form").forEach(f=>f.classList.remove("on"));
+  const f=document.getElementById(`vf-${kind}`);
+  if(f)f.classList.add("on");
+}
+async function submitVerification(restaurantId,kind,btn){
+  const form=btn.closest(".verify-form");
+  const allergen=form.querySelector("select")?.value||profile[0]||"peanut";
+  const comment=form.querySelector("textarea")?.value||"";
+  btn.disabled=true;btn.textContent="Submitting…";
+  try{
+    await sbInsert("verifications",{restaurant_id:restaurantId,allergen,outcome:kind,comment,status:"pending"});
+    form.classList.remove("on");
+    const thanks=form.parentElement.querySelector(".verify-thanks");
+    if(thanks){thanks.classList.add("on");thanks.textContent="Thanks — this helps other allergy-conscious diners and gets reviewed by our team.";}
+  }catch(e){
+    btn.textContent="Couldn't submit — try again";btn.disabled=false;console.error(e);return;
+  }
+  btn.disabled=false;btn.textContent="Submit";
+}
+
+/* ---------- drawer / detail sheet ---------- */
+function renderDrawerBody(r){
+  const prof=profile;
+  const bd=allergenBreakdown(r,prof);
+  const src=SRC[r.data_source]||SRC.ai_pipeline;
+  let clear=0,caution=0,contains=0;
+  for(const it of r.items){const st=itemStatus(it,prof);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
+
+  const bdHtml=bd.length?`<div class="abd">${bd.map(row=>{
+    const m=statusMeta[row.worst];
+    const n=row.counts.contains+row.counts.may+row.counts.shared;
+    return `<div class="abd-row"><span class="abd-em">${row.meta.em}</span>
+      <span class="abd-name">${row.meta.name}<div class="abd-detail">${n?`${n} of ${row.total} items flagged`:`clear across all ${row.total} items`}</div></span>
+      <span class="abd-pill tier ${m.c}">${m.l}</span></div>`;
+  }).join("")}</div>`:`<div class="why-card">Pick allergens above to see a per-allergen breakdown.</div>`;
+
+  const itemsHtml=r.items.map((it,i)=>renderItemRow(it,`${r.id}-${i}`,prof,src.short)).join("");
+
+  document.getElementById("drawerBody").innerHTML=`
+    <div class="sec-label">Why this score<span class="line"></span></div>
+    <div class="why-card">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${prof.length!==1?"s":""} directly. ${r.verified?"Restaurant-verified data raises certainty.":"Based on "+src.short.toLowerCase()+" — not yet restaurant-verified."}</div>
+    ${bdHtml}
+
+    <div class="sec-label">Can you trust this?<span class="line"></span></div>
+    <div class="verify-box">
+      <div class="verify-q">Have you eaten here? Help other allergy-conscious diners.</div>
+      <div class="verify-actions">
+        <button class="vbtn" onclick="showVerifyForm('safe_experience')"><span class="vem">✅</span>Safe experience</button>
+        <button class="vbtn" onclick="showVerifyForm('reaction_reported')"><span class="vem">⚠️</span>Had a reaction</button>
+        <button class="vbtn" onclick="showVerifyForm('info_correction')"><span class="vem">✏️</span>Suggest a fix</button>
+      </div>
+      <div class="verify-form" id="vf-safe_experience">
+        <select>${prof.map(p=>{const a=ALLERGENS.find(x=>x.id===p);return `<option value="${p}">${a.em} ${a.name}</option>`;}).join("")||ALLERGENS.map(a=>`<option value="${a.id}">${a.em} ${a.name}</option>`).join("")}</select>
+        <textarea rows="2" placeholder="Optional: what did you order?"></textarea>
+        <button class="verify-submit" onclick="submitVerification(${r.id},'safe_experience',this)">Submit</button>
+      </div>
+      <div class="verify-form" id="vf-reaction_reported">
+        <select>${prof.map(p=>{const a=ALLERGENS.find(x=>x.id===p);return `<option value="${p}">${a.em} ${a.name}</option>`;}).join("")||ALLERGENS.map(a=>`<option value="${a.id}">${a.em} ${a.name}</option>`).join("")}</select>
+        <textarea rows="2" placeholder="What happened? (this is never auto-resolved — a real person reviews it)"></textarea>
+        <button class="verify-submit" onclick="submitVerification(${r.id},'reaction_reported',this)">Submit</button>
+      </div>
+      <div class="verify-form" id="vf-info_correction">
+        <select>${ALLERGENS.map(a=>`<option value="${a.id}">${a.em} ${a.name}</option>`).join("")}</select>
+        <textarea rows="2" placeholder="What's wrong or out of date?"></textarea>
+        <button class="verify-submit" onclick="submitVerification(${r.id},'info_correction',this)">Submit</button>
+      </div>
+      <div class="verify-thanks"></div>
+    </div>
+
+    <div class="sec-label">Menu · your profile<span class="line"></span></div>${itemsHtml}
+    <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> Menus and kitchens change. Always confirm allergen handling with restaurant staff before ordering.</div>`;
+}
 function openDrawer(id){
-  selected=id;
+  selected=id;expandedItems.clear();
   const r=DATA.find(x=>x.id===id);if(!r)return;
   const s=scoreRestaurant(r,profile),t=s===null?"care":tierOf(s);
-  const circ=2*Math.PI*29,off=s===null?circ:circ*(1-s/100);
-  let clear=0,caution=0,contains=0;
-  for(const it of r.items){const st=itemStatus(it,profile);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
+  const circ=2*Math.PI*32,off=s===null?circ:circ*(1-s/100);
   const profNames=profile.map(p=>ALLERGENS.find(a=>a.id===p)?.name).filter(Boolean).join(", ")||"none selected";
   const reviewed=r.last_reviewed?new Date(r.last_reviewed).toLocaleDateString():"—";
+  const src=SRC[r.data_source]||SRC.ai_pipeline;
   document.getElementById("drawerHead").innerHTML=`
     <div class="dh-top">
-      <div class="ring"><svg viewBox="0 0 72 72">
-        <circle cx="36" cy="36" r="29" fill="none" stroke="#EAF3EE" stroke-width="7"/>
-        <circle cx="36" cy="36" r="29" fill="none" stroke="${tierHex[t]}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
+      <div class="ring"><svg viewBox="0 0 78 78">
+        <circle cx="39" cy="39" r="32" fill="none" stroke="var(--surface-2)" stroke-width="7"/>
+        <circle cx="39" cy="39" r="32" fill="none" stroke="${tierHex[t]}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
         <span class="num" style="color:${tierText[t]}">${s??"–"}</span></div>
       <div><div class="dh-name">${r.name}</div>
         <div class="dh-sub">${r.cuisine||""} · Confidence for: ${profNames}</div>
-        <div class="dh-tier" style="color:${tierText[t]}">${s===null?"SELECT ALLERGENS TO SCORE":tierLabel[t]}</div></div>
+        <div class="dh-tier" style="color:${tierText[t]}">${s===null?"SELECT ALLERGENS TO SCORE":tierLabel[t]}
+          <span class="info-dot" title="Score = weighted share of menu items that are clear/caution/contains for your selected allergens, adjusted for verification status. Full formula: docs/SCORING.md">i</span>
+        </div></div>
     </div>
-    <div>${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:`<span class="meta-tag">Public menu data</span>`}<span class="meta-tag">Reviewed ${reviewed}</span></div>`;
-  const rows=r.items.map(it=>{const m=statusMeta[itemStatus(it,profile)];
-    return `<div class="item"><div><div class="item-name">${it.name}</div><div class="item-note">${it.note||""}</div></div><span class="tier ${m.c}">${m.l}</span></div>`;}).join("");
-  document.getElementById("drawerBody").innerHTML=`
-    <div class="sec-label">Why this score</div>
-    <div class="why">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${profile.length!==1?"s":""} directly. ${r.verified?"Restaurant-verified data raises certainty.":"Based on public menu data — not yet restaurant-verified."}</div>
-    <div class="sec-label">Menu analysis · your profile</div>${rows}
-    <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> Menus and kitchens change. Always confirm allergen handling with restaurant staff before ordering.</div>`;
+    <div class="meta-row">${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:""}<span class="meta-tag ${src.cls}">${src.label}</span><span class="meta-tag">Reviewed ${reviewed}</span></div>`;
+  renderDrawerBody(r);
   document.getElementById("drawer").classList.add("open");
+  document.getElementById("overlay").classList.add("on");
   renderList();renderPins();
 }
-function closeDrawer(){document.getElementById("drawer").classList.remove("open");selected=null;renderList();renderPins();}
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("open");
+  document.getElementById("overlay").classList.remove("on");
+  selected=null;renderList();renderPins();
+}
 function renderAll(){renderList();renderPins();}
 document.getElementById("searchBox").addEventListener("input",renderList);
 
