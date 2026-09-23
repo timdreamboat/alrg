@@ -495,7 +495,7 @@ async function onboardSearch(){
   try{
     const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:q+", USA",format:"json",limit:1,countrycodes:"us"});
     const r=await fetch(url);const d=await r.json();
-    if(d&&d[0])finishOnboard([parseFloat(d[0].lat),parseFloat(d[0].lon)],12);
+    if(d&&d[0])finishOnboard([parseFloat(d[0].lat),parseFloat(d[0].lon)],14);
     else setOnboardStatus(`Couldn't find "${q}" — try a city, state, or ZIP.`);
   }catch(e){setOnboardStatus("Search failed — check your connection and try again.");}
 }
@@ -519,7 +519,7 @@ function initMap(){
   L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{
     maxZoom:16
   }).addTo(map);
-  clusterGroup=L.markerClusterGroup({maxClusterRadius:50,spiderfyOnMaxZoom:true,iconCreateFunction:clusterIcon});
+  clusterGroup=L.markerClusterGroup({maxClusterRadius:38,spiderfyOnMaxZoom:true,iconCreateFunction:clusterIcon});
   map.addLayer(clusterGroup);
 }
 function clusterIcon(cluster){
@@ -577,13 +577,19 @@ function parseLocationQuery(raw){
   return{city:q.toLowerCase(),label:q};
 }
 const geocodeCache={};
+// Zoom 14, not 11 — at 11 a suburb search (e.g. "Highlands Ranch, CO")
+// still shows a whole metro-region view, so a nearby restaurant can get
+// absorbed into a cluster badge near the town label while a farther one
+// renders as its own labeled pin — reading as "only one place here" even
+// though both are correctly in the list. Zoom 14 keeps genuinely distinct
+// restaurants far enough apart on-screen to each get their own pin.
 async function geocodeAndFly(query){
-  if(geocodeCache[query]){map.flyTo(geocodeCache[query],11,{duration:0.6});return;}
+  if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});return;}
   try{
     const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:query+", USA",format:"json",limit:1,countrycodes:"us"});
     const r=await fetch(url);
     const d=await r.json();
-    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,11,{duration:0.6});}
+    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});}
   }catch(e){/* map stays put — list filtering still works without this */}
 }
 function applyLocationFilter(){
