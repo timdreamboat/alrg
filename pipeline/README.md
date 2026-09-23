@@ -257,14 +257,17 @@ thin). Don't wire in Google Places or similar on your own initiative —
 that still needs the owner to confirm the subscription is actually in
 place — but this is the exact spot to come back to when it is, and the
 two-part split above (discovery lead, independently re-verified) is the
-design to build, not just a Phase-1 discovery swap. Overture Maps' open
-static dataset (no key, no per-call cost) remains a free alternative
-worth real engineering effort (DuckDB + spatial queries against
-Overture's S3/Azure release) if the subscription path doesn't happen —
-it would fill the same "where are the restaurants" discovery-lead role
-as Places, still independently re-verified and still leaving our own
-pipeline as the sole allergen source either way — not built either way
-yet.
+design to build, not just a Phase-1 discovery swap. **Already built and
+in active use, no key needed:** `pipeline/discover_places.py` queries
+Overture Maps' open Places dataset (no key, no per-call cost, CDLA
+Permissive 2.0) the same discovery-lead way — see
+`pipeline/COVERAGE_PLAN.md`, Track B, for how it's used today. It fills
+the same "where are the restaurants" role Places will, still
+independently re-verified before anything is stored, still leaving our
+own pipeline as the sole allergen source either way. Google Places, once
+wired in, supplements this (better global coverage, live-fresh) rather
+than replacing it — Overture stays useful as a free first pass either
+way.
 
 ## Chain allergen pages that are JS-rendered SPAs — use fetch_rendered.js
 

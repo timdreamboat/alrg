@@ -72,6 +72,48 @@ pipeline effort should go — independents are the restaurants nobody
 else is covering at scale, and they're the higher-uncertainty case
 allergy-conscious diners most need a second opinion on.
 
+**2026-09-23 — candidate list now comes from `pipeline/discover_places.py`
+first, not cold WebSearch guessing.** This script queries Overture
+Maps' open Places dataset (free, no key or account needed, CDLA
+Permissive 2.0 license — see `pipeline/PAID_UPGRADE_POINTS.md`) for
+real restaurants near a city and prints them as JSONL:
+
+```
+python3 pipeline/discover_places.py "Wichita, KS" 12 0.7
+```
+
+(city/state query, radius in miles, minimum confidence 0-1 — defaults
+15 miles / 0.6 if omitted). A single run against one metro city
+routinely returns 1,000+ real candidates (name, category, address,
+phone, website, confidence) — far more than one state needs.
+
+**This is a discovery lead, same rule as Google Places will be once
+that's wired in (see `pipeline/PAID_UPGRADE_POINTS.md` #3) — never
+store an Overture field directly.** The flow per state:
+1. Run `discover_places.py` against that state's `metros` city/cities.
+2. Filter out anything already in `restaurants` (match on address or
+   lat/lng proximity) and anything that's actually a chain already
+   handled by Track A (name matches a row in `chains`) — Overture mixes
+   both in, this script doesn't distinguish them.
+3. Pick real independent candidates from what's left, prioritizing
+   higher `confidence` and skipping anything that looks like a data
+   artifact (duplicated city name in the `name` field, null address,
+   confidence well under 0.7).
+4. For each one, run the full restaurant-menu-extractor ->
+   allergen-analyzer -> qa-allergen-auditor -> db-publisher flow as
+   normal — Overture's `phone`/`website` are a starting point to check,
+   not a value to copy in; independently confirm from the restaurant's
+   own site before storing anything, same discipline as the menu data
+   itself.
+5. Only fall back to cold WebSearch discovery (the original method,
+   still described below) if a metro's Overture pull comes back thin
+   or a state still needs more cities than are seeded in `metros`.
+
+This doesn't change the audit/publish rules at all — it only replaces
+"guess what might exist" with "here are 1,000 real candidates," so the
+slow part (menu/allergen analysis) has real leads to work through
+immediately instead of spending pipeline time on discovery guesswork.
+
 ### Track A — chain location expansion (supplement only, capped)
 
 Chains are lower-value to expand exhaustively — they're standardized,
