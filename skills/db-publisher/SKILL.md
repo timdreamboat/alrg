@@ -49,6 +49,16 @@ Refuse to publish otherwise and say why.
 3. Replace that restaurant's menu_items (delete by restaurant_id, insert new)
    so removed dishes disappear. Set audited=true only per the audit report.
 4. Update metros status if this completes a metro.
+4a. **If this restaurant came from `discovery_candidates`** (its address
+    matches a `pending` row there — check before every publish, see
+    `pipeline/COVERAGE_PLAN.md`), update that row: `status='promoted'`,
+    `promoted_restaurant_id=<the restaurants.id just inserted>`. This is
+    what turns the map's dashed "coming soon" pin into the real scored
+    pin — the app only queries `status=eq.pending`, so skipping this
+    step leaves a stale duplicate-looking pin sitting on the map forever
+    next to the real one. If a candidate turns out not viable during
+    this pass (closed, duplicate, no real menu anywhere), set
+    `status='rejected'` on it instead of leaving it pending.
 5. Insert ops_log entry: event=batch_published, detail={metro, restaurants,
    items, audit_stats}.
 6. Report to the user in one line:

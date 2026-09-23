@@ -265,6 +265,7 @@ input{font-family:var(--fb)}
     <div class="legend-row"><span class="legend-dot" style="background:#D98C1F"></span>Proceed with care</div>
     <div class="legend-row"><span class="legend-dot" style="background:#D14B3D"></span>High risk</div>
     <div class="legend-row"><span class="legend-dot" style="background:#AEB8AF"></span>Pick allergens to score</div>
+    <div class="legend-row"><span class="legend-dot" style="background:transparent;border:2px dashed #9AA39B"></span>Discovered — coming soon</div>
   </div>
 
   <!-- Allergen picker — a real grid, not a scroll row a user could miss half of -->
@@ -397,6 +398,9 @@ async function sbInsert(path,body){
   if(!r.ok)throw new Error(`Supabase ${r.status}`);
 }
 let CHAINS_BY_ID={};
+let CANDIDATES=[];
+let candidateMarkers={};
+let selectedCandidate=null;
 async function load(){
   if(!configured){document.getElementById("setupBanner").style.display="grid";return;}
   try{
@@ -407,6 +411,12 @@ async function load(){
     const byRest={};
     for(const it of items)(byRest[it.restaurant_id]??=[]).push(it);
     DATA=rests.map(r=>({...r,items:byRest[r.id]||[]}));
+    // Discovered-but-not-yet-analyzed leads (see pipeline/COVERAGE_PLAN.md,
+    // pipeline/discover_places.py) — shown as a distinct muted pin, never
+    // scored, never mixed into DATA/the list. db-publisher flips a row's
+    // status to 'promoted' once the real restaurant is published, which
+    // drops it out of this query.
+    CANDIDATES=await sbAll("discovery_candidates?status=eq.pending&select=*");
     initMap();renderAll();
   }catch(e){
     document.getElementById("listMeta").textContent="Couldn't reach database — check config.js values";
@@ -609,6 +619,26 @@ function renderPins(){
   // where the map centers (geolocation, search, or a coverage quick-pick),
   // so a first-time view is always somewhere relevant instead of a
   // whole-country view with two unlabeled cluster blobs.
+}
+// Hollow + dashed on purpose — every real pin (including the "pick
+// allergens" grey #AEB8AF) is a solid filled dot, so a candidate can
+// never be mistaken for real audited data at a glance, even in the
+// same color family.
+function candidatePinIcon(sel){
+  const size=sel?22:16;
+  return L.divIcon({className:"",iconSize:[size,size],iconAnchor:[size/2,size/2],
+    html:`<div style="width:100%;height:100%;border-radius:50%;background:rgba(174,184,175,.35);border:${sel?"2.5px dashed #6B756D":"2px dashed #9AA39B"}"></div>`});
+}
+function renderCandidatePins(){
+  for(const c of CANDIDATES){
+    if(!c.lat||!c.lng)continue;
+    if(candidateMarkers[c.id])candidateMarkers[c.id].setIcon(candidatePinIcon(selectedCandidate===c.id));
+    else{
+      const m=L.marker([c.lat,c.lng],{icon:candidatePinIcon(false)}).on("click",()=>openCandidateDrawer(c.id));
+      m.bindTooltip(c.name,{permanent:false,direction:"top",offset:[0,-4],className:"pin-label",opacity:1});
+      candidateMarkers[c.id]=m;clusterGroup.addLayer(m);
+    }
+  }
 }
 
 /* ---------- location filter (city / state / zip) ---------- */
@@ -898,7 +928,7 @@ function renderDrawerBody(r){
     <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> Menus and kitchens change. Always confirm allergen handling with restaurant staff before ordering.</div>`;
 }
 function openDrawer(id){
-  selected=id;expandedItems.clear();
+  selected=id;selectedCandidate=null;expandedItems.clear();
   const r=DATA.find(x=>x.id===id);if(!r)return;
   const s=scoreRestaurant(r,profile),t=s===null?"care":tierOf(s);
   const circ=2*Math.PI*32,off=s===null?circ:circ*(1-s/100);
@@ -920,14 +950,47 @@ function openDrawer(id){
   renderDrawerBody(r);
   document.getElementById("drawer").classList.add("open");
   document.getElementById("overlay").classList.add("on");
-  renderList();renderPins();
+  renderList();renderPins();renderCandidatePins();
 }
 function closeDrawer(){
   document.getElementById("drawer").classList.remove("open");
   document.getElementById("overlay").classList.remove("on");
-  selected=null;renderList();renderPins();
+  selected=null;selectedCandidate=null;renderList();renderPins();renderCandidatePins();
 }
-function renderAll(){renderList();renderPins();}
+// Deliberately minimal — no score ring, no allergen breakdown, no menu
+// items, no verify box. This restaurant hasn't been through the pipeline
+// yet; showing anything score-shaped here would look like an audited
+// result. See pipeline/COVERAGE_PLAN.md's discovery-lead rule — a
+// candidate's own phone/website aren't independently re-verified yet
+// either, so they're shown as-found, clearly labeled, not as confirmed
+// contact info.
+function openCandidateDrawer(id){
+  selectedCandidate=id;selected=null;
+  const c=CANDIDATES.find(x=>x.id===id);if(!c)return;
+  const addrParts=[c.address,c.city,[c.state,c.zip].filter(Boolean).join(" ")].filter(Boolean);
+  const fullAddr=addrParts.join(", ");
+  const dirUrl=(c.lat&&c.lng)?`https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`:null;
+  document.getElementById("drawerHead").innerHTML=`
+    <div class="dh-top">
+      <div><div class="dh-name">${c.name}</div>
+        <div class="dh-sub">${(c.category||"").replace(/_/g," ")}</div>
+        <div class="dh-tier" style="color:var(--ink-soft)">DISCOVERED — NOT YET ANALYZED</div></div>
+    </div>
+    <div class="meta-row"><span class="meta-tag src-ai">Coming soon</span></div>`;
+  document.getElementById("drawerBody").innerHTML=`
+    <div class="sec-label">About this place<span class="line"></span></div>
+    <div class="about-card">
+      ${fullAddr?`<div class="about-row"><span>${fullAddr}</span>${dirUrl?`<a class="about-link" href="${dirUrl}" target="_blank" rel="noopener">Directions</a>`:""}</div>`:""}
+      ${c.phone?`<div class="about-row"><span>${c.phone}</span></div>`:""}
+      ${c.website?`<div class="about-row"><span><a class="about-link-inline" href="${c.website}" target="_blank" rel="noopener">${c.website.replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,"")}</a></span></div>`:""}
+      <div class="about-note">Found nearby, not yet analyzed for allergens — phone/website above are as-discovered and not independently confirmed yet. Coverage is added regularly; check back soon.</div>
+    </div>
+    <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> This entry has no allergen data yet and isn't a recommendation either way.</div>`;
+  document.getElementById("drawer").classList.add("open");
+  document.getElementById("overlay").classList.add("on");
+  renderPins();renderCandidatePins();
+}
+function renderAll(){renderList();renderPins();renderCandidatePins();}
 document.getElementById("searchBox").addEventListener("input",renderList);
 
 /* ---------- PWA ---------- */
