@@ -52,17 +52,23 @@ create table restaurants (
                           -- honest here: note it explicitly if the source is weak (press
                           -- coverage instead of the restaurant's own menu, a third-party
                           -- aggregator) rather than presenting it as equal-confidence.
-  -- The four columns below (2026-09-23) exist for the paid-places-API
-  -- upgrade (pipeline/PAID_UPGRADE_POINTS.md #3/#5) — null until that's
-  -- active, populated for real once it is. Never fabricate any of
-  -- these; a null phone/website/rating is the honest state today.
+  -- phone/website (2026-09-23) exist for the paid-places-API upgrade
+  -- (pipeline/PAID_UPGRADE_POINTS.md #3/#5) — null until that's active.
+  -- Populate them from a restaurant's own site, independently
+  -- re-verified after Places surfaces it as a discovery lead, never
+  -- copied straight from Places' own fields — see
+  -- pipeline/COVERAGE_PLAN.md for why. Never fabricate either; null is
+  -- the honest state today.
+  --
+  -- No rating/rating_count column: a Places-sourced star rating must be
+  -- requested live and displayed with attribution on every view per
+  -- Google's terms, not stored — that's incompatible with how every
+  -- other field in this table works (populate once, serve from
+  -- Supabase), so it was dropped from the plan 2026-09-23 rather than
+  -- built in a way that couldn't actually be shipped. Distance remains
+  -- the real, honest sort signal (see app/index.html renderList).
   phone         text,
   website       text,
-  rating        numeric(2,1),  -- e.g. Google Places' 1.0–5.0 average rating
-  rating_count  integer,       -- how many ratings back that average — real
-                                -- popularity signal, once populated, for the
-                                -- list sort that currently falls back to
-                                -- distance (see app/index.html renderList)
   last_reviewed timestamptz default now(),
   created_at    timestamptz default now()
 );

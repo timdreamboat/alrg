@@ -202,36 +202,52 @@ properly fixed:
    per-restaurant (what the first run did). This works but is slow and
    caps how many restaurants one hourly firing can cover.
 
-**The two-part model (owner decision, 2026-09-22) — this is the design
-for when the Places upgrade lands, read this before touching discovery
-code that day.** ALRG and Google split the work by what each is
-actually authoritative for, and neither side does the other's job:
-- **Google Places (once paid) = where restaurants are and how to reach
-  them.** Nearby/Text Search discovers real restaurants in an area and
-  returns place_id, name, address, lat/lng, phone, website, rating,
-  rating_count — location and map metadata Google already has and
-  maintains, that we'd otherwise be hand-collecting one restaurant at a
-  time via WebSearch. Google is used live, per lookup; per the data-
-  licensing rule, none of its content is cached or redistributed beyond
-  `place_id` as a join key (see below).
+**The two-part model (owner decision, 2026-09-22, corrected 2026-09-23
+after checking Google's actual terms) — this is the design for when the
+Places upgrade lands, read this before touching discovery code that
+day.** ALRG and Google split the work by what each is actually
+authoritative for, and neither side does the other's job:
+- **Google Places (once paid) = a discovery lead, not a stored data
+  source.** Nearby/Text Search finds real restaurants in an area and
+  returns a `place_id` and an approximate name/location — "a restaurant
+  exists here, go look." It is NOT the source of record for name,
+  address, phone, or rating in our own database. Checked 2026-09-23:
+  Google's terms only exempt `place_id` from caching restrictions
+  entirely; coordinates may be cached 30 days; name, formatted address,
+  rating, phone, and photos must be requested live and displayed with
+  attribution on every view, not warehoused. Storing those fields
+  straight from a Places response the way the rest of `restaurants`
+  works (populate once, serve from Supabase forever) would violate
+  that.
+- **The pipeline independently re-verifies and collects** name,
+  address, phone, and website from the restaurant's own site once
+  Places has pointed at it — the same discipline already applied to
+  menus, just one step earlier. That's our own independently-collected
+  data at that point, not Places content, so it's ours to store. Same
+  discovery-then-verify shape as every restaurant added today, just
+  with Places replacing slow WebSearch guessing as the "does this
+  exist, where" step.
+- **No `rating`/`rating_count` field, on purpose.** A star rating is
+  inherently Google's own proprietary aggregate — there's no
+  independent way to re-derive it from a restaurant's own site the way
+  phone/address can be. It doesn't survive this pattern and isn't part
+  of `restaurants`' schema. Distance remains the real, honest sort
+  signal (see `app/index.html` `renderList()`).
 - **Our own pipeline = the only source for menu and allergen data,
   always.** Google Places has no per-item allergen data for arbitrary
   restaurants — it isn't a product it offers — so it was never a
-  candidate for that half of the job. Every restaurant Places
-  discovers still goes through the unchanged
+  candidate for that half of the job. Every restaurant Places surfaces
+  as a lead still goes through the unchanged
   restaurant-menu-extractor → allergen-analyzer → qa-allergen-auditor →
   db-publisher chain, reading the restaurant's own menu/site or the
   chain's official document, same as every restaurant today.
-- **Combined per restaurant, not per field.** Places supplies the
-  identity/contact row (`place_id`, `phone`, `website`, `rating`,
-  `rating_count`, `lat`/`lng`, `address`), our pipeline supplies the
-  `menu_items` + flags + `source_document` for that same restaurant.
-  The two update on different clocks — contact/rating info can be
-  refreshed from Places independently of a full allergen re-analysis —
-  and neither one is allowed to originate the other's data. Never let
-  Places output populate `source_document` or `flags`, and never let
-  the allergen pipeline guess at phone/website/rating instead of
-  leaving them null.
+- **Combined per restaurant, not per field.** `place_id` is the join
+  key; our own re-verified phone/website plus our own menu_items/flags/
+  source_document make up everything else. Coordinates get refreshed at
+  least every 30 days if sourced via Places/Geocoding — not populated
+  once and left stale. Never let Places output populate
+  `source_document` or `flags` directly, and never let the allergen
+  pipeline guess at phone/website instead of leaving them null.
 
 **PAID-UPGRADE:** this whole discovery approach is the free substitute
 for a paid places API — tracked in full in
@@ -240,19 +256,15 @@ upgrade on that list (it's the main reason metro coverage is this
 thin). Don't wire in Google Places or similar on your own initiative —
 that still needs the owner to confirm the subscription is actually in
 place — but this is the exact spot to come back to when it is, and the
-two-part split above is the design to build, not just a Phase-1
-discovery swap. Google Places' terms also restrict caching/
-redistributing place data, which cuts against this project's own
-data-licensing rule; keep using `place_id` as a join key only when that
-day comes, same as today — this is actually easy to honor under the
-two-part model since Google's content is never treated as anything
-other than a live lookup for the contact/rating row, never stored menu
-or allergen content. Overture Maps' open static dataset (no key, no
-per-call cost) remains a free alternative worth real engineering effort
-(DuckDB + spatial queries against Overture's S3/Azure release) if the
-subscription path doesn't happen — it would fill the same "where are
-the restaurants" role as Places, still leaving our own pipeline as the
-sole allergen source either way — not built either way yet.
+two-part split above (discovery lead, independently re-verified) is the
+design to build, not just a Phase-1 discovery swap. Overture Maps' open
+static dataset (no key, no per-call cost) remains a free alternative
+worth real engineering effort (DuckDB + spatial queries against
+Overture's S3/Azure release) if the subscription path doesn't happen —
+it would fill the same "where are the restaurants" discovery-lead role
+as Places, still independently re-verified and still leaving our own
+pipeline as the sole allergen source either way — not built either way
+yet.
 
 ## Chain allergen pages that are JS-rendered SPAs — use fetch_rendered.js
 

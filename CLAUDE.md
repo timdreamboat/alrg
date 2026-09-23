@@ -27,13 +27,21 @@ cautiously.
   or redistribute proprietary map-vendor content. Base place data comes from
   open sources (Overture/OSM) or the owner's own collection. Menus + allergen
   analysis are our own derived work and are the proprietary core.
-- Two-part data model (owner decision, 2026-09-22): once Google Places is
-  paid and wired in, Google is the source for map/location/contact metadata
-  (geocoding, place discovery, phone, website, rating) and ALRG's own
-  pipeline stays the sole source for menu + allergen data, always — Google
-  has no per-item allergen data to offer anyway. Combined per restaurant via
-  place_id, never per field; neither source originates the other's columns.
-  See `pipeline/README.md` ("Restaurant discovery in the cloud Routine") and
+- Two-part data model (owner decision, 2026-09-22, corrected 2026-09-23
+  after checking Google's actual terms): once Google Places is paid and
+  wired in, it's a discovery lead only — "a restaurant exists here, go
+  look" — never a stored data source. Google's terms only let `place_id`
+  be cached indefinitely; coordinates cache for 30 days; name, address,
+  rating, and phone must be requested live with attribution on every
+  view, not warehoused. So the pipeline independently re-verifies and
+  stores name/address/phone/website from the restaurant's own site once
+  Places points at it (same discipline as menus, one step earlier) —
+  that's our own data at that point, ours to store. No rating field:
+  a star rating can't be independently re-derived and can't be stored
+  under those terms, so it was dropped from the plan entirely. ALRG's
+  own pipeline stays the sole source for menu + allergen data, always —
+  Google has no per-item allergen data to offer anyway. See
+  `pipeline/README.md` ("Restaurant discovery in the cloud Routine") and
   `pipeline/PAID_UPGRADE_POINTS.md` #3 for the full design.
 
 ## Standing conventions
