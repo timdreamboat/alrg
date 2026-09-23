@@ -280,6 +280,22 @@ async function sb(path){
   if(!r.ok)throw new Error(`Supabase ${r.status}`);
   return r.json();
 }
+// Supabase/PostgREST caps unpaginated responses at 1000 rows regardless of
+// table size (confirmed via Content-Range: 0-999/* on this project) — with
+// 11,000+ menu_items, a plain sb() call silently truncates to an arbitrary
+// first-1000-rows slice, which scored some restaurants off a near-empty
+// fragment of their real menu. Page through everything instead.
+async function sbAll(path,pageSize=1000){
+  let all=[],offset=0;
+  const sep=path.includes("?")?"&":"?";
+  while(true){
+    const batch=await sb(`${path}${sep}limit=${pageSize}&offset=${offset}`);
+    all=all.concat(batch);
+    if(batch.length<pageSize)break;
+    offset+=pageSize;
+  }
+  return all;
+}
 async function sbInsert(path,body){
   const r=await fetch(`${C.SUPABASE_URL}/rest/v1/${path}`,{
     method:"POST",
@@ -291,8 +307,8 @@ async function sbInsert(path,body){
 async function load(){
   if(!configured){document.getElementById("setupBanner").style.display="grid";return;}
   try{
-    const rests=await sb("restaurants?select=*&order=name");
-    const items=await sb("menu_items?select=*");
+    const rests=await sbAll("restaurants?select=*&order=name");
+    const items=await sbAll("menu_items?select=*&order=id");
     const byRest={};
     for(const it of items)(byRest[it.restaurant_id]??=[]).push(it);
     DATA=rests.map(r=>({...r,items:byRest[r.id]||[]}));
