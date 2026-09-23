@@ -166,6 +166,8 @@ input{font-family:var(--fb)}
 .about-row svg{flex:none;color:var(--pine)}
 .about-row span{flex:1}
 .about-link{flex:none!important;color:var(--pine-deep);font-weight:700;font-size:.78rem;text-decoration:none;background:var(--mint);padding:6px 12px;border-radius:999px}
+.about-link-inline{color:var(--pine-deep);font-weight:600;text-decoration:none}
+.about-link-inline:hover{text-decoration:underline}
 .about-src strong{color:var(--ink);font-weight:700}
 .about-note{font-size:.72rem;color:var(--ink-faint);padding:0 0 12px;line-height:1.4}
 .abd{display:flex;flex-direction:column;gap:1px;border-radius:var(--r-md);overflow:hidden;background:var(--line-soft)}
@@ -494,6 +496,23 @@ renderAllergenButton();
    we actually cover), then load centered there. */
 let pendingCenter=null;
 function setOnboardStatus(msg){document.getElementById("onboardStatus").textContent=msg;}
+// Shared geocoder: Mapbox once MAPBOX_TOKEN is set (PAID-UPGRADE,
+// pipeline/PAID_UPGRADE_POINTS.md #2 — faster, higher volume, an actual
+// SLA), Nominatim (free, ~1req/sec policy limit) otherwise. Every
+// caller in this file goes through this one function so the upgrade
+// only has to be wired in one place.
+async function geocodeQuery(q){
+  if(C.MAPBOX_TOKEN){
+    const url=`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?`+new URLSearchParams({access_token:C.MAPBOX_TOKEN,country:"us",limit:1});
+    const r=await fetch(url);const d=await r.json();
+    const f=d?.features?.[0];
+    return f?[f.center[1],f.center[0]]:null; // Mapbox returns [lng,lat] — flip to [lat,lng]
+  }
+  const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:q+", USA",format:"json",limit:1,countrycodes:"us"});
+  const r=await fetch(url);const d=await r.json();
+  return d&&d[0]?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null;
+}
+
 function finishOnboard(center,zoom){
   pendingCenter={center,zoom};
   document.getElementById("onboard").classList.add("hidden");
@@ -514,11 +533,8 @@ async function onboardSearch(){
   if(!q)return;
   setOnboardStatus("Searching…");
   try{
-    // PAID-UPGRADE: Nominatim is the free substitute for Google/Mapbox
-    // geocoding — see pipeline/PAID_UPGRADE_POINTS.md #2.
-    const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:q+", USA",format:"json",limit:1,countrycodes:"us"});
-    const r=await fetch(url);const d=await r.json();
-    if(d&&d[0])finishOnboard([parseFloat(d[0].lat),parseFloat(d[0].lon)],14);
+    const pt=await geocodeQuery(q);
+    if(pt)finishOnboard(pt,14);
     else setOnboardStatus(`Couldn't find "${q}" — try a city, state, or ZIP.`);
   }catch(e){setOnboardStatus("Search failed — check your connection and try again.");}
 }
@@ -529,22 +545,30 @@ function onboardQuick(place){
   onboardSearch();
 }
 
-/* ---------- map (Leaflet + Esri Light Gray, free, no key) ---------- */
+/* ---------- map (Leaflet; Esri free tiles, or Mapbox once configured) ---------- */
 function initMap(){
   // pendingCenter may already be set if the user resolved the location
   // onboarding (geolocation/search/quick-pick) before the data fetch and
   // map init finished — honor it instead of the continental fallback.
   const start=pendingCenter||{center:[39.5,-98.35],zoom:4};
   map=L.map("map",{zoomControl:true}).setView(start.center,start.zoom);
-  // PAID-UPGRADE: Esri Light Gray tiles are the free substitute for a
-  // paid vector-tile provider (Mapbox/Google Maps) — see
-  // pipeline/PAID_UPGRADE_POINTS.md #1 for what to swap in and why.
-  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
-    maxZoom:16,attribution:"Tiles © Esri"
-  }).addTo(map);
-  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{
-    maxZoom:16
-  }).addTo(map);
+  if(C.MAPBOX_TOKEN){
+    // PAID-UPGRADE active: real Mapbox tiles, cleaner labels/typography
+    // than the free Esri fallback below. pipeline/PAID_UPGRADE_POINTS.md #1.
+    L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${C.MAPBOX_TOKEN}`,{
+      maxZoom:20,tileSize:512,zoomOffset:-1,attribution:'© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+  }else{
+    // PAID-UPGRADE: Esri Light Gray tiles are the free substitute for a
+    // paid vector-tile provider — see pipeline/PAID_UPGRADE_POINTS.md #1.
+    // Set MAPBOX_TOKEN in app/config.js to switch to the branch above.
+    L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
+      maxZoom:16,attribution:"Tiles © Esri"
+    }).addTo(map);
+    L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{
+      maxZoom:16
+    }).addTo(map);
+  }
   clusterGroup=L.markerClusterGroup({maxClusterRadius:38,spiderfyOnMaxZoom:true,iconCreateFunction:clusterIcon});
   map.addLayer(clusterGroup);
 }
@@ -618,11 +642,8 @@ const geocodeCache={};
 async function geocodeAndFly(query){
   if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});pendingCenter={center:geocodeCache[query],zoom:14};renderList();return;}
   try{
-    // PAID-UPGRADE: see pipeline/PAID_UPGRADE_POINTS.md #2.
-    const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:query+", USA",format:"json",limit:1,countrycodes:"us"});
-    const r=await fetch(url);
-    const d=await r.json();
-    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});pendingCenter={center:pt,zoom:14};renderList();}
+    const pt=await geocodeQuery(query);
+    if(pt){geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});pendingCenter={center:pt,zoom:14};renderList();}
   }catch(e){/* map stays put — list filtering still works without this */}
 }
 function applyLocationFilter(){
@@ -671,7 +692,13 @@ function distanceOf(r){
 function renderList(){
   const q=document.getElementById("searchBox").value.toLowerCase().trim();
   const wrap=document.getElementById("listScroll");wrap.innerHTML="";
-  const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile),d:distanceOf(r)}))
+  // rt = rating (real popularity, PAID-UPGRADE #3 — see
+  // pipeline/PAID_UPGRADE_POINTS.md) — null for every restaurant today,
+  // which makes the rating tier of the sort a no-op and this behaves
+  // exactly like the distance-only sort already in place. Once ratings
+  // populate, restaurants with real popularity data bubble up
+  // automatically, no further code change needed.
+  const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile),d:distanceOf(r),rt:r.rating??null}))
     .filter(({r})=>!q||r.name.toLowerCase().includes(q)||(r.cuisine||"").toLowerCase().includes(q))
     .filter(({r})=>matchesLocation(r,locFilter))
     .sort((a,b)=>{
@@ -679,6 +706,8 @@ function renderList(){
         const bys=(b.s??-1)-(a.s??-1);
         if(bys!==0)return bys;
       }
+      const byRating=(b.rt??-1)-(a.rt??-1);
+      if(byRating!==0)return byRating;
       return(a.d??Infinity)-(b.d??Infinity);
     });
   if(!rows.length){
@@ -686,15 +715,15 @@ function renderList(){
     wrap.innerHTML=`<div class="empty-state"><strong>No restaurants here yet</strong>${locFilter?`ALRG doesn't have coverage in ${locFilter.label} yet — currently live in the Denver, CO and New York, NY metros, with more added regularly.`:"Try a different search."}</div>`;
     return;
   }
-  document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence, then distance`:`${rows.length} places · sorted by distance`;
-  for(const{r,s,d}of rows){
+  document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence, popularity, then distance`:`${rows.length} places · sorted by popularity, then distance`;
+  for(const{r,s,d,rt}of rows){
     const t=s===null?null:tierOf(s);
     const src=SRC[r.data_source]||SRC.ai_pipeline;
     const btn=document.createElement("button");
     btn.className="rcard"+(selected===r.id?" sel":"");
     btn.innerHTML=`<span class="badge" style="background:${t?tierHex[t]:"#AEB8AF"}">${s??"–"}</span>
       <span><span class="rcard-name">${r.name}${r.verified?" <span style='color:var(--pine)'>✓</span>":""}</span>
-      <div class="rcard-sub"><span class="src-dot" style="background:${src.dot}"></span>${r.cuisine||""} · ${r.city||""}${d!==null?` · ${d<0.1?'<0.1':d.toFixed(1)} mi`:""}</div>
+      <div class="rcard-sub"><span class="src-dot" style="background:${src.dot}"></span>${r.cuisine||""} · ${r.city||""}${rt?` · ★${rt.toFixed(1)}`:""}${d!==null?` · ${d<0.1?'<0.1':d.toFixed(1)} mi`:""}</div>
       ${t?`<div class="rcard-tier" style="color:${tierText[t]}">${tierLabel[t]}</div>`:""}</span>`;
     btn.onclick=()=>openDrawer(r.id);
     wrap.appendChild(btn);
@@ -786,17 +815,29 @@ function renderDrawerBody(r){
   let clear=0,caution=0,contains=0;
   for(const it of r.items){const st=itemStatus(it,prof);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
 
-  // PAID-UPGRADE: phone/website aren't collected at all — see
-  // pipeline/PAID_UPGRADE_POINTS.md #5.
+  // PAID-UPGRADE (pipeline/PAID_UPGRADE_POINTS.md #3/#5): phone/website/
+  // rating are null today and render the honest fallback note below.
+  // Once the places-API upgrade populates these columns, real rows show
+  // real links/stars automatically — no template change needed here.
+  const ratingHtml=r.rating?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8-5.1-4.7 6.9-.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span><strong>${r.rating.toFixed(1)}</strong> ★${r.rating_count?` (${r.rating_count.toLocaleString()} ratings)`:""}</span></div>`:"";
+  const phoneHtml=r.phone?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.8 2Z" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span><a class="about-link-inline" href="tel:${r.phone}">${r.phone}</a></span></div>`:"";
+  const websiteHtml=r.website?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span><a class="about-link-inline" href="${r.website}" target="_blank" rel="noopener">${r.website.replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,"")}</a></span></div>`:"";
+  const contactNote=(r.phone||r.website)?"":`<div class="about-note">Phone and website aren't tracked yet — Directions above uses this restaurant's map location.</div>`;
   const aboutHtml=`
     <div class="about-card">
       ${fullAddr?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
         <span>${fullAddr}</span>${dirUrl?`<a class="about-link" href="${dirUrl}" target="_blank" rel="noopener">Directions</a>`:""}</div>`:""}
+      ${ratingHtml}
+      ${phoneHtml}
+      ${websiteHtml}
       <div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M12 3a9 9 0 100 18 9 9 0 000-18Z" stroke="currentColor" stroke-width="1.7"/></svg>
         <span>Reviewed ${reviewed}</span></div>
       <div class="about-row about-src"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18Z" stroke="currentColor" stroke-width="1.7"/></svg>
         <span><strong>${src.label}</strong>${citation?` — "${citation}"`:""}</span></div>
-      <div class="about-note">Phone and website aren't tracked yet — Directions above uses this restaurant's map location.</div>
+      ${contactNote}
     </div>`;
 
   const bdHtml=bd.length?`<div class="abd">${bd.map(row=>{

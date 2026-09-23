@@ -52,6 +52,17 @@ create table restaurants (
                           -- honest here: note it explicitly if the source is weak (press
                           -- coverage instead of the restaurant's own menu, a third-party
                           -- aggregator) rather than presenting it as equal-confidence.
+  -- The four columns below (2026-09-23) exist for the paid-places-API
+  -- upgrade (pipeline/PAID_UPGRADE_POINTS.md #3/#5) — null until that's
+  -- active, populated for real once it is. Never fabricate any of
+  -- these; a null phone/website/rating is the honest state today.
+  phone         text,
+  website       text,
+  rating        numeric(2,1),  -- e.g. Google Places' 1.0–5.0 average rating
+  rating_count  integer,       -- how many ratings back that average — real
+                                -- popularity signal, once populated, for the
+                                -- list sort that currently falls back to
+                                -- distance (see app/index.html renderList)
   last_reviewed timestamptz default now(),
   created_at    timestamptz default now()
 );
