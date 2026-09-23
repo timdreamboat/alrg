@@ -826,6 +826,13 @@ function renderDrawerBody(r){
   const websiteHtml=r.website?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" stroke="currentColor" stroke-width="1.6"/></svg>
         <span><a class="about-link-inline" href="${r.website}" target="_blank" rel="noopener">${r.website.replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,"")}</a></span></div>`:"";
   const contactNote=(r.phone||r.website)?"":`<div class="about-note">Phone and website aren't tracked yet — Directions above uses this restaurant's map location.</div>`;
+  // Chain locations reuse one corporate allergen guide across every real
+  // address of that chain — the data is genuine and audited, but it was
+  // never confirmed at this specific location. Say so plainly rather
+  // than let `verified` (true for every chain row, see
+  // pipeline/COVERAGE_PLAN.md) read as per-location confirmation.
+  const chainName=r.chain_id?(CHAINS_BY_ID[r.chain_id]?.name||r.name):null;
+  const chainNote=chainName?`<div class="about-note">Based on ${chainName}'s official corporate allergen guide. Ingredients, suppliers, and prep can vary slightly by location — confirm with the restaurant before you visit.</div>`:"";
   const aboutHtml=`
     <div class="about-card">
       ${fullAddr?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
@@ -837,6 +844,7 @@ function renderDrawerBody(r){
         <span>Reviewed ${reviewed}</span></div>
       <div class="about-row about-src"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18Z" stroke="currentColor" stroke-width="1.7"/></svg>
         <span><strong>${src.label}</strong>${citation?` — "${citation}"`:""}</span></div>
+      ${chainNote}
       ${contactNote}
     </div>`;
 
@@ -855,7 +863,7 @@ function renderDrawerBody(r){
     ${aboutHtml}
 
     <div class="sec-label">Why this score<span class="line"></span></div>
-    <div class="why-card">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${prof.length!==1?"s":""} directly. ${r.verified?"Restaurant-verified data raises certainty.":"Based on "+src.short.toLowerCase()+" — not yet restaurant-verified."}</div>
+    <div class="why-card">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${prof.length!==1?"s":""} directly. ${chainName?`From ${chainName}'s corporate allergen guide — not confirmed at this specific location.`:r.verified?"Restaurant-verified data raises certainty.":"Based on "+src.short.toLowerCase()+" — not yet restaurant-verified."}</div>
     ${bdHtml}
 
     <div class="sec-label">Can you trust this?<span class="line"></span></div>

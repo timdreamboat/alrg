@@ -81,10 +81,13 @@ real physical locations and copy the existing menu into a new
 **For each new location found:**
 - Insert one `restaurants` row: name, address, city, state, zip,
   lat/lng (if known), `chain_id` set, `data_source = 'chain_matrix'`,
-  `verified = false` (still not restaurant-confirmed — that's a
-  separate signal from "sourced from an audited chain matrix"),
-  `source_document` left null (the citation lives on `chains.source_document`
-  for this chain already — don't duplicate it per location).
+  `verified = true` (matches existing practice for every chain_matrix
+  row already in the database — `verified` here means "sourced from an
+  audited official chain matrix," not restaurant-staff confirmation;
+  the app must never imply per-location confirmation from this flag
+  alone, see the UI disclaimer requirement below), `source_document`
+  left null (the citation lives on `chains.source_document` for this
+  chain already — don't duplicate it per location).
 - Copy that chain's existing `menu_items` rows (name, note, flags,
   `audited = true`, inherited — the content is identical, it already
   passed audit once) onto the new `restaurant_id`. This is a literal
@@ -96,6 +99,16 @@ real physical locations and copy the existing menu into a new
 Within a state, prefer adding a chain **not yet represented there**
 over piling more locations of one already-present chain — the goal is
 50 real, at-least-somewhat-varied restaurants, not 50 McDonald's.
+
+**UI requirement (owner decision, 2026-09-23):** because a chain
+location's data is copied from corporate's matrix rather than
+confirmed at that specific address, every chain restaurant's detail
+card must carry a visible disclaimer — something like: "Based on
+[Chain]'s official corporate allergen guide. Individual locations can
+vary slightly in ingredients, suppliers, or prep — confirm with the
+restaurant before you visit." This is implemented in `app/index.html`
+(see the detail-drawer rendering) and applies to every restaurant with
+a `chain_id` set, regardless of `verified`.
 
 ### Track B — independent restaurants (slower, still needed for real variety)
 
