@@ -109,30 +109,15 @@ create policy "public read chains"      on chains      for select using (true);
 create policy "public submit verification" on verifications for insert with check (true);
 
 -- ============================================================
--- Seed: Denver sample data so the app works immediately
+-- NOTE: this file used to seed 4 hardcoded "Demo St" restaurants here
+-- so the app had something to show immediately after setup. Removed
+-- 2026-09-23 — they were fabricated data (fake addresses, made-up
+-- menus/allergen flags) that ended up marked verified=true in
+-- production, presenting fictional content with the same authority as
+-- real, audited restaurants. Never re-add placeholder restaurant data
+-- to this schema, seed or otherwise — an empty map until the pipeline
+-- publishes real data is the honest state, not a demo restaurant.
 -- ============================================================
-insert into restaurants (name,cuisine,address,city,state,zip,lat,lng,verified,data_source) values
-('Copper Kettle Kitchen','New American','1 Demo St','Denver','CO','80202',39.7508,-104.9966,true ,'ai_pipeline'),
-('Maria''s Taqueria','Mexican','2 Demo St','Denver','CO','80211',39.7614,-105.0166,true ,'ai_pipeline'),
-('Golden Lotus','Thai','3 Demo St','Denver','CO','80203',39.7312,-104.9826,false,'ai_pipeline'),
-('Verde Bowl Co.','Salads & grain bowls','4 Demo St','Denver','CO','80206',39.7402,-104.9500,true ,'ai_pipeline');
-
-insert into menu_items (restaurant_id,name,note,flags) values
-(1,'Grilled salmon bowl','Quinoa, roasted veg','{}'),
-(1,'Thai chop salad','Peanut-lime dressing','{"peanut":"contains","soy":"may"}'),
-(1,'House fries','Shared fryer','{"peanut":"shared","wheat":"shared"}'),
-(1,'Roast chicken plate','Herb jus','{}'),
-(2,'Chicken street tacos','Corn tortillas','{}'),
-(2,'Carnitas bowl','Rice, beans, pico','{}'),
-(2,'Queso fundido','Melted cheese','{"dairy":"contains"}'),
-(2,'Churros','Fried, sugar dusted','{"wheat":"contains","egg":"contains","dairy":"may"}'),
-(3,'Pad thai','Tamarind, crushed peanut','{"peanut":"contains","egg":"contains","soy":"contains","shellfish":"may"}'),
-(3,'Green curry','Coconut milk','{"peanut":"may","shellfish":"may","soy":"may"}'),
-(3,'Satay skewers','Peanut sauce','{"peanut":"contains","soy":"contains"}'),
-(4,'Harvest grain bowl','Farro base','{"wheat":"may"}'),
-(4,'Citrus kale salad','No nuts in-house','{}'),
-(4,'Chili-lime chicken bowl','Rice base','{}'),
-(4,'Green goddess bowl','Tahini dressing','{"sesame":"contains"}');
 
 insert into metros (name,state,rank,status,completed_at) values
 ('Denver','CO',19,'complete',now()),

@@ -192,16 +192,20 @@ properly fixed:
 2. Only if Overpass fails outright — fall back to WebSearch + WebFetch
    per-restaurant (what the first run did). This works but is slow and
    caps how many restaurants one hourly firing can cover.
-Do not add a paid places API (Google Places, Foursquare, etc.) without
-the owner's explicit approval — see "Standing conventions" in CLAUDE.md
-("everything free-tier unless the owner explicitly approves a cost").
-Google Places' terms also restrict caching/redistributing place data,
-which cuts against this project's own data-licensing rule; if this ever
-gets revisited, Overture Maps' open static dataset (no key, no per-call
-cost, explicitly the kind of source CLAUDE.md already prefers) is the
-better fit than a paid vendor API, but needs real engineering work
-(DuckDB + spatial queries against Overture's S3/Azure release) that
-hasn't been built yet.
+**PAID-UPGRADE:** this whole discovery approach is the free substitute
+for a paid places API — tracked in full in
+`pipeline/PAID_UPGRADE_POINTS.md` #3, the single highest-impact
+upgrade on that list (it's the main reason metro coverage is this
+thin). Don't wire in Google Places or similar on your own initiative —
+that still needs the owner to confirm the subscription is actually in
+place — but this is the exact spot to come back to when it is. Google
+Places' terms also restrict caching/redistributing place data, which
+cuts against this project's own data-licensing rule; keep using
+`place_id` as a join key only when that day comes, same as today.
+Overture Maps' open static dataset (no key, no per-call cost) remains
+a free alternative worth real engineering effort (DuckDB + spatial
+queries against Overture's S3/Azure release) if the subscription path
+doesn't happen — not built either way yet.
 
 ## Chain allergen pages that are JS-rendered SPAs — use fetch_rendered.js
 

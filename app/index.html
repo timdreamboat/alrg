@@ -514,6 +514,8 @@ async function onboardSearch(){
   if(!q)return;
   setOnboardStatus("Searching…");
   try{
+    // PAID-UPGRADE: Nominatim is the free substitute for Google/Mapbox
+    // geocoding — see pipeline/PAID_UPGRADE_POINTS.md #2.
     const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:q+", USA",format:"json",limit:1,countrycodes:"us"});
     const r=await fetch(url);const d=await r.json();
     if(d&&d[0])finishOnboard([parseFloat(d[0].lat),parseFloat(d[0].lon)],14);
@@ -534,6 +536,9 @@ function initMap(){
   // map init finished — honor it instead of the continental fallback.
   const start=pendingCenter||{center:[39.5,-98.35],zoom:4};
   map=L.map("map",{zoomControl:true}).setView(start.center,start.zoom);
+  // PAID-UPGRADE: Esri Light Gray tiles are the free substitute for a
+  // paid vector-tile provider (Mapbox/Google Maps) — see
+  // pipeline/PAID_UPGRADE_POINTS.md #1 for what to swap in and why.
   L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
     maxZoom:16,attribution:"Tiles © Esri"
   }).addTo(map);
@@ -613,6 +618,7 @@ const geocodeCache={};
 async function geocodeAndFly(query){
   if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});pendingCenter={center:geocodeCache[query],zoom:14};renderList();return;}
   try{
+    // PAID-UPGRADE: see pipeline/PAID_UPGRADE_POINTS.md #2.
     const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:query+", USA",format:"json",limit:1,countrycodes:"us"});
     const r=await fetch(url);
     const d=await r.json();
@@ -780,6 +786,8 @@ function renderDrawerBody(r){
   let clear=0,caution=0,contains=0;
   for(const it of r.items){const st=itemStatus(it,prof);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
 
+  // PAID-UPGRADE: phone/website aren't collected at all — see
+  // pipeline/PAID_UPGRADE_POINTS.md #5.
   const aboutHtml=`
     <div class="about-card">
       ${fullAddr?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>

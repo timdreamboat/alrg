@@ -43,3 +43,9 @@ lose track of; this file is meant to be glanced at).
 Move a row from "Watching" to "Confirmed hard blocks" only after it repeats
 with the same signature on a clean attempt (not immediately after another
 attempt against the same domain, which can trigger throttling on its own).
+
+**PAID-UPGRADE:** the manual-drop-in workflow above is the free
+fallback. A paid scraping-proxy/headless-browser service (residential
+or high-reputation IPs) would very likely get past Akamai-class blocks
+like McDonald's programmatically instead of needing a human each time
+— see `pipeline/PAID_UPGRADE_POINTS.md` #4.

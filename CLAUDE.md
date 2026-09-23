@@ -29,7 +29,18 @@ cautiously.
   analysis are our own derived work and are the proprietary core.
 
 ## Standing conventions
-- Everything free-tier unless the owner explicitly approves a cost.
+- Everything free-tier for now, with one exception: the plan is for
+  ALRG to run on a paid subscription once it goes live (2026-09-23
+  owner decision) — the database (Supabase) is the one thing meant to
+  stay free either way. Every place currently working around a paid
+  API with a free substitute (map tiles, geocoding, restaurant/places
+  discovery, JS-render-blocked chain sourcing) is deliberately marked
+  `PAID-UPGRADE:` in code/docs and tracked in full in
+  `pipeline/PAID_UPGRADE_POINTS.md` — check that file before adding a
+  new free-tier workaround, and swap the real thing in there once a
+  subscription actually exists. Until then, still don't add a new paid
+  API on your own initiative outside what's already tracked — flag it
+  the same way instead.
 - All data writes go through the publisher path with provenance + ops_log entry.
 - The service validates and publishes autonomously — the owner is NOT a
   per-batch approval gate. A qa-allergen-auditor PASS or PASS WITH
