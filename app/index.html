@@ -63,13 +63,43 @@ input{font-family:var(--fb)}
 .iconbtn{flex:none;width:42px;height:42px;border-radius:var(--r-md);border:none;background:var(--surface);box-shadow:var(--sh-md);display:grid;place-items:center;color:var(--ink-soft);transition:transform .15s,color .15s}
 .iconbtn:hover{color:var(--pine);transform:translateY(-1px)}
 .iconbtn.active{background:var(--pine);color:#fff}
+.brand span:last-child{white-space:nowrap}
 
-.profile-row{display:flex;align-items:center;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
-.profile-row::-webkit-scrollbar{display:none}
-.profile-label{font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;background:var(--surface);border-radius:999px;padding:9px 12px;box-shadow:var(--sh-sm);flex:none}
-.chip{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--surface);border-radius:999px;padding:8px 15px;font-size:.83rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;transition:all .16s;flex:none;box-shadow:var(--sh-sm)}
-.chip:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}
-.chip.on{background:linear-gradient(155deg,var(--pine-bright),var(--pine));color:#fff;box-shadow:var(--sh-md)}
+/* ---------- allergen filter: a real picker, not a scroll row that hides
+   half its options off-screen on narrow phones with zero visual cue ---------- */
+.allergen-btn{flex:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:none;border-radius:var(--r-md);padding:11px 14px;box-shadow:var(--sh-md);font-size:.82rem;font-weight:700;color:var(--ink)}
+.allergen-btn:hover{box-shadow:var(--sh-md),var(--sh-glow)}
+#allergenBtnEm{font-size:.95rem;letter-spacing:-2px}
+.picker-sheet{position:fixed;left:0;right:0;bottom:0;max-height:80dvh;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-lg);z-index:800;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden}
+.picker-sheet.open{transform:translateY(0)}
+.picker-head{padding:8px 22px 4px;flex:none}
+.picker-head h3{font-family:var(--fd);font-size:1.15rem;font-weight:700}
+.picker-head p{font-size:.78rem;color:var(--ink-soft);margin-top:4px}
+.allergen-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 22px;overflow-y:auto}
+.ap-card{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 8px;border-radius:var(--r-md);border:1.5px solid var(--line);background:var(--surface);transition:all .15s}
+.ap-card .apem{font-size:1.7rem}
+.ap-card .apname{font-size:.76rem;font-weight:700;color:var(--ink-soft);text-align:center}
+.ap-card.on{background:var(--mint);border-color:var(--pine);box-shadow:var(--sh-sm)}
+.ap-card.on .apname{color:var(--pine-deep)}
+.picker-done{margin:4px 22px 20px;background:var(--pine);color:#fff;border:none;border-radius:999px;padding:14px;font-size:.9rem;font-weight:700;flex:none}
+@media(min-width:821px){.allergen-picker-grid{grid-template-columns:repeat(5,1fr)}.picker-sheet{left:auto;right:16px;bottom:16px;width:380px;border-radius:var(--r-lg);max-height:70dvh}}
+
+/* ---------- location-first onboarding ---------- */
+.onboard{position:fixed;inset:0;z-index:900;background:rgba(15,20,17,.5);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px;opacity:1;transition:opacity .25s;pointer-events:auto}
+.onboard.hidden{opacity:0;pointer-events:none}
+.onboard-card{width:100%;max-width:400px;background:var(--surface);border-radius:var(--r-xl);padding:28px 26px;box-shadow:var(--sh-lg)}
+.onboard-card h2{font-family:var(--fd);font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.onboard-card>p{font-size:.85rem;color:var(--ink-soft);margin-bottom:18px;line-height:1.4}
+.onboard-locate{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--pine);color:#fff;border:none;border-radius:var(--r-md);padding:14px;font-size:.88rem;font-weight:700}
+.onboard-or{text-align:center;font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin:16px 0 10px}
+.onboard-coverage{font-size:.76rem;color:var(--ink-soft);margin-top:14px;text-align:center;line-height:1.6}
+.onboard-quick{background:none;border:none;color:var(--pine-deep);font-weight:700;text-decoration:underline;font-size:.76rem}
+.onboard-status{font-size:.78rem;color:var(--ink-soft);margin-top:10px;text-align:center;min-height:1em}
+
+/* ---------- Apple-Maps-style pin labels: identify a place without
+   having to click it first ---------- */
+.pin-label{background:var(--surface);color:var(--ink);font-family:var(--fb);font-weight:700;font-size:.72rem;padding:3px 9px;border-radius:999px;box-shadow:var(--sh-sm);border:none!important}
+.pin-label::before{display:none}
 
 .map-note{position:absolute;right:14px;bottom:14px;z-index:400;background:var(--surface);border-radius:999px;padding:7px 14px;font-family:var(--fm);font-size:.55rem;letter-spacing:.09em;color:var(--ink-soft);box-shadow:var(--sh-sm)}
 
@@ -182,6 +212,12 @@ input{font-family:var(--fb)}
 /* ---------- responsive: mobile bottom sheet list, desktop floating panel ---------- */
 .list-panel{left:0;right:0;bottom:0;top:auto;height:46dvh;border-radius:var(--r-xl) var(--r-xl) 0 0}
 .sheet-handle{display:block;width:38px;height:4px;border-radius:99px;background:var(--line);margin:9px auto 4px;flex:none}
+@media(max-width:480px){
+  .brand span:last-child{display:none}
+  .brand{padding:9px}
+  #allergenBtnLabel{display:none}
+  .allergen-btn{padding:11px}
+}
 @media(min-width:821px){
   .list-panel{left:16px;top:138px;bottom:16px;right:auto;width:360px;height:auto;border-radius:var(--r-lg)}
   .sheet-handle{display:none}
@@ -204,11 +240,48 @@ input{font-family:var(--fb)}
         <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#0E6E5C" stroke-width="2"/><line x1="10.5" y1="10.5" x2="14" y2="14" stroke="#0E6E5C" stroke-width="2" stroke-linecap="round"/></svg>
         <input id="searchBox" type="text" placeholder="Search restaurants…">
       </div>
+      <button class="allergen-btn" id="allergenBtn" type="button">
+        <span id="allergenBtnEm">🥜🥛</span><span id="allergenBtnLabel">2 allergens</span>
+      </button>
     </div>
-    <div class="profile-row" id="profileBar"><span class="profile-label">MY ALLERGENS</span></div>
   </div>
 
   <div class="map-note">SCORES UPDATE WITH YOUR PROFILE</div>
+
+  <!-- Allergen picker — a real grid, not a scroll row a user could miss half of -->
+  <div class="overlay" id="allergenOverlay" onclick="closeAllergenPicker()"></div>
+  <div class="picker-sheet" id="allergenSheet">
+    <div class="sheet-grip"></div>
+    <div class="picker-head">
+      <h3>My allergens</h3>
+      <p>Tap all that apply — scores and menu flags update for every one.</p>
+    </div>
+    <div class="allergen-picker-grid" id="allergenGrid"></div>
+    <button class="picker-done" onclick="closeAllergenPicker()">Done</button>
+  </div>
+
+  <!-- Location-first onboarding — shown before results render so the first
+       thing a user sees is relevant to them, not an unreadable whole-country
+       view with two unlabeled cluster blobs. -->
+  <div class="onboard" id="onboard">
+    <div class="onboard-card">
+      <div class="brand" style="box-shadow:none;padding:0;margin-bottom:6px"><span class="mark">A</span><span>ALRG</span></div>
+      <h2>Where are you dining?</h2>
+      <p>We'll show restaurants and confidence scores near you.</p>
+      <button class="onboard-locate" id="onboardLocate" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Use my current location
+      </button>
+      <div class="onboard-or">or search</div>
+      <div class="loc-filter" style="background:var(--surface-2)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="#4A5B54" stroke-width="1.6"/><circle cx="12" cy="9" r="2.4" stroke="#4A5B54" stroke-width="1.6"/></svg>
+        <input id="onboardBox" type="text" placeholder="City, state, or ZIP" inputmode="search">
+        <button id="onboardGo" type="button">GO</button>
+      </div>
+      <p class="onboard-coverage">Live coverage today: <button class="onboard-quick" onclick="onboardQuick('Denver, CO')">Denver, CO</button> · <button class="onboard-quick" onclick="onboardQuick('New York, NY')">New York, NY</button></p>
+      <div class="onboard-status" id="onboardStatus"></div>
+    </div>
+  </div>
 
   <aside class="list-panel">
     <div class="sheet-handle"></div>
@@ -269,7 +342,7 @@ const SRC={
 };
 
 let profile=JSON.parse(localStorage.getItem("alrg_profile")||'["peanut","dairy"]');
-let DATA=[],selected=null,map,markers={},clusterGroup,boundsFit=false,locFilter=null;
+let DATA=[],selected=null,map,markers={},clusterGroup,locFilter=null;
 let expandedItems=new Set();
 
 /* ---------- Supabase REST ---------- */
@@ -359,21 +432,87 @@ function looksLikeIngredients(note){
   return true;
 }
 
-/* ---------- profile chips ---------- */
-const bar=document.getElementById("profileBar");
-for(const a of ALLERGENS){
-  const b=document.createElement("button");
-  b.className="chip"+(profile.includes(a.id)?" on":"");
-  b.innerHTML=`<span>${a.em}</span>${a.name}`;
-  b.onclick=()=>{profile=profile.includes(a.id)?profile.filter(x=>x!==a.id):[...profile,a.id];
-    localStorage.setItem("alrg_profile",JSON.stringify(profile));
-    b.classList.toggle("on");renderAll();if(selected)openDrawer(selected);};
-  bar.appendChild(b);
+/* ---------- allergen picker (grid, not a scroll row half of it can hide off-screen) ---------- */
+function renderAllergenButton(){
+  document.getElementById("allergenBtnEm").textContent=profile.length
+    ?profile.map(p=>ALLERGENS.find(a=>a.id===p)?.em).filter(Boolean).slice(0,3).join("")
+    :"🍽️";
+  document.getElementById("allergenBtnLabel").textContent=profile.length?`${profile.length} allergen${profile.length!==1?"s":""}`:"Set allergens";
+}
+function renderAllergenGrid(){
+  const grid=document.getElementById("allergenGrid");grid.innerHTML="";
+  for(const a of ALLERGENS){
+    const b=document.createElement("button");
+    b.className="ap-card"+(profile.includes(a.id)?" on":"");
+    b.innerHTML=`<span class="apem">${a.em}</span><span class="apname">${a.name}</span>`;
+    b.onclick=()=>{
+      profile=profile.includes(a.id)?profile.filter(x=>x!==a.id):[...profile,a.id];
+      localStorage.setItem("alrg_profile",JSON.stringify(profile));
+      b.classList.toggle("on");
+      renderAllergenButton();renderAll();if(selected)openDrawer(selected);
+    };
+    grid.appendChild(b);
+  }
+}
+function openAllergenPicker(){
+  renderAllergenGrid();
+  document.getElementById("allergenSheet").classList.add("open");
+  document.getElementById("allergenOverlay").classList.add("on");
+}
+function closeAllergenPicker(){
+  document.getElementById("allergenSheet").classList.remove("open");
+  document.getElementById("allergenOverlay").classList.remove("on");
+}
+document.getElementById("allergenBtn").onclick=openAllergenPicker;
+renderAllergenButton();
+
+/* ---------- location-first onboarding ----------
+   Show a location prompt before the map/list render broadly — a
+   whole-country view with two unlabeled cluster blobs told a real user
+   nothing ("I can't tell what I'm looking at until I click"). Resolve a
+   center point first (geolocation, search, or a quick-pick of the metros
+   we actually cover), then load centered there. */
+let pendingCenter=null;
+function setOnboardStatus(msg){document.getElementById("onboardStatus").textContent=msg;}
+function finishOnboard(center,zoom){
+  pendingCenter={center,zoom};
+  document.getElementById("onboard").classList.add("hidden");
+  if(map)map.setView(center,zoom,{animate:true});
+}
+document.getElementById("onboardLocate").onclick=()=>{
+  if(!navigator.geolocation){setOnboardStatus("Location isn't available in this browser — try search instead.");return;}
+  setOnboardStatus("Locating…");
+  navigator.geolocation.getCurrentPosition(
+    pos=>finishOnboard([pos.coords.latitude,pos.coords.longitude],13),
+    ()=>setOnboardStatus("Couldn't get your location — try search instead."),
+    {timeout:8000}
+  );
+};
+async function onboardSearch(){
+  const q=document.getElementById("onboardBox").value.trim();
+  if(!q)return;
+  setOnboardStatus("Searching…");
+  try{
+    const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:q+", USA",format:"json",limit:1,countrycodes:"us"});
+    const r=await fetch(url);const d=await r.json();
+    if(d&&d[0])finishOnboard([parseFloat(d[0].lat),parseFloat(d[0].lon)],12);
+    else setOnboardStatus(`Couldn't find "${q}" — try a city, state, or ZIP.`);
+  }catch(e){setOnboardStatus("Search failed — check your connection and try again.");}
+}
+document.getElementById("onboardGo").onclick=onboardSearch;
+document.getElementById("onboardBox").addEventListener("keydown",e=>{if(e.key==="Enter")onboardSearch();});
+function onboardQuick(place){
+  document.getElementById("onboardBox").value=place;
+  onboardSearch();
 }
 
 /* ---------- map (Leaflet + Esri Light Gray, free, no key) ---------- */
 function initMap(){
-  map=L.map("map",{zoomControl:true}).setView([39.5,-98.35],4);
+  // pendingCenter may already be set if the user resolved the location
+  // onboarding (geolocation/search/quick-pick) before the data fetch and
+  // map init finished — honor it instead of the continental fallback.
+  const start=pendingCenter||{center:[39.5,-98.35],zoom:4};
+  map=L.map("map",{zoomControl:true}).setView(start.center,start.zoom);
   L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{
     maxZoom:16,attribution:"Tiles © Esri"
   }).addTo(map);
@@ -401,14 +540,19 @@ function renderPins(){
     const s=scoreRestaurant(r,profile),t=s===null?null:tierOf(s);
     if(markers[r.id])markers[r.id].setIcon(pinIcon(s,t,selected===r.id));
     else{
+      // Apple-Maps-style: a name label sits with the pin so a user can tell
+      // what they're looking at without clicking first, and two nearby
+      // pins (e.g. two restaurants in the same suburb) read as distinct
+      // places instead of one ambiguous dot.
       const m=L.marker([r.lat,r.lng],{icon:pinIcon(s,t,false)}).on("click",()=>openDrawer(r.id));
+      m.bindTooltip(r.name,{permanent:true,direction:"top",offset:[0,-4],className:"pin-label",opacity:1});
       markers[r.id]=m;clusterGroup.addLayer(m);
     }
   }
-  if(!boundsFit){
-    const pts=Object.values(markers);
-    if(pts.length){map.fitBounds(L.featureGroup(pts).getBounds().pad(0.25),{maxZoom:13});boundsFit=true;}
-  }
+  // No auto-fit-to-everything here — the location onboarding flow decides
+  // where the map centers (geolocation, search, or a coverage quick-pick),
+  // so a first-time view is always somewhere relevant instead of a
+  // whole-country view with two unlabeled cluster blobs.
 }
 
 /* ---------- location filter (city / state / zip) ---------- */
