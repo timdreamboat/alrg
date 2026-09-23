@@ -3,6 +3,22 @@
 Owner decision, 2026-09-23. Two intentional pivots from how the pipeline
 ran before this file existed:
 
+**2026-09-23 update — independents lead, chains are a light supplement,
+not the main lever.** Chain locations are useful (real coverage, real
+audited data) but low-differentiation — a McDonald's in one state is
+essentially the same restaurant as a McDonald's in another, and the
+owner's own experience (living with someone with food allergies) is
+that chain restaurants are lower-risk and less of a concern day to day
+precisely because they're standardized and already publish allergen
+info. The actual gap — and the thing ALRG adds real value on — is
+independent restaurants, which aren't handled at scale anywhere else.
+Chasing down every real address of every chain in every state is a lot
+of pipeline effort for restaurants that are "almost always the same,"
+so that effort now goes to independents first. See the reordered
+priority list below — Track B (independents) runs before Track A
+(chain expansion) for any under-50 state, and Track A is capped per
+chain per state so it tops states up rather than dominating them.
+
 1. **APIs stay off until user adoption is real.** Map/geocoding
    (Mapbox) and place discovery/contact data (Google Places) remain on
    their free substitutes — see `pipeline/PAID_UPGRADE_POINTS.md`. That
@@ -44,14 +60,38 @@ seeded city plus its chain locations still don't reach 50, the Routine
 should add a second city in that state to `metros` rather than
 stalling — do not treat one metro row as the ceiling for a state.
 
-## Two tracks, run in this order
+## Two tracks — independents lead, chain expansion tops up
 
-### Track A — chain location expansion (fast, cheap, do this first for every already-analyzed chain)
+### Track B — independent restaurants (primary lever, run first)
+
+For any state under 50, work it with the existing
+restaurant-menu-extractor -> allergen-analyzer -> qa-allergen-auditor ->
+db-publisher flow, same as it's always worked, using that state's
+`metros` row(s) as the search starting point. This is where real
+pipeline effort should go — independents are the restaurants nobody
+else is covering at scale, and they're the higher-uncertainty case
+allergy-conscious diners most need a second opinion on.
+
+### Track A — chain location expansion (supplement only, capped)
+
+Chains are lower-value to expand exhaustively — they're standardized,
+already publish their own allergen info, and one McDonald's is a lot
+like the next. Use Track A to **top up** a state that's still short of
+50 after a real independent-discovery attempt, not as the first move.
+
+**Cap: at most ~8 locations per chain per state.** The goal is
+covering the chain's real presence in that state, not enumerating
+every address — 8 real locations of a chain already say "this chain
+operates here" as well as 30 do, and the saved effort goes to
+independents instead. If a state is still short of 50 after topping up
+with several different chains (each capped at ~8), that's a signal to
+add another independent-discovery pass, not to lift the chain cap.
 
 For each chain with `analyzed_at is not null` (currently: check
 `select name from chains where analyzed_at is not null`), find its
 real physical locations and copy the existing menu into a new
-`restaurants` row per location — prioritize states currently under 50.
+`restaurants` row per location — prioritize states currently under 50,
+stop at ~8 per chain per state.
 
 **How to find real locations without a paid places API:**
 1. Overpass (OSM) query by brand tag first — this is the cleanest free
@@ -97,8 +137,9 @@ real physical locations and copy the existing menu into a new
   location) summarizing state, chain, locations added.
 
 Within a state, prefer adding a chain **not yet represented there**
-over piling more locations of one already-present chain — the goal is
-50 real, at-least-somewhat-varied restaurants, not 50 McDonald's.
+over piling more locations of one already-present chain, and stop at
+the ~8-per-chain cap above — the goal is topping a state up with a
+little variety, not maximizing any one chain's footprint.
 
 **UI requirement (owner decision, 2026-09-23):** because a chain
 location's data is copied from corporate's matrix rather than
@@ -110,29 +151,21 @@ restaurant before you visit." This is implemented in `app/index.html`
 (see the detail-drawer rendering) and applies to every restaurant with
 a `chain_id` set, regardless of `verified`.
 
-### Track B — independent restaurants (slower, still needed for real variety)
-
-Once chain expansion has been tried for a state and it's still under
-50 (common in smaller/rural states with thin chain footprints), or
-once chain expansion alone would make a state's list too
-one-note, fall back to the existing restaurant-menu-extractor ->
-allergen-analyzer -> qa-allergen-auditor -> db-publisher flow, same as
-it's always worked, using that state's `metros` row(s) as the search
-starting point. This is unchanged from before — it's just no longer
-the only lever for reaching the 50 floor, so it doesn't need to carry
-the entire nationwide push alone.
-
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
 detail lives here, `CLAUDE.md` should point at this file:
 
 1. Any chain with `analyzed_at is null` -> chain-menu-importer (unchanged,
-   still highest leverage — a chain not yet analyzed can't be expanded).
-2. Any state with `count(restaurants) < 50` that has an analyzed chain
-   not yet expanded into it -> Track A (chain location expansion).
-3. Any state still `< 50` after Track A is exhausted for it -> Track B
-   (independent-restaurant pipeline via that state's `metros` rows).
+   still highest leverage as a one-time investment — a chain not yet
+   analyzed can't be expanded later, but this step does NOT chase
+   location addresses, just the one-time menu analysis).
+2. Any state with `count(restaurants) < 50` -> Track B (independent
+   restaurants) first, via that state's `metros` row(s).
+3. Any state still `< 50` after a real independent-discovery attempt
+   -> Track A (chain location expansion), capped at ~8 locations per
+   chain per state, spread across chains not yet represented there
+   rather than piling onto one.
 4. All 50 states >= 50 and chains backlog empty -> maintenance mode
    (freshness sweep), same as before. Report "coverage complete"
    once, same rule as before.

@@ -88,19 +88,21 @@ Each firing, in priority order (superseded in full detail by
 `pipeline/COVERAGE_PLAN.md`, owner decision 2026-09-23 — read that file,
 this is just the summary):
 1. Any chain in `chains` with `analyzed_at IS NULL`? Run chain-menu-importer
-   on it — highest leverage for nationwide presence (one import covers every
-   location of that chain).
-2. Else, any US state with `count(restaurants) < 50` that has an already-
-   analyzed chain not yet expanded into it? Find that chain's real
-   locations there (Overpass brand-tag query first, chain's own store
-   locator as fallback) and copy its already-audited menu into a new
-   `restaurants` row per location — no fresh menu/allergen analysis, ever,
-   for a chain location; the chain's one-time analysis already covers
-   every location of it nationwide.
-3. Else, any US state still under 50 after chain expansion is exhausted
-   for it? Run the restaurant-menu-extractor → allergen-analyzer →
-   qa-allergen-auditor → db-publisher flow on independents there, using
-   that state's `metros` row(s) as the starting point.
+   on it — one-time menu analysis only, not location discovery (that's
+   step 3, capped and lower priority — see below for why).
+2. Else, any US state with `count(restaurants) < 50`? Work it with the
+   restaurant-menu-extractor → allergen-analyzer → qa-allergen-auditor →
+   db-publisher flow on independents, using that state's `metros`
+   row(s) as the starting point. This is the primary lever now
+   (2026-09-23 owner decision) — independents are the coverage gap that
+   matters; chains are standardized, lower-risk, and not worth chasing
+   address-by-address.
+3. Else, any US state still under 50 after a real independent pass?
+   Find an already-analyzed chain's real locations there (Overpass
+   brand-tag query first, chain's own store locator as fallback) and
+   copy its already-audited menu into a new `restaurants` row per
+   location, capped at ~8 locations per chain per state — no fresh
+   menu/allergen analysis, ever, for a chain location.
 4. Else — every state at 50+ and the chains backlog empty, nationwide
    coverage reached for the current target — switch to maintenance mode:
    a freshness sweep on the oldest-`last_reviewed` restaurants. Report
