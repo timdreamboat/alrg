@@ -47,6 +47,11 @@ create table restaurants (
   chain_id      bigint references chains(id),
   verified      boolean default false,    -- restaurant-confirmed data
   data_source   text default 'ai_pipeline', -- ai_pipeline | chain_matrix | restaurant_verified
+  source_document text,  -- independents only (chains use chains.source_document instead) —
+                          -- the real page/document the menu+allergen data came from. Be
+                          -- honest here: note it explicitly if the source is weak (press
+                          -- coverage instead of the restaurant's own menu, a third-party
+                          -- aggregator) rather than presenting it as equal-confidence.
   last_reviewed timestamptz default now(),
   created_at    timestamptz default now()
 );

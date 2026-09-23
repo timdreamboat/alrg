@@ -752,15 +752,19 @@ async function submitVerification(restaurantId,kind,btn){
 }
 
 /* ---------- drawer / detail sheet ---------- */
-// Real source citation, chain-level first: `chains.source_document` is
-// the actual document/page the allergen data was transcribed from (one
-// value per chain, backfilled 2026-09-23 from the exact sources recorded
-// in ops_log at import time — not fabricated). Item-level note citations
-// are a fallback for independents only, and only work until an item gets
-// real ingredient text written into that same field by the ingredient
-// backfill, which is exactly why the citation moved to the chain level.
+// Real source citation. Chains: `chains.source_document`, one value per
+// chain (backfilled 2026-09-23 from the exact sources recorded in
+// ops_log at import time). Independents: `restaurants.source_document`,
+// backfilled the same day from each restaurant's actual extraction
+// history — including being honest when that source is weak (press
+// coverage instead of the restaurant's own menu, a third-party
+// aggregator) or, for 4 restaurants that turned out to be leftover demo
+// seed data from initial setup, explicitly flagged as not real. Neither
+// field lives in menu_items.note, which the ingredient backfill needs
+// for real ingredient text — see pipeline/README.md.
 function sourceCitation(r){
   if(r.chain_id&&CHAINS_BY_ID[r.chain_id]?.source_document)return CHAINS_BY_ID[r.chain_id].source_document;
+  if(r.source_document)return r.source_document;
   const hit=r.items.find(it=>it.note&&/^from .*official/i.test(it.note.trim()));
   return hit?hit.note:null;
 }

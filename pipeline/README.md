@@ -30,6 +30,33 @@ queryable column instead of buried in a JSON blob. Backfilled for all
 guessed after the fact. Do the same for every future chain at import
 time, not as a later backfill pass.
 
+**Independent (non-chain) restaurants get the same field on
+`restaurants` instead** — `restaurants.source_document`, since there's
+no `chains` row to attach it to. Set this at extraction time for every
+independent restaurant, and **be honest about source quality, not just
+presence**: a restaurant's own menu page is strong; press coverage
+(Michelin Guide, food blogs) or a third-party listing (allmenus.com,
+Yelp, etc.) used because the restaurant's own site was unreachable is
+real but weaker, and the citation should say so explicitly (e.g. "the
+restaurant's own site returned errors when fetched; compiled from
+press coverage instead — verify with staff") rather than reading the
+same as a restaurant-published source.
+
+**Known issue found 2026-09-23, fixed but worth knowing about:** the
+original repo setup seeded 4 Denver restaurants (Copper Kettle
+Kitchen, Maria's Taqueria, Golden Lotus, Verde Bowl Co. — restaurant
+ids 1–4) as hardcoded placeholder data ("1 Demo St" etc.) to make the
+app demoable before the pipeline existed. They were never touched by
+real extraction but carried `data_source=ai_pipeline` and
+`verified=true` (3 of 4), presenting fabricated menu/allergen data
+with the same authority as real, audited chains. Corrected 2026-09-23:
+`verified` set to false and `source_document` set to an explicit
+"this is placeholder demo data, not real" label on all 4 — full
+removal vs. keeping them clearly labeled as demo content is the
+owner's call, not made here. If you ever see a restaurant with a
+"Demo St" address or similarly obviously-fake data, treat it the same
+way — flag it honestly, don't silently publish over it.
+
 ---
 
 ## Override: highly-refined frying oil is not an allergen trigger
