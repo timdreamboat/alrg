@@ -101,7 +101,9 @@ input{font-family:var(--fb)}
 .pin-label{background:var(--surface);color:var(--ink);font-family:var(--fb);font-weight:700;font-size:.72rem;padding:3px 9px;border-radius:999px;box-shadow:var(--sh-sm);border:none!important}
 .pin-label::before{display:none}
 
-.map-note{position:absolute;right:14px;bottom:14px;z-index:400;background:var(--surface);border-radius:999px;padding:7px 14px;font-family:var(--fm);font-size:.55rem;letter-spacing:.09em;color:var(--ink-soft);box-shadow:var(--sh-sm)}
+.legend{position:absolute;right:14px;bottom:14px;z-index:400;background:var(--surface);border-radius:var(--r-md);padding:10px 13px;box-shadow:var(--sh-md);display:flex;flex-direction:column;gap:5px}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:.68rem;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
 
 /* ---------- list panel (desktop: floating card; mobile: bottom sheet) ---------- */
 .list-panel{position:absolute;background:var(--surface);box-shadow:var(--sh-lg);z-index:500;display:flex;flex-direction:column;overflow:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1)}
@@ -158,6 +160,14 @@ input{font-family:var(--fb)}
 .sec-label .line{flex:1;height:1px;background:var(--line)}
 
 .why-card{background:var(--surface-2);border-radius:var(--r-md);padding:14px 16px;font-size:.85rem;color:var(--ink-soft);line-height:1.5;margin-bottom:12px}
+.about-card{background:var(--surface-2);border-radius:var(--r-md);padding:6px 16px;margin-bottom:6px}
+.about-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:.83rem;color:var(--ink-soft)}
+.about-row:last-of-type{border-bottom:none}
+.about-row svg{flex:none;color:var(--pine)}
+.about-row span{flex:1}
+.about-link{flex:none!important;color:var(--pine-deep);font-weight:700;font-size:.78rem;text-decoration:none;background:var(--mint);padding:6px 12px;border-radius:999px}
+.about-src strong{color:var(--ink);font-weight:700}
+.about-note{font-size:.72rem;color:var(--ink-faint);padding:0 0 12px;line-height:1.4}
 .abd{display:flex;flex-direction:column;gap:1px;border-radius:var(--r-md);overflow:hidden;background:var(--line-soft)}
 .abd-row{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--surface)}
 .abd-em{font-size:1.05rem;flex:none}
@@ -212,6 +222,8 @@ input{font-family:var(--fb)}
 /* ---------- responsive: mobile bottom sheet list, desktop floating panel ---------- */
 .list-panel{left:0;right:0;bottom:0;top:auto;height:46dvh;border-radius:var(--r-xl) var(--r-xl) 0 0}
 .sheet-handle{display:block;width:38px;height:4px;border-radius:99px;background:var(--line);margin:9px auto 4px;flex:none}
+.legend{bottom:calc(46dvh + 12px);right:12px;padding:7px 10px}
+.legend-row{font-size:.62rem}
 @media(max-width:480px){
   .brand span:last-child{display:none}
   .brand{padding:9px}
@@ -221,7 +233,7 @@ input{font-family:var(--fb)}
 @media(min-width:821px){
   .list-panel{left:16px;top:138px;bottom:16px;right:auto;width:360px;height:auto;border-radius:var(--r-lg)}
   .sheet-handle{display:none}
-  .map-note{bottom:16px}
+  .legend{bottom:16px}
   .sheet{left:auto;right:16px;top:16px;bottom:16px;width:min(440px,94vw);max-height:none;border-radius:var(--r-lg);transform:translateX(120%)}
   .sheet.open{transform:translateX(0)}
   .sheet-grip{display:none}
@@ -246,7 +258,12 @@ input{font-family:var(--fb)}
     </div>
   </div>
 
-  <div class="map-note">SCORES UPDATE WITH YOUR PROFILE</div>
+  <div class="legend" id="legend">
+    <div class="legend-row"><span class="legend-dot" style="background:#1F9D5C"></span>High confidence</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#D98C1F"></span>Proceed with care</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#D14B3D"></span>High risk</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#AEB8AF"></span>Pick allergens to score</div>
+  </div>
 
   <!-- Allergen picker — a real grid, not a scroll row a user could miss half of -->
   <div class="overlay" id="allergenOverlay" onclick="closeAllergenPicker()"></div>
@@ -478,6 +495,7 @@ function finishOnboard(center,zoom){
   pendingCenter={center,zoom};
   document.getElementById("onboard").classList.add("hidden");
   if(map)map.setView(center,zoom,{animate:true});
+  if(DATA.length)renderList(); // distance is only known once pendingCenter is set
 }
 document.getElementById("onboardLocate").onclick=()=>{
   if(!navigator.geolocation){setOnboardStatus("Location isn't available in this browser — try search instead.");return;}
@@ -529,10 +547,16 @@ function clusterIcon(cluster){
   return L.divIcon({className:"",iconSize:[size,size],iconAnchor:[size/2,size/2],
     html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(155deg,#14A085,#0A4F42);display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${fs}px;border:3px solid #fff;box-shadow:0 6px 18px -4px rgba(10,79,66,.55)">${count}</div>`});
 }
+// Color-only pin — no number on the map. A bare score floating on a map
+// with no legend is meaningless at a glance ("is 76 good?"); color does
+// the at-a-glance job (see the on-map legend), and the exact number lives
+// in the list card and the detail sheet once a place is opened, with a
+// full explanation right there instead of scattered across the map.
 function pinIcon(score,tier,sel){
   const bg=tier?tierHex[tier]:"#AEB8AF";
-  return L.divIcon({className:"",iconSize:[sel?46:40,sel?46:40],iconAnchor:[sel?23:20,sel?23:20],
-    html:`<div style="width:100%;height:100%;border-radius:50%;background:${bg};display:grid;place-items:center;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:${sel?'13px':'12px'};border:${sel?"3px solid #1B2622":"2.5px solid #fff"};box-shadow:0 6px 16px -3px rgba(20,30,26,.45)">${score??"–"}</div>`});
+  const size=sel?26:20;
+  return L.divIcon({className:"",iconSize:[size,size],iconAnchor:[size/2,size/2],
+    html:`<div style="width:100%;height:100%;border-radius:50%;background:${bg};border:${sel?"3px solid #1B2622":"2.5px solid #fff"};box-shadow:0 4px 10px -2px rgba(20,30,26,.5)"></div>`});
 }
 function renderPins(){
   for(const r of DATA){
@@ -584,12 +608,12 @@ const geocodeCache={};
 // though both are correctly in the list. Zoom 14 keeps genuinely distinct
 // restaurants far enough apart on-screen to each get their own pin.
 async function geocodeAndFly(query){
-  if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});return;}
+  if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});pendingCenter={center:geocodeCache[query],zoom:14};renderList();return;}
   try{
     const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({q:query+", USA",format:"json",limit:1,countrycodes:"us"});
     const r=await fetch(url);
     const d=await r.json();
-    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});}
+    if(d&&d[0]){const pt=[parseFloat(d[0].lat),parseFloat(d[0].lon)];geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});pendingCenter={center:pt,zoom:14};renderList();}
   }catch(e){/* map stays put — list filtering still works without this */}
 }
 function applyLocationFilter(){
@@ -614,28 +638,54 @@ document.getElementById("locClear").onclick=()=>{
   renderList();
 };
 
+/* ---------- distance (real data, used as the default sort) ----------
+   "Sort by popularity" was asked for, but there's no real popularity
+   signal in the data (no review/visit counts) — fabricating one would
+   just be a different kind of wrong. Distance from the location the
+   user actually chose (onboarding: geolocation/search/quick-pick) is
+   real, honest, and matches what "Near you" already implies. Used as
+   the sort when no allergens are picked, and as the tie-break under
+   score otherwise (previously ties fell back to alphabetical, which is
+   why the list looked repetitive — "Panera Bread" x5 in a row). */
+function haversineMiles(lat1,lng1,lat2,lng2){
+  const R=3958.8,toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function distanceOf(r){
+  if(!pendingCenter||!r.lat||!r.lng)return null;
+  return haversineMiles(pendingCenter.center[0],pendingCenter.center[1],r.lat,r.lng);
+}
+
 /* ---------- list ---------- */
 function renderList(){
   const q=document.getElementById("searchBox").value.toLowerCase().trim();
   const wrap=document.getElementById("listScroll");wrap.innerHTML="";
-  const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile)}))
+  const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile),d:distanceOf(r)}))
     .filter(({r})=>!q||r.name.toLowerCase().includes(q)||(r.cuisine||"").toLowerCase().includes(q))
     .filter(({r})=>matchesLocation(r,locFilter))
-    .sort((a,b)=>(b.s??-1)-(a.s??-1));
+    .sort((a,b)=>{
+      if(profile.length){
+        const bys=(b.s??-1)-(a.s??-1);
+        if(bys!==0)return bys;
+      }
+      return(a.d??Infinity)-(b.d??Infinity);
+    });
   if(!rows.length){
     document.getElementById("listMeta").textContent=locFilter?`No matches for "${locFilter.label}"`:"0 places";
     wrap.innerHTML=`<div class="empty-state"><strong>No restaurants here yet</strong>${locFilter?`ALRG doesn't have coverage in ${locFilter.label} yet — currently live in the Denver, CO and New York, NY metros, with more added regularly.`:"Try a different search."}</div>`;
     return;
   }
-  document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence`:"Pick allergens above to score";
-  for(const{r,s}of rows){
+  document.getElementById("listMeta").textContent=profile.length?`${rows.length} places · sorted by confidence, then distance`:`${rows.length} places · sorted by distance`;
+  for(const{r,s,d}of rows){
     const t=s===null?null:tierOf(s);
     const src=SRC[r.data_source]||SRC.ai_pipeline;
     const btn=document.createElement("button");
     btn.className="rcard"+(selected===r.id?" sel":"");
     btn.innerHTML=`<span class="badge" style="background:${t?tierHex[t]:"#AEB8AF"}">${s??"–"}</span>
       <span><span class="rcard-name">${r.name}${r.verified?" <span style='color:var(--pine)'>✓</span>":""}</span>
-      <div class="rcard-sub"><span class="src-dot" style="background:${src.dot}"></span>${r.cuisine||""} · ${r.city||""}</div>
+      <div class="rcard-sub"><span class="src-dot" style="background:${src.dot}"></span>${r.cuisine||""} · ${r.city||""}${d!==null?` · ${d<0.1?'<0.1':d.toFixed(1)} mi`:""}</div>
       ${t?`<div class="rcard-tier" style="color:${tierText[t]}">${tierLabel[t]}</div>`:""}</span>`;
     btn.onclick=()=>openDrawer(r.id);
     wrap.appendChild(btn);
@@ -699,12 +749,36 @@ async function submitVerification(restaurantId,kind,btn){
 }
 
 /* ---------- drawer / detail sheet ---------- */
+// Pull the real source citation out of the menu data when one exists
+// (chain PDFs get transcribed with a citation like "From Subway official
+// U.S. Allergy and Sensitivity Information, January 2026" in the item
+// notes) instead of only showing the generic data_source category.
+function sourceCitation(r){
+  const hit=r.items.find(it=>it.note&&/^from .*official/i.test(it.note.trim()));
+  return hit?hit.note:null;
+}
 function renderDrawerBody(r){
   const prof=profile;
   const bd=allergenBreakdown(r,prof);
   const src=SRC[r.data_source]||SRC.ai_pipeline;
+  const citation=sourceCitation(r);
+  const reviewed=r.last_reviewed?new Date(r.last_reviewed).toLocaleDateString():"—";
+  const addrParts=[r.address,r.city,[r.state,r.zip].filter(Boolean).join(" ")].filter(Boolean);
+  const fullAddr=addrParts.join(", ");
+  const dirUrl=(r.lat&&r.lng)?`https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`:null;
   let clear=0,caution=0,contains=0;
   for(const it of r.items){const st=itemStatus(it,prof);if(st==="clear")clear++;else if(st==="contains")contains++;else caution++;}
+
+  const aboutHtml=`
+    <div class="about-card">
+      ${fullAddr?`<div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-13A7 7 0 0 0 5 9c0 5.42 7 13 7 13Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span>${fullAddr}</span>${dirUrl?`<a class="about-link" href="${dirUrl}" target="_blank" rel="noopener">Directions</a>`:""}</div>`:""}
+      <div class="about-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M12 3a9 9 0 100 18 9 9 0 000-18Z" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span>Reviewed ${reviewed}</span></div>
+      <div class="about-row about-src"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18Z" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span><strong>${src.label}</strong>${citation?` — "${citation}"`:""}</span></div>
+      <div class="about-note">Phone and website aren't tracked yet — Directions above uses this restaurant's map location.</div>
+    </div>`;
 
   const bdHtml=bd.length?`<div class="abd">${bd.map(row=>{
     const m=statusMeta[row.worst];
@@ -717,6 +791,9 @@ function renderDrawerBody(r){
   const itemsHtml=r.items.map((it,i)=>renderItemRow(it,`${r.id}-${i}`,prof,src.short)).join("");
 
   document.getElementById("drawerBody").innerHTML=`
+    <div class="sec-label">About this place<span class="line"></span></div>
+    ${aboutHtml}
+
     <div class="sec-label">Why this score<span class="line"></span></div>
     <div class="why-card">For your profile: <strong>${clear} clear item${clear!==1?"s":""}</strong>, ${caution} with caution flags, ${contains} containing your allergen${prof.length!==1?"s":""} directly. ${r.verified?"Restaurant-verified data raises certainty.":"Based on "+src.short.toLowerCase()+" — not yet restaurant-verified."}</div>
     ${bdHtml}
@@ -756,7 +833,6 @@ function openDrawer(id){
   const s=scoreRestaurant(r,profile),t=s===null?"care":tierOf(s);
   const circ=2*Math.PI*32,off=s===null?circ:circ*(1-s/100);
   const profNames=profile.map(p=>ALLERGENS.find(a=>a.id===p)?.name).filter(Boolean).join(", ")||"none selected";
-  const reviewed=r.last_reviewed?new Date(r.last_reviewed).toLocaleDateString():"—";
   const src=SRC[r.data_source]||SRC.ai_pipeline;
   document.getElementById("drawerHead").innerHTML=`
     <div class="dh-top">
@@ -770,7 +846,7 @@ function openDrawer(id){
           <span class="info-dot" title="Score = weighted share of menu items that are clear/caution/contains for your selected allergens, adjusted for verification status. Full formula: docs/SCORING.md">i</span>
         </div></div>
     </div>
-    <div class="meta-row">${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:""}<span class="meta-tag ${src.cls}">${src.label}</span><span class="meta-tag">Reviewed ${reviewed}</span></div>`;
+    <div class="meta-row">${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:""}<span class="meta-tag ${src.cls}">${src.label}</span></div>`;
   renderDrawerBody(r);
   document.getElementById("drawer").classList.add("open");
   document.getElementById("overlay").classList.add("on");
