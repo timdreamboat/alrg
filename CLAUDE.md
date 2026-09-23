@@ -27,6 +27,14 @@ cautiously.
   or redistribute proprietary map-vendor content. Base place data comes from
   open sources (Overture/OSM) or the owner's own collection. Menus + allergen
   analysis are our own derived work and are the proprietary core.
+- Two-part data model (owner decision, 2026-09-22): once Google Places is
+  paid and wired in, Google is the source for map/location/contact metadata
+  (geocoding, place discovery, phone, website, rating) and ALRG's own
+  pipeline stays the sole source for menu + allergen data, always — Google
+  has no per-item allergen data to offer anyway. Combined per restaurant via
+  place_id, never per field; neither source originates the other's columns.
+  See `pipeline/README.md` ("Restaurant discovery in the cloud Routine") and
+  `pipeline/PAID_UPGRADE_POINTS.md` #3 for the full design.
 
 ## Standing conventions
 - Everything free-tier for now, with one exception: the plan is for
@@ -76,17 +84,28 @@ unattended-ness. Full detail and the exact routine prompt: `pipeline/README.md`.
 GitHub Actions (`.github/workflows/nightly.yml`) exists only as a fallback
 if Routines are ever unavailable; don't mention it otherwise.
 
-Each firing, in priority order:
+Each firing, in priority order (superseded in full detail by
+`pipeline/COVERAGE_PLAN.md`, owner decision 2026-09-23 — read that file,
+this is just the summary):
 1. Any chain in `chains` with `analyzed_at IS NULL`? Run chain-menu-importer
    on it — highest leverage for nationwide presence (one import covers every
    location of that chain).
-2. Else, any metro with `status='queued'`? Run the restaurant-menu-extractor
-   → allergen-analyzer → qa-allergen-auditor → db-publisher flow on the next
-   one(s) by rank.
-3. Else — both queues empty, nationwide coverage reached for the current
-   target list — switch to maintenance mode: a freshness sweep on the
-   oldest-`last_reviewed` restaurants. Report "coverage complete, entering
-   maintenance mode" once; don't repeat that report every subsequent firing.
+2. Else, any US state with `count(restaurants) < 50` that has an already-
+   analyzed chain not yet expanded into it? Find that chain's real
+   locations there (Overpass brand-tag query first, chain's own store
+   locator as fallback) and copy its already-audited menu into a new
+   `restaurants` row per location — no fresh menu/allergen analysis, ever,
+   for a chain location; the chain's one-time analysis already covers
+   every location of it nationwide.
+3. Else, any US state still under 50 after chain expansion is exhausted
+   for it? Run the restaurant-menu-extractor → allergen-analyzer →
+   qa-allergen-auditor → db-publisher flow on independents there, using
+   that state's `metros` row(s) as the starting point.
+4. Else — every state at 50+ and the chains backlog empty, nationwide
+   coverage reached for the current target — switch to maintenance mode:
+   a freshness sweep on the oldest-`last_reviewed` restaurants. Report
+   "coverage complete, entering maintenance mode" once; don't repeat that
+   report every subsequent firing.
 
 A Routine run has no local files and no interactive permission prompts, so
 everything it needs — schema, skills, this file — must already be committed
@@ -151,4 +170,8 @@ is live. Next milestones:
 (3) owner-only in-app view for reviewing pending verifications (interim:
     Supabase table editor) — this is the owner's real checkpoint, prioritize it,
 (4) restaurant portal,
-(5) once metros + chains queues empty: freshness-sweep maintenance mode.
+(5) nationwide coverage — every US state at 50+ unique restaurants, see
+    `pipeline/COVERAGE_PLAN.md` (added 2026-09-23; metros seeded for all
+    50 states this pass),
+(6) once every state is at 50+ and chains queue is empty: freshness-sweep
+    maintenance mode.

@@ -130,6 +130,11 @@ create policy "public submit verification" on verifications for insert with chec
 -- publishes real data is the honest state, not a demo restaurant.
 -- ============================================================
 
+-- Seed covers all 50 states (2026-09-23, nationwide coverage plan —
+-- see pipeline/COVERAGE_PLAN.md) so every state has at least one
+-- discovery entry point for the independent-restaurant pipeline. Rank
+-- is a rough population-order hint for batch priority, not an
+-- authoritative figure — fine to be approximate.
 insert into metros (name,state,rank,status,completed_at) values
 ('Denver','CO',19,'complete',now()),
 ('New York','NY',1,'queued',null),
@@ -148,7 +153,44 @@ insert into metros (name,state,rank,status,completed_at) values
 ('Minneapolis','MN',16,'queued',null),
 ('San Diego','CA',17,'queued',null),
 ('Tampa','FL',18,'queued',null),
-('St. Louis','MO',20,'queued',null);
+('St. Louis','MO',20,'queued',null),
+('Columbus','OH',21,'queued',null),
+('Charlotte','NC',22,'queued',null),
+('Indianapolis','IN',23,'queued',null),
+('Nashville','TN',24,'queued',null),
+('Detroit','MI',25,'queued',null),
+('Oklahoma City','OK',26,'queued',null),
+('Las Vegas','NV',27,'queued',null),
+('Louisville','KY',28,'queued',null),
+('Baltimore','MD',29,'queued',null),
+('Milwaukee','WI',30,'queued',null),
+('Albuquerque','NM',31,'queued',null),
+('New Orleans','LA',32,'queued',null),
+('Honolulu','HI',33,'queued',null),
+('Wichita','KS',34,'queued',null),
+('Newark','NJ',35,'queued',null),
+('Virginia Beach','VA',36,'queued',null),
+('Providence','RI',37,'queued',null),
+('Portland','OR',38,'queued',null),
+('Boise','ID',39,'queued',null),
+('Des Moines','IA',40,'queued',null),
+('Omaha','NE',41,'queued',null),
+('Anchorage','AK',42,'queued',null),
+('Bridgeport','CT',43,'queued',null),
+('Birmingham','AL',44,'queued',null),
+('Little Rock','AR',45,'queued',null),
+('Wilmington','DE',46,'queued',null),
+('Manchester','NH',47,'queued',null),
+('Jackson','MS',48,'queued',null),
+('Portland','ME',49,'queued',null),
+('Sioux Falls','SD',50,'queued',null),
+('Charleston','SC',51,'queued',null),
+('Salt Lake City','UT',52,'queued',null),
+('Fargo','ND',53,'queued',null),
+('Billings','MT',54,'queued',null),
+('Burlington','VT',55,'queued',null),
+('Cheyenne','WY',56,'queued',null),
+('Charleston','WV',57,'queued',null);
 
 -- Chains backlog: names only, from public knowledge. NO allergen data is
 -- seeded here — chain-menu-importer sources and audits each one for real

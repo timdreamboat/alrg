@@ -64,6 +64,21 @@ long-term — keep using `place_id` as a join key only (already how
 `restaurants.place_id` is defined), don't cache descriptions/photos/
 reviews, consistent with the data-licensing rule already in CLAUDE.md.
 
+**Owner decision, 2026-09-22 — the exact division of labor, not just a
+swap.** Google is never the allergen source; it doesn't offer that data
+for arbitrary restaurants anyway. The two-part model is:
+- Google Places → discovery + the identity/contact row: `place_id`,
+  name, address, lat/lng, phone, website, rating, rating_count. Live
+  lookup only, per the licensing rule above.
+- Our existing restaurant-menu-extractor → allergen-analyzer →
+  qa-allergen-auditor → db-publisher chain → menu_items, flags,
+  source_document, for every restaurant Places discovers, unchanged
+  from how it works today.
+- Combined per restaurant (same row), not per field — one source never
+  originates the other's columns. Full detail and the reasoning is in
+  `pipeline/README.md` under "Restaurant discovery in the cloud
+  Routine," which is the doc to actually build from when this lands.
+
 ## 4. JS-rendered / bot-blocked chain allergen pages — `pipeline/BLOCKED_SOURCES.md`
 
 **Status: not started, no DB/UI change needed for this one** — it's a
