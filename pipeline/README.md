@@ -375,3 +375,26 @@ throttling rather than a real block), move it from "Watching" to
 "Confirmed hard blocks" in that file — append the row, commit, and push.
 This is a repo file specifically so it's easy for the owner to glance at
 and act on, not just another `ops_log` row.
+
+## `discover_places.py` sandbox setup — duckdb + AWS env var fix
+
+Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
+python package) preinstalled, and even after `pip install duckdb` plus
+`duckdb`'s own `INSTALL httpfs; INSTALL spatial;`, the script failed with
+an S3 `403 InvalidAccessKeyId` error reading Overture's public bucket.
+Cause: the sandbox sets `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` to the
+literal string `proxy-injected` globally (for other tools' benefit), and
+duckdb's `httpfs` extension picks those up automatically and tries to
+sign an authenticated request with them — which fails against a public,
+anonymous-read bucket that never wanted credentials in the first place.
+
+Fix: run the script with those two env vars unset:
+```
+pip install --quiet duckdb   # once per sandbox instance, not preinstalled
+python3 -c "import duckdb; duckdb.connect().execute('INSTALL httpfs; INSTALL spatial;')"   # once
+env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY python3 pipeline/discover_places.py "City, ST" 6 0.75
+```
+Confirmed working 2026-09-23 (22,178 real candidates returned for New
+York, NY). If a future sandbox image preinstalls duckdb or stops setting
+those placeholder AWS vars, this workaround becomes unnecessary but
+should stay harmless.
