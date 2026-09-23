@@ -85,7 +85,17 @@ python3 pipeline/discover_places.py "Wichita, KS" 12 0.7
 (city/state query, radius in miles, minimum confidence 0-1 — defaults
 15 miles / 0.6 if omitted). A single run against one metro city
 routinely returns 1,000+ real candidates (name, category, address,
-phone, website, confidence) — far more than one state needs.
+phone, website, confidence, source_dataset, source_updated) — far more
+than one state needs.
+
+**`source_updated` is per-candidate, not a dataset-wide freshness
+date.** Tested against Wichita, KS (2026-09-23): most candidates were
+from within weeks of the current release, but one real record was last
+updated **2021-10-13** — nearly 5 years old. This is how stale that
+specific lead might be, not how stale Overture is in general. Weight it
+when picking candidates and when re-verifying (see step 3) — an old
+record is still worth checking, just with more skepticism that the
+place still exists as described.
 
 **This is a discovery lead, same rule as Google Places will be once
 that's wired in (see `pipeline/PAID_UPGRADE_POINTS.md` #3) — never
@@ -96,9 +106,9 @@ store an Overture field directly.** The flow per state:
    handled by Track A (name matches a row in `chains`) — Overture mixes
    both in, this script doesn't distinguish them.
 3. Pick real independent candidates from what's left, prioritizing
-   higher `confidence` and skipping anything that looks like a data
-   artifact (duplicated city name in the `name` field, null address,
-   confidence well under 0.7).
+   higher `confidence` and more recent `source_updated`, and skipping
+   anything that looks like a data artifact (duplicated city name in
+   the `name` field, null address, confidence well under 0.7).
 4. For each one, run the full restaurant-menu-extractor ->
    allergen-analyzer -> qa-allergen-auditor -> db-publisher flow as
    normal — Overture's `phone`/`website` are a starting point to check,
