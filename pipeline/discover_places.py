@@ -55,6 +55,17 @@ def main():
     radius_miles = float(sys.argv[2]) if len(sys.argv) > 2 else 15.0
     min_confidence = float(sys.argv[3]) if len(sys.argv) > 3 else 0.6
 
+    # Border cities pull in real candidates from neighboring states within
+    # the radius (confirmed in testing: a Providence, RI query returned
+    # Norton, MA; a Burlington, VT query returned Willsboro, NY). Since
+    # coverage is tracked per state, that leakage would silently corrupt a
+    # state's count -- require "City, ST" and hard-filter on region so
+    # every row returned is actually in the state asked for.
+    parts = [p.strip() for p in place.split(",")]
+    if len(parts) < 2 or len(parts[-1]) != 2 or not parts[-1].isalpha():
+        raise SystemExit(f'place must be "City, ST" (two-letter state), got: {place!r}')
+    state = parts[-1].upper()
+
     lat, lng = geocode(place)
     # ~1 degree lat = 69 miles; longitude degree shrinks with latitude, pad generously
     dlat = radius_miles / 69.0
@@ -81,9 +92,10 @@ def main():
           AND confidence >= ?
           AND bbox.xmin BETWEEN ? AND ?
           AND bbox.ymin BETWEEN ? AND ?
+          AND addresses[1].region = ?
     """
     params = RESTAURANT_CATEGORY_PATTERNS + [
-        min_confidence, lng - dlng, lng + dlng, lat - dlat, lat + dlat
+        min_confidence, lng - dlng, lng + dlng, lat - dlat, lat + dlat, state
     ]
     rows = con.execute(query, params).fetchall()
     # source_updated varies wildly per record -- some are weeks old, some
