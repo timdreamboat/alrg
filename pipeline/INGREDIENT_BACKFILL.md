@@ -54,7 +54,7 @@ data; a fabricated ingredient list is worse than an honest gap.
 
 | Chain | Status | Source | Items |
 |---|---|---|---|
-| Subway | not started | ingredient PDF confirmed to exist (see above) | 1,984 |
+| Subway | done (2026-09-23) | `us-ingredients-en.pdf` fetched, parsed (pypdf + pdfplumber, cffi reinstall needed), matched by item name and written to `menu_items.note` for all 31 Denver locations. 62 of 64 distinct items got real ingredient text (1,922 rows updated). 2 items — "Chicken, Grilled (Buffalo sauce)" and "Spicy Italian Meats (pepperoni, salami)" — have no matching entry in the PDF (not real distinct Subway products in this document) and were left with their original citation note per the no-fabrication rule. | 1,984 (1,922 updated, 62 left as-is) |
 | Five Guys | not started | check existing fetched PDF for component ingredients first | 253 |
 | Chick-fil-A | not started | per-item pages, no single doc found yet | 1,248 |
 | Panera Bread | not started | needs research | 985 |
