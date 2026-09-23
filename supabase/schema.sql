@@ -5,6 +5,7 @@
 -- ============================================================
 
 drop table if exists verifications cascade;
+drop table if exists discovery_candidates cascade;
 drop table if exists menu_items cascade;
 drop table if exists restaurants cascade;
 drop table if exists chains cascade;
@@ -75,6 +76,37 @@ create table restaurants (
 create index idx_rest_geo  on restaurants (state, city);
 create index idx_rest_zip  on restaurants (zip);
 
+-- ---------- discovery candidates (map "coming soon" pins) ----------
+-- Restaurants found by pipeline/discover_places.py (or, once wired in,
+-- Google Places) but not yet independently re-verified/analyzed. Shown
+-- on the map as a distinct dashed/hollow pin (app/index.html
+-- candidatePinIcon) with no score, never merged into `restaurants`
+-- until the full extractor -> analyzer -> auditor -> publisher flow
+-- actually runs on it. db-publisher sets status='promoted' and
+-- promoted_restaurant_id when that happens; status='rejected' if a
+-- candidate turns out not viable (closed, duplicate, no real menu
+-- found) — either way it drops out of the app's pending query
+-- (status=eq.pending). See pipeline/COVERAGE_PLAN.md.
+create table discovery_candidates (
+  id            bigint generated always as identity primary key,
+  name          text not null,
+  address       text,
+  city          text,
+  state         text,
+  zip           text,
+  lat           double precision,
+  lng           double precision,
+  phone         text,
+  website       text,
+  category      text,
+  source        text default 'overture',  -- overture | google_places | ...
+  source_updated timestamptz,             -- freshness of the discovery-lead record itself
+  status        text not null default 'pending',  -- pending | promoted | rejected
+  discovered_at timestamptz default now(),
+  promoted_restaurant_id bigint references restaurants(id)
+);
+create index idx_candidates_state_status on discovery_candidates (state, status);
+
 -- ---------- menu items with allergen flags ----------
 -- flags JSONB: {"peanut":"contains","dairy":"may","wheat":"shared"} ; absent = clear
 -- statuses: contains | may | shared  (clear is implicit)
@@ -118,10 +150,12 @@ alter table chains        enable row level security;
 alter table metros        enable row level security;
 alter table verifications enable row level security;
 alter table ops_log       enable row level security;
+alter table discovery_candidates enable row level security;
 
 create policy "public read restaurants" on restaurants for select using (true);
 create policy "public read items"       on menu_items  for select using (true);
 create policy "public read chains"      on chains      for select using (true);
+create policy "public read discovery_candidates" on discovery_candidates for select using (true);
 -- anyone may SUBMIT a verification; only service role reads/updates them
 create policy "public submit verification" on verifications for insert with check (true);
 

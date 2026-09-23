@@ -101,21 +101,36 @@ place still exists as described.
 that's wired in (see `pipeline/PAID_UPGRADE_POINTS.md` #3) — never
 store an Overture field directly.** The flow per state:
 1. Run `discover_places.py` against that state's `metros` city/cities.
-2. Filter out anything already in `restaurants` (match on address or
-   lat/lng proximity) and anything that's actually a chain already
-   handled by Track A (name matches a row in `chains`) — Overture mixes
-   both in, this script doesn't distinguish them.
+2. Filter out anything already in `restaurants` **or already in
+   `discovery_candidates`** (match on address or lat/lng proximity) and
+   anything that's actually a chain already handled by Track A (name
+   matches a row in `chains`) — Overture mixes both in, this script
+   doesn't distinguish them.
 3. Pick real independent candidates from what's left, prioritizing
    higher `confidence` and more recent `source_updated`, and skipping
    anything that looks like a data artifact (duplicated city name in
    the `name` field, null address, confidence well under 0.7).
-4. For each one, run the full restaurant-menu-extractor ->
+4. **Insert picked candidates into `discovery_candidates`**
+   (`status='pending'`) — this is what makes them show up on the map as
+   a distinct "coming soon" pin (see `app/index.html`
+   `candidatePinIcon`/`openCandidateDrawer`) before they're analyzed.
+5. For each one, run the full restaurant-menu-extractor ->
    allergen-analyzer -> qa-allergen-auditor -> db-publisher flow as
    normal — Overture's `phone`/`website` are a starting point to check,
    not a value to copy in; independently confirm from the restaurant's
    own site before storing anything, same discipline as the menu data
    itself.
-5. Only fall back to cold WebSearch discovery (the original method,
+6. **When db-publisher actually publishes the restaurant**, update its
+   `discovery_candidates` row: `status='promoted'`,
+   `promoted_restaurant_id=<the new restaurants.id>`. This is what
+   turns the dashed "coming soon" pin into the real scored one — the
+   app's map query is `discovery_candidates?status=eq.pending`, so a
+   promoted row simply stops appearing there once the real restaurant
+   (with its real score) is live. If a candidate turns out not viable
+   (permanently closed, a duplicate, no real menu found anywhere) set
+   `status='rejected'` instead — same effect, it drops off the map
+   without ever being confused for a real entry either way.
+7. Only fall back to cold WebSearch discovery (the original method,
    still described below) if a metro's Overture pull comes back thin
    or a state still needs more cities than are seeded in `metros`.
 
