@@ -63,6 +63,7 @@ data; a fabricated ingredient list is worse than an honest gap.
 | Jimmy John's | not started | needs research | 396 |
 | Dunkin' | not started | needs research | 4,068 |
 | Independent restaurants | partial | `note` already has real short descriptions from original menu extraction for most; 10 of 124 items have none | 124 |
+| Texas Roadhouse | no source found (2026-09-23) | Checked at chain-import time: the official allergen source (Special Diets Wizard on nutritionix.com) is a per-item allergen filter tool, not an ingredient-statement document — no separate "ingredient guide" found on texasroadhouse.com or nutritionix.com. `note` left null per the no-fabrication rule. | 258 |
 
 Update this table (status + a one-line note on what was found/done) as
 each chain gets worked — don't just update `menu_items` silently and
