@@ -57,11 +57,21 @@ XHR in a single 6s-settle sniff, so they don't use this specific widget (or it
 didn't fire in time); not exhaustively diagnosed, worth a longer/dedicated
 sniff pass before ruling it out for them.
 
+**Resolved 2026-09-24 — Domino's.** Previously listed here
+(`net::ERR_TOO_MANY_RETRIES`, one attempt, throttling suspected rather than a
+real block). A clean retry this pass via `fetch_rendered.js` hit no error at
+all — dismissed a cookie-consent overlay and rendered the real
+`dominos.com/en/pages/content/nutritional/allergen-info` page: a genuine
+official ingredient-level allergen matrix (X/O flags across Milk, Egg, Fish,
+Shellfish, Wheat, Soy, Peanuts, Nuts, Sesame — 107 rows). Confirms the
+throttling theory from the first attempt. Domino's is now fully analyzed and
+imported (`chains.analyzed_at` set, `official_matrix=true`; see `ops_log`,
+event `chain_imported`, 2026-09-24).
+
 ## Watching — not yet confirmed hard-blocked, still auto-retrying
 
 | Chain | URL attempted | What happened | Notes |
 |---|---|---|---|
-| Domino's | dominos.com/en/pages/content/nutritional/allergen-info | `net::ERR_TOO_MANY_RETRIES` | Same as Taco Bell (now confirmed above) — also hit by an earlier plain-WebFetch attempt in the same session, which may have tripped the throttling itself. |
 | Burger King | bk.com/allergen | Diagnosed 2026-09-23 (screenshot + HTML-length check): first attempt hit `net::ERR_TOO_MANY_RETRIES` (proxy throttling), a clean retry then loaded (103KB HTML, real nav chrome) but the visible page is a perpetual loading spinner — no hidden-but-present content (0 elements >200 chars text hidden via CSS). A third attempt with a 20s settle wait got further: real nav text rendered ("View Cart / Home / Menu / Offers / Rewards" — this is BK's food-ordering SPA, not a static content page) but the main content area still never populated, HTML shrank to 45KB and innerText stayed at 42 chars (nav only). | 2026-09-23, second diagnostic pass (screenshot at each stage). Not a consent overlay and not simple slow-loading — looks like `/allergen` routes into the ordering app, which likely needs a store/location selected before it'll fetch content, and that selection/fetch never completes headlessly within 20s. Needs one more attempt simulating a store selection (e.g. a zip-prefilled URL) before concluding further, or move to confirmed if that also stalls. |
 | Popeyes (location locator only — allergen PDF itself works fine) | locations.popeyes.com/co/denver and individual location pages | HTTP 503 on every attempt (directory listing and individual store pages alike), via both plain WebFetch and `fetch_rendered.js` | 2026-09-23, first attempt. This is the RBI-shared store-locator platform (same corporate family as Burger King, also on this list) — worth watching whether it's the same underlying block as bk.com/allergen. Fell back to a third-party directory (yellowpages.com) for addresses this pass, cross-reference not yet independently verified. Only tried once; needs a second clean attempt before drawing conclusions. |
 | Starbucks | starbucks.com/menu/nutrition/top-allergens | Diagnosed 2026-09-23, disconfirms the prior pass's "hidden via CSS" theory: a computed-style sweep did find 5 elements with >200 chars of text hidden via CSS, but inspecting them directly showed they're all `<script>`/`<style>` tags (GTM, TrustArc loader, `__BOOTSTRAP` JSON, font-face declarations) — normal browser behavior, not gated real content. A targeted search for any `[class*=allerg]`/`[id*=allerg]` element, and for a `<main>` element at all, found **zero** — the SPA's content root never mounts anything allergen-related, it's not that content is present-but-hidden. A TrustArc consent *loader script* is present (`consent.trustarc.com/notice?...`) but never actually renders a visible banner element to dismiss either. | 2026-09-23, second diagnostic pass. New conclusion: this isn't a hidden-content or stuck-consent-banner case — the client-side data fetch for the allergen content itself appears to never complete/mount within the wait window (same shape as the Burger King finding this same pass: nav chrome loads, main content never does). Worth checking next pass whether the app's data API domain is one the sandbox proxy is slow/blocking on, same category of root cause suspected for Burger King. |
