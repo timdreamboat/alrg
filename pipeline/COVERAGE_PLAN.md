@@ -110,6 +110,25 @@ store an Overture field directly.** The flow per state:
    higher `confidence` and more recent `source_updated`, and skipping
    anything that looks like a data artifact (duplicated city name in
    the `name` field, null address, confidence well under 0.7).
+
+   **Also skip ghost-kitchen / virtual-brand concepts — found
+   2026-09-24, not caught by the chains-table name filter above.**
+   "The Meltdown," "Banda Burrito," and "The Burger Den" all appeared
+   as apparently-independent Overture candidates in AK and HI, but are
+   Denny's Corporation delivery-only virtual brands operated out of
+   existing Denny's kitchens, not independent restaurants — confirmed
+   via The Meltdown's own Allergen Guide PDF, copyright-marked "© 2022
+   DFO, LLC" (a Denny's corporate entity) and explicitly scoped to "the
+   contiguous United States only" (so it doesn't even cover the HI
+   location it was being considered for). These aren't in the `chains`
+   table, so the existing name-match filter misses them. If a
+   "restaurant" candidate's own site reads like a shared corporate
+   ghost-kitchen doc (generic multi-brand-style allergen PDF, another
+   chain's name showing up in an ingredient/seasoning line, explicit
+   regional scoping that excludes the state being worked), treat it
+   like a chain for filtering purposes — don't source it as an
+   independent, and don't treat its document as that location's own
+   data.
 4. **Insert picked candidates into `discovery_candidates`**
    (`status='pending'`) — this is what makes them show up on the map as
    a distinct "coming soon" pin (see `app/index.html`
