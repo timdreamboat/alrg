@@ -47,6 +47,24 @@ is a distinct real place). Check progress with:
 select state, count(*) from restaurants group by state order by count(*) asc;
 ```
 
+**Found 2026-09-25 — that query has a blind spot, don't use it alone to
+pick "lowest coverage state."** A plain `group by state` silently omits
+any state with zero restaurants (no row = absent from the result, not a
+zero row) — several hourly passes on 2026-09-25 picked NM (2) and CA (3)
+as "the lowest-coverage state" this way while 14 states (ID, IA, NE, CT,
+AR, DE, NH, ME, SD, ND, MT, VT, WY, WV) sat at a true zero the whole
+time, invisible to that query. Always left-join from `metros` instead,
+so a state with nothing yet still sorts to the front:
+
+```sql
+select m.state, m.name, m.rank, coalesce(r.cnt,0) as restaurant_count
+from metros m
+left join (select state, count(*) cnt from restaurants group by state) r
+  on r.state = m.state
+where m.state <> 'DC'
+order by coalesce(r.cnt,0) asc, m.rank asc nulls last;
+```
+
 A state "passes" once its count is >= 50. DC and any US territory are
 bonus coverage, not part of the 50-state target (DC is already seeded
 in `metros` from earlier work; no other territory is seeded, none
