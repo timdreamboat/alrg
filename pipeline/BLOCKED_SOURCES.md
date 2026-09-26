@@ -186,6 +186,10 @@ needs a later retry (`select * from restaurants where lat is null`).
 
 **Not independents — local multi-location groups identified this pass (Baltimore-area, MD):** Papi's Tacos (4 locations: Fells Point, Hampden, Towson, Ocean City, one shared site/menu) and Sal and Sons (2 locations: Fells Point, Jessup, one shared site). Same exclusion logic as the Giliberto's/Attic rows above — recognized local multi-location brands aren't genuine single independents even when absent from the `chains` table. Neither inserted as a discovery_candidates row.
 
+| Le Petit Cafe Coffee House (independent, Kenner LA) | lepetitcafebonjour.com / www.lepetitcafebonjour.com | DNS lookup failure (`ENOTFOUND`) via WebFetch on both bare and `www` domains | 2026-09-26, first attempt. `discovery_candidates` id 408 left `pending` for LA Track B — needs a WebSearch for a current URL or third-party listing before concluding a permanent close. |
+
+**Not independents — chains/multi-location brands identified this pass (New Orleans, LA):** Papa Johns (2 rows, ids 396/398), Golden Corral (id 402), and Ruby Slipper Cafe (id 406, a recognized New Orleans-founded multi-location breakfast/brunch brand with 20+ locations across LA and other states) were sitting `pending` from an earlier Overture pull, never worked. Same exclusion pattern as the Sioux Falls/Indianapolis/Baltimore rows above — all 4 marked `rejected` rather than left pending. One genuine independent published this pass instead: Rib Room (621 St Louis St, New Orleans — historic single-location steakhouse inside the Omni Royal Orleans Hotel since 1965), off two complete own-site menu pages, 30 audited items.
+
 Move a row from "Watching" to "Confirmed hard blocks" only after it repeats
 with the same signature on a clean attempt (not immediately after another
 attempt against the same domain, which can trigger throttling on its own).
