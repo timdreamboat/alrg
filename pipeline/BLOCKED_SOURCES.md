@@ -127,6 +127,29 @@ event `chain_imported`, 2026-09-24).
 | Khoury's Mediterranean Restaurant (independent, South Miami FL) | khouryrestaurantmiami.com | 301-redirects to `dtsindus.com`, an unrelated business — domain appears abandoned/repurposed, not a live restaurant site | 2026-09-26, first attempt. Needs a WebSearch for a current URL before concluding the restaurant itself is gone. |
 | Deli Lane Cafe and Sunset Tavern (independent, South Miami FL) | delilane.com | HTTP 403 Forbidden via plain WebFetch | 2026-09-26, first attempt. Not yet tried via `fetch_rendered.js` — could be a bot wall or a transient block, needs a second attempt before concluding anything. |
 
+**Resolved 2026-09-26 — Los Taquitos (Arcadia, Phoenix AZ), published.** Own-site
+`lostaquitosaz.com` only surfaces a 9-item taco preview, but its "Order Now"
+link goes to the restaurant's real ordering-platform storefront
+(`custom.order.online/en/store/los-taquitos-phoenix-2273674`, DoorDash
+Commerce Platform) — a genuine full 119-item menu with real per-item
+ingredient descriptions across every category (tacos, burritos,
+quesadillas, bowls, tortas, enchiladas, tostadas, etc.), not a thin
+aggregator listing. Published as `restaurants` id 378, `verified=true`
+(own ordering-channel source, same tier as a restaurant's own site).
+Same shared-fryer wheat-caution convention already used elsewhere in this
+pipeline (e.g. Ramen Fuji's Sweet Potato Fries) applied to this
+restaurant's crispy/fried items (chips, tostadas, rolled tacos, fries).
+**Not a national chain** — same exclusion logic as Giliberto's/The Attic
+in Sioux Falls: Los Taquitos' own site says it has 3 real AZ locations
+(Ahwatukee, Arcadia, and a second Phoenix location), too small/local for
+`chains`, so each real address should be added as its own independent
+`restaurants` row with its own audited copy of this same menu rather than
+a `chain_menu_importer` pass. **Only the Arcadia location was added this
+pass** — the Ahwatukee and second Phoenix locations are still open work
+for a future AZ pass. Nominatim geocoding hit HTTP 429 (rate-limited) on
+3 separate attempts this pass, so `restaurants` id 378 has null lat/lng —
+needs a later retry (`select * from restaurants where lat is null`).
+
 **Resolved 2026-09-26 — Clasica Victoria (South Miami / Key Biscayne, FL), published.** A real, complete own-site menu PDF (`clasicavictoria.com` → Squarespace-hosted `CV MENU 2026 Final 1.1.pdf`) that includes the restaurant's own per-item "Gluten Free" and "Contains Nuts" icons — a strong, directly-usable source, no reconstruction needed. Two real physical FL locations of the same small local brand (South Miami and Key Biscayne) share this one menu document; both published from it (`restaurants` ids 376–377), each `source_document` noting explicitly that the other location shares the same source. Not a `chains` table entry (too small/local, not a national chain) — same category as the Giliberto's/Attic exclusion logic, except here the shared menu was a genuine strong source worth using for both real addresses rather than a reason to skip either.
 
 Move a row from "Watching" to "Confirmed hard blocks" only after it repeats
