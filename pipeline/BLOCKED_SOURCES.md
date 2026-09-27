@@ -325,3 +325,42 @@ published):**
 | Post Office Pies (Mountain Brook AL) | postofficepies.com/menu | `fetch_rendered.js` rendered real nav chrome but the menu content itself never populated — same "nav mounts, main content never does" shape as Starbucks/Burger King | 2026-09-27, first attempt. Needs a longer settle wait or a diagnostic pass before concluding further. |
 | Snapper Grabbers Land & Sea (Vestavia Hills AL) | snappergrabbers.com | `fetch_rendered.js` rendered real nav chrome and a "VIEW OUR MENU" link but the actual menu content is behind that link/lazy-loaded, only "Load More Content" placeholders showed | 2026-09-27, first attempt. Needs the actual menu page/link followed directly before concluding further. |
 | Taqueria Los Primos (Hoover AL) | taquerialosprimoshoover.e-tab.com | `fetch_rendered.js` rendered only "etabWebOrdering" — an e-tab ordering widget that never surfaced menu content in a single settle-and-read pass | 2026-09-27, first attempt. Same category as the HungerRush/Toast ordering-platform gaps already logged for DiOrio's (Louisville KY) — needs an interactive click-through, not a quick retry. |
+
+**Resolved 2026-09-27 — DE (Wilmington) Track B pass, 3 published: Honest
+Indian Restaurant (`restaurants` id 402, 189 audited items, 100%
+vegetarian menu), The Reef Seafood & Steak (id 403, 41 audited items),
+Walt's Flavor Crisp Chicken Express (id 404, 60 audited items). All three
+had complete own-site menus with real item names/descriptions, no
+reconstruction needed. `discovery_candidates` ids 719/726/728 marked
+`promoted`. Walt's own site gives a different address and phone (103 N
+Lincoln St, Wilmington DE 19805; 302-429-2587) than the Overture-sourced
+discovery lead (2601 Carpenter Station Rd; 302-439-3452) — used the
+site's own stated info per the independently-verify convention, noted on
+the `restaurants` row. Nominatim geocoding found no exact house-number
+match for Honest Indian (3100 Naamans Rd) or The Reef (2618 Carpenter
+Station Rd) — both left with null lat/lng for a later retry sweep
+(`select * from restaurants where lat is null`); Walt's corrected
+address did geocode successfully.
+
+**DE (Wilmington) Track B, additional leads found this pass, left
+`pending` (not published) — all structural gaps, not bot blocks:**
+
+| Sprinkles Italian Bakery & Market (id 717) | sprinklesitalianbakery.com | Homepage lists menu *categories* (bakery sweets, sandwiches, tomato pie, Sicilian pizza) but no itemized list with prices/ingredients anywhere on the page. | 2026-09-27, first attempt. Needs the site's separate bakery/market menu sub-pages (linked but not fetched this pass) before concluding anything. |
+| Jacks Tavern (id 718) | famousjacks.com | Plain WebFetch: HTTP 503. | 2026-09-27, first attempt. Needs a second clean attempt (or `fetch_rendered.js`) before concluding anything. |
+| King Garden Chinese Restaurant (id 722) | kinggardenwilmington.com | Homepage only names a few signature dishes in promotional text; full menu lives behind an online-ordering widget (`/order-online#menu-section`) not fetched this pass. | 2026-09-27, first attempt. Needs the ordering-widget page fetched directly (likely via `fetch_rendered.js`) before concluding anything. |
+| India Grille (id 723) | indiagrille.net and orderindiagrille.com/order | Homepage shows only a few lunch-special/gallery items; the linked ordering platform (`orderindiagrille.com/order`) rendered just an empty cart shell, no menu content loaded within the settle window. | 2026-09-27, first attempt. Needs a longer settle wait on the ordering platform, or the site's own `/menu` page (not yet tried), before concluding anything. |
+| Hong Hing Chinese Restaurant (id 725) | honghingchinesede.com | Homepage references a few dishes via images only; full menu is behind an `/order/` link not fetched this pass. | 2026-09-27, first attempt. Needs the order page fetched directly before concluding anything. |
+| The Reef Seafood & Steak dining-menu — resolved, see above. | | | |
+| TajMahal Indian Restaurant (id 730) | tajmahalde.com | Homepage rendered only the restaurant name, no menu content or links captured this pass. | 2026-09-27, first attempt. Needs a `fetch_rendered.js` pass (plain WebFetch may be hitting a JS-rendered gap) before concluding anything. |
+| Mr Taco Mexican Grill 2 (id 731) | mrtacogrill.com/our-menu/ | Menu is presented as photographed images ("CLICK TO ENLARGE"), not page text — same shape as the Mo's A Place for Steaks/CBG Portland image-menu rows above. | 2026-09-27, first attempt. Needs the raw image URLs fetched and read visually before concluding anything. |
+| Sciarrino's Pizza (id 732) | sciarrinospizza.net | Homepage names menu categories only; full menu lives at a separate ordering platform (`orderstart.com/sciarrinospizza`) not fetched this pass. | 2026-09-27, first attempt. Needs the ordering-platform page fetched directly before concluding anything. |
+
+**Not attempted this pass (no website on file):** OMY Smoked BBQ (id 713,
+`omysmokedbbq.com` failed DNS resolution this pass — worth a retry, could
+be transient), Piazza Pizza (id 714), Mex A Mex (id 716), Naamans
+Pizzeria (id 721), Prospero's Pizza (id 727) — no `website` field in
+`discovery_candidates`, need a WebSearch for a current URL before any
+fetch attempt. Milano Pizza (id 535, New Castle DE) already logged above
+(2026-09-26) as unresolved — own domain dead, singleplatform.com listing
+too thin to publish from; still `pending`. Sid's at C26 - BBQ & Jerky (id
+733, Claymont DE) not attempted this pass — next DE pass's work.
