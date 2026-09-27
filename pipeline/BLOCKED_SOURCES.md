@@ -190,6 +190,39 @@ needs a later retry (`select * from restaurants where lat is null`).
 
 **Not independents — chains/multi-location brands identified this pass (New Orleans, LA):** Papa Johns (2 rows, ids 396/398), Golden Corral (id 402), and Ruby Slipper Cafe (id 406, a recognized New Orleans-founded multi-location breakfast/brunch brand with 20+ locations across LA and other states) were sitting `pending` from an earlier Overture pull, never worked. Same exclusion pattern as the Sioux Falls/Indianapolis/Baltimore rows above — all 4 marked `rejected` rather than left pending. One genuine independent published this pass instead: Rib Room (621 St Louis St, New Orleans — historic single-location steakhouse inside the Omni Royal Orleans Hotel since 1965), off two complete own-site menu pages, 30 audited items.
 
+**Resolved 2026-09-27 — Picasso's Pizzeria (Wichita, KS), published.** Full,
+complete own-site menu (`picassospizzerias.com/menu`) with real per-item
+ingredient text across every category (slices, "Slices of Art" specialty
+pizzas, gluten-free, pies, calzones, sandwiches, salads, sides, desserts) —
+a strong, directly-usable source, no reconstruction needed. Published as
+`restaurants` id 394, `verified=false` (independent, AI-analyzed —
+`ai_pipeline` tier, not corporate-matrix), 41 audited menu items. Basil
+pesto items flagged `treenut: contains` (pine nuts, per the hidden-source
+"pesto→tree nuts+dairy" rule) — Picasso slice, Hank's Turkey and Veggie
+sandwiches. Nutella Slice flagged `treenut: contains` + `dairy: contains`
+(Nutella is hazelnut- and milk-based). Gluten-free items flagged
+`wheat: may` rather than clear, for shared-kitchen cross-contact caution
+rather than a hard "none". Not a national chain — single-location
+independent since 2012, own domain, no chain-table or multi-location match.
+`discovery_candidates` row (id 68) promoted. Three chain candidates sitting
+in the same Wichita queue (RibCrib BBQ, P.F. Chang's, Sonic Drive In) marked
+`rejected` — same exclusion logic as the Sioux Falls/Baltimore/New Orleans
+rows above, recognized multi-location brands aren't genuine independents
+even when absent from the `chains` table.
+
+**KS Track B queue refreshed this pass** — the existing Wichita
+`discovery_candidates` queue was fully exhausted (1 promoted, 9 rejected as
+chains), so a fresh `discover_places.py` pull was run against Wichita, KS
+(12mi radius, 0.7 min confidence) to seed the next KS pass. 25 genuine-
+looking independent candidates inserted as `pending` (mostly Derby, a
+Wichita suburb, since the pull's radius reached that far); national/
+regional chains found in the same pull (Golden Corral, Dairy Queen, Taco
+Bell, McDonald's, KFC, Sonic Drive In, Pizza Hut, Little Caesars, Casey's,
+Applebee's, Village Inn, Wendy's, Papa Johns, Papa Murphy's, Arby's, Burger
+King, Subway, Hunt Brothers Pizza, Gambino's Pizza, Taco Tico, Road Runner
+Mexican Fast Food) were excluded outright, not inserted. None of the 25 has
+been fetched/vetted yet — that's the next KS pass's work.
+
 Move a row from "Watching" to "Confirmed hard blocks" only after it repeats
 with the same signature on a clean attempt (not immediately after another
 attempt against the same domain, which can trigger throttling on its own).
