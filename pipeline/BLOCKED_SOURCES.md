@@ -223,6 +223,40 @@ King, Subway, Hunt Brothers Pizza, Gambino's Pizza, Taco Tico, Road Runner
 Mexican Fast Food) were excluded outright, not inserted. None of the 25 has
 been fetched/vetted yet — that's the next KS pass's work.
 
+| The 3rd Wave Cafe (independent, Lyndhurst NJ) | 3rdwavecafe.com/menus | `fetch_rendered.js` (8s wait) rendered only nav chrome (Home/Menu/Order Online/Cookies/Specials/About/Contact) and a contact form — the actual menu content never mounted, same "nav mounts, content never does" shape as Starbucks/Burger King. Homepage photos suggest a real pancake/coffee menu exists. | 2026-09-27, first attempt. `discovery_candidates` id 418 left `pending` for NJ Track B — needs a longer settle wait or the site's separate Square ordering flow (linked from "Order Online") checked before concluding further. |
+| Firehouse Family Restaurant (independent, Garfield NJ) | firehousefamilyrestaurantnj.com (301-redirects to order.toasttab.com/online/the-firehouse-42-plauderville-ave) | `fetch_rendered.js` landed on a Cloudflare "Performing security verification" challenge on the Toast ordering page — same signature already confirmed for Applebee's. | 2026-09-27, first attempt. `discovery_candidates` id 419 left `pending` — worth noting `order.toasttab.com` itself may be a platform-wide Cloudflare block from this sandbox rather than restaurant-specific (see La Famiglia Sorrento row below, same signature same pass); retry only occasionally per the confirmed-block convention. |
+| La Famiglia Sorrento (independent, Westfield NJ) | lafamigliasorrento.com/menu.php (real "Menu" nav target) renders empty; lafamigliasorrento.com/ homepage shows a "SPECIALS 9/25-10/1" carousel with real per-item ingredient text but of uncertain completeness (dated, paginated 1-4, likely a rotating weekly-specials widget, not confirmed as the full standing menu); the site's own "ONLINE ORDER" link goes to `toasttab.com/la-famiglia-sorrento-631-central-avenue`, which redirected to the same `order.toasttab.com` Cloudflare "Performing security verification" challenge as the Firehouse row above | Not published: the only complete-looking source (the homepage specials carousel) isn't confirmed to be the full menu, and the real menu.php page is empty — same "partial menu risks a false-clear on unlisted items" judgment call as Milano Pizza/J-N-J Southern Kitchen. | 2026-09-27, first attempt. `discovery_candidates` id 421 left `pending` — a second Toast attempt after this Cloudflare block clears, or a WebSearch for a third-party listing, needed before another attempt. Two real leads hitting the identical `order.toasttab.com` Cloudflare challenge in the same pass is worth checking again next time this platform comes up. |
+| Negeen Persian Grill (independent, Summit NJ) | negeengrill.com | DNS lookup failure (`ENOTFOUND`) via WebFetch | 2026-09-27, first attempt. `discovery_candidates` id 423 left `pending` — needs a WebSearch for a current URL or aggregator listing before concluding a permanent close. |
+
+**Not independents — chains/multi-location brands identified this pass (Newark-area, NJ):** Laredo Taco Company (Valero/Corner Store-affiliated taco concept, same exclusion pattern as the Oklahoma City row above), Qdoba Mexican Grill, Papa Johns, Bonchon and Bonchon Chicken (2 separate NJ locations of the same Korean fried-chicken chain), and Fleming's Prime Steakhouse and Wine Bar (Bloomin' Brands, same corporate family as Outback Steakhouse) were sitting `pending` from an earlier Overture pull, never worked — all 6 marked `rejected`. Raise the Roost (Newark) also rejected after checking its own site: it is a multi-location chicken chain/franchise (its own "Restaurant Locations" page lists multiple stores), not a genuine independent, despite reading that way in the Overture pull.
+
+**Resolved 2026-09-27 — Mr Bruno's Pizzeria (Little Ferry, NJ), published.** Full,
+complete own-site menu (`mrbrunospizza.com`, a Slice ordering platform) with
+real per-item ingredient descriptions across most categories — a strong,
+directly-usable source. Plain WebFetch only returned a condensed category
+summary (same large-single-page-app truncation already seen for Venice
+Pizza), so `fetch_rendered.js` was used to capture the complete visible-text
+menu instead. Published as `restaurants` id 395, `verified=false`
+(independent, AI-analyzed — `ai_pipeline` tier), 216 audited menu items
+across pizza, specialty pizza, appetizers, salads, sides/soups, extras,
+calzones/rolls, cold/hot subs, burgers/tots, wraps, pasta, baked dishes,
+entrees, and seafood. Catering-tray listings, coupon/deal bundles, the
+by-the-slice pizza section, the House Favorites teaser list, and the
+time-limited Lunch Special section were excluded as duplicates of
+already-covered a la carte items, not distinct dishes — same precedent as
+Venice Pizza. Self-audited per qa-allergen-auditor procedure: PASS WITH
+CORRECTIONS, 6 discrepancies (2.8%) — all clear/may-\>may/contains upgrades
+(buffalo sauce is butter-based so items using it got `dairy: may`; brown
+gravy and homemade meatballs are standardly flour-based/breadcrumb-bound so
+`wheat` was upgraded from `may` to `contains`), zero clear-\>contains misses.
+Nominatim geocoded the address to a real address-point node (not an exact
+business-name match — same caveat already noted for other recent
+publishes). Not a national chain — single-location independent, own Slice
+storefront, no chain-table or multi-location match found (the generic
+"You can also try Mr Bruno's Pizzeria's other locations" line on the Slice
+page is templated platform marketing copy, not evidence of a real second
+location).
+
 Move a row from "Watching" to "Confirmed hard blocks" only after it repeats
 with the same signature on a clean attempt (not immediately after another
 attempt against the same domain, which can trigger throttling on its own).
