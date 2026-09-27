@@ -470,3 +470,24 @@ descriptions — no reconstruction or third-party aggregator needed. Published a
 `restaurants` id 411, `verified=true`, 101 items, `discovery_candidates` id 926 marked
 `promoted`. Worth checking other stuck own-site menu pages for a similarly-named PDF
 link before concluding a structural dead end.
+
+**Resolved 2026-09-27 — Indian Delhi Palace (Phoenix, AZ), published.** Own-site
+`indiandelhipalace.com/menu` renders a complete itemized menu (soups/salad, appetizers,
+tandoori & grill, entrées, vegetarian, chef's specialties, rice, breads, dessert) with
+real per-dish ingredient text — a strong, directly-usable source, no reconstruction
+needed. The entrée section lists dish names with a shared "available with Chicken,
+Lamb, Shrimp, Goat, Paneer, or Mixed Vegetables" protein choice rather than itemizing
+each protein separately; published each entrée as one row with a `shellfish: may` /
+`dairy: may` caution flag to cover the Shrimp/Paneer options rather than assuming a
+specific protein, noted explicitly in each item's `note` field. Not a national chain —
+no `chains`-table or multi-location match found. Published as `restaurants` id 420,
+`verified=false`, 53 audited items, `discovery_candidates` id 996 marked `promoted`.
+
+| Lou Malnati's Pizzeria (Overture candidate, Phoenix AZ) | loumalnatis.com/arizona-arcadia | Confirmed multi-location chain (Chicago-based, 50+ years, multiple states) via its own site's "for more than 50 years... perfecting Chicago's Deep Dish tradition in their pizzerias" copy — not a genuine independent, same exclusion rule as Giliberto's/The Attic in prior passes. | 2026-09-27. Never inserted as a `discovery_candidates` row. |
+| Tarbell's (Overture candidate, Phoenix AZ) | tarbells.com | Restaurant group, not a single independent — same site also runs "The Tavern," "The Wine Store," and "Cha Cha Mouche." | 2026-09-27. Never inserted as a `discovery_candidates` row. |
+| Pa'la (Overture candidate, Phoenix AZ) | palakitchen.com | Multi-location — own site lists "24th Street" and "Downtown" locations. | 2026-09-27. Never inserted as a `discovery_candidates` row. |
+| "Taco Samich 4" (Overture candidate, Phoenix AZ) | tacosmexico.com (Overture's website field for this candidate) | Overture's name/website pairing is mismatched — the linked site is Tacos Mexico, a Southern-California-based multi-state chain "expanding out of State to... Arizona," not a genuine independent regardless of what the Overture name field said. | 2026-09-27. Never inserted as a `discovery_candidates` row. |
+| Nishikawa Ramen (independent, Phoenix AZ) | nishikawa-ramen.com | 301-redirects to an unrelated LA escape-room venue site — domain lost/repurposed, not a bot block. | 2026-09-27, first attempt. Never inserted as a `discovery_candidates` row — needs a WebSearch for a current URL or aggregator listing before concluding the restaurant itself is gone. |
+| JulioBerto's (independent, Phoenix AZ) | juliobertos.com, redirects to 360deliandgrill.com | Redirect target returns a Cloudflare block page whose own text references an unrelated domain (thecakestudiobaltimore.com) — looks like a shared-hosting/WAF misconfiguration rather than a real fetchable site for this restaurant. | 2026-09-27, first attempt. Never inserted as a `discovery_candidates` row. |
+| Mariscos Las Glorias (independent, Phoenix AZ) | mariscoslasglorias.com/menu-mixed/ | The menu page itself returns a WordPress "critical error" via both plain WebFetch and `fetch_rendered.js` — genuine site-side breakage, not a bot wall. Homepage confirms single location, 20+ years in Phoenix. | 2026-09-27, first attempt. Not inserted as a discovery_candidates row this pass — real, promising independent; needs a re-check next pass (the site error may be transient) or a DoorDash/Toast listing as a fallback source. |
+| SaltFire Brewing Tap House, formerly Boulders on Broadway (independent, Tempe AZ) | bouldersonbroadway.com redirects to saltfirebrewingtaphouse.com | Not a bot block — site renders fine (real About/contact content, confirms single Tempe location, family-operated) but the nav's "Food Menu" link 404s and every guessed path (`/food-menu/`, `/menu/`) only shows a landing hub with a "MENU" button that doesn't surface item content. | 2026-09-27, first attempt. Not inserted as a discovery_candidates row this pass — needs the real menu-page link found (e.g. via a rendered click on the "MENU" button/link-extraction pass) before concluding further. |
