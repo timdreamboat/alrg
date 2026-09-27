@@ -170,6 +170,51 @@ needs a later retry (`select * from restaurants where lat is null`).
 **Resolved 2026-09-26 — Clasica Victoria (South Miami / Key Biscayne, FL), published.** A real, complete own-site menu PDF (`clasicavictoria.com` → Squarespace-hosted `CV MENU 2026 Final 1.1.pdf`) that includes the restaurant's own per-item "Gluten Free" and "Contains Nuts" icons — a strong, directly-usable source, no reconstruction needed. Two real physical FL locations of the same small local brand (South Miami and Key Biscayne) share this one menu document; both published from it (`restaurants` ids 376–377), each `source_document` noting explicitly that the other location shares the same source. Not a `chains` table entry (too small/local, not a national chain) — same category as the Giliberto's/Attic exclusion logic, except here the shared menu was a genuine strong source worth using for both real addresses rather than a reason to skip either.
 
 | Loch Bar (independent, Baltimore MD) | lochbarbaltimore.com | Domain itself is down: "We are currently restoring lochbarbaltimore.com. Please check back later." — not a bot block, the site host appears to be mid-migration/rebuild. | 2026-09-26, first attempt. `discovery_candidates` id 120 left `pending` — needs a re-check next pass (or a WebSearch for a third-party listing) once the site is back up. |
+
+**Resolved 2026-09-27 — PA (Philadelphia) Track B pass, 2 published: Calle
+Del Sabor (`restaurants` id 416, 49 audited items, `discovery_candidates` id
+969 promoted) and K and J Caribbean American Diner (`restaurants` id 417, 50
+audited items, `discovery_candidates` id 976 promoted). Both single-location
+independents with complete own-site menus (Calle Del Sabor's is a JS-rendered
+single-page site, fetched via `fetch_rendered.js`; K and J's is a plain
+static site with full priced item lists). Not national chains — no
+`chains`-table or multi-location match found for either.**
+
+| Spring Garden Restaurant (independent, Philadelphia PA) | springgardenrestaurantpa.com | WebFetch: HTTP 503. `fetch_rendered.js`: "upstream request failed". | 2026-09-27, first attempt. `discovery_candidates` id 967 left `pending` — transient signature, needs a genuinely separate-pass retry before concluding anything. |
+| Lazaro's Pizzeria and Grill (independent, Philadelphia PA) | lazarospizzeriagrill.com | WebFetch: HTTP 403. `fetch_rendered.js`: Cloudflare "Performing security verification" challenge (Ray ID present) — same signature category as Applebee's/Firehouse Family/La Famiglia Sorrento above. | 2026-09-27, first attempt. `discovery_candidates` id 968 left `pending` — first confirmed hit, needs a second separate clean attempt before moving to Confirmed hard blocks. |
+| J & P Seafood (independent, Philadelphia PA) | jimandpeteseafood.com | DNS lookup failure (`ENOTFOUND`) via WebFetch | 2026-09-27, first attempt. `discovery_candidates` id 970 left `pending` — needs a WebSearch for a current URL or aggregator listing before concluding a permanent close. |
+| DJ Kitchen (independent, Philadelphia PA) | djkitchenphilly.com order-online page | Not a bot block — a per-category accordion gap. `fetch_rendered.js` (default and 20s settle both tried) only ever populates the first 2 of 13 menu categories (Starters, Starters - Cold Dishes); Soups, Authentic Noodle, Fried Rice, Lo Mein, Rice Noodle & Chow Fun, Entrees, DJ Specialties, Authentic Chinese Dishes, Vegetables & Tofu and Beverage never load — same shape as Costa's BBQ/China Ocean/Racca's Pizzeria. | 2026-09-27, first attempt. `discovery_candidates` id 974 left `pending` — publishing off 2 of 13 categories risks a false-clear on the unreviewed majority, so not published. Needs a per-category click-through (bigger job) before publishing. |
+| Circles Northern Liberties / Circles Thai (independent, Philadelphia PA) | circlesthai.hrpos.heartland.us/menu | Same accordion gap as DJ Kitchen above — `fetch_rendered.js` (12s settle) only populates the first of 9 categories (Soups & Salads, 2 items); Apps, Rolls, Stir Fry, Noodles & Fried Rice, Curry, Specialties, Sides, Desserts never load. | 2026-09-27, first attempt. `discovery_candidates` id 978 left `pending` — not published, same false-clear-by-omission risk as DJ Kitchen. |
+
+**Not independents — local multi-location brands identified this pass
+(Philadelphia, PA):** Los Potrillos (`discovery_candidates` id 971,
+`rejected` — own site states a second brick-and-mortar location plus a food
+truck at the Overture-sourced candidate address; also no usable menu found,
+`/menu` 404s), Pho Ha Saigon (id 972, `rejected` — own site confirms 4
+Philadelphia locations sharing one brand), Tiffin Indian Cuisine (id 975,
+`rejected` — own site lists 11 locations across PA/NJ), and Deke's Garage
+Roadhouse BBQ (id 977, `rejected` — own site's About section states "10
+Years, 3 Stores & 2 Food Trucks"). Same exclusion logic as the Sioux
+Falls/Baltimore/Newark rows elsewhere in this file — recognized
+multi-location brands aren't genuine independents even when absent from the
+`chains` table.
+
+**Dead/stale Overture lead (Philadelphia, PA):** Ruby Chinese Restaurant
+(`discovery_candidates` id 973, `rejected`) — rubychinese.com is a parked
+DomainMarket.com for-sale listing, no restaurant content; the Overture
+website field is stale/wrong for this candidate.
+
+**PA Track B queue refreshed this pass** — 14 fresh independent-looking
+candidates from the same Philadelphia Overture pull seeded as `pending`
+`discovery_candidates` rows (ids 979–992: Larry's Steaks and Hoagies, Crab
+Shack, Asian Fusion & Steak, New Mandarin House Inc, Calabash Restaurant &
+Banquet, The Palace of Indian, City Line Diner and Deli, Fiesta Acapulco,
+Mount Airy Breakfast Boutique, Bizini's, Fritay Lakay, Marathon On The
+Square Restaurant, J & J Pizza, Trio Delight Cafe) for the next PA pass —
+none fetched/vetted yet. Note for that pass: Marathon On The Square
+Restaurant (id 990) has not been checked for a multi-location "Marathon
+Grill" Philadelphia restaurant-group match — verify before treating it as a
+genuine independent.
 | The Choptank - Baltimore (independent, Baltimore MD) | thechoptankbaltimore.com (redirects to thechoptankrestaurant.com) — menu page links to a 2022 dinner-menu PDF | The linked PDF (`Choptank_Dinner_050222.pdf`, dated May 2022) now 404s on the new domain — the site's own menu links are stale/broken, not a bot wall (confirmed via direct curl: HTTP 301 to `/not-found`). | 2026-09-26, first attempt. `discovery_candidates` id 121 left `pending` — needs a WebSearch for a current menu source (the restaurant is real and operating, own site just hasn't updated its menu links) before another attempt. |
 | J-N-J Southern Kitchen (independent, Owings Mills MD) | jnjsouthernkitchenmd.com/menu (the restaurant's own ordering site) | Not a bot block — a structural gap, same "nav mounts, tab content never does" shape as Starbucks/Jersey Mike's. Two categories (Chicken Combos, JNJ Southern Specialties — 36 items) render fully with real descriptions, but Chicken/Sandwiches/Sides/Beverages/Desserts tabs never populate without a click, confirmed via `fetch_rendered.js`. | 2026-09-26, first attempt. `discovery_candidates` id 122 left `pending`, not published this pass — a partial menu missing Sides/Sandwiches/Beverages/Desserts entirely risks a false-clear on unreviewed items for this restaurant, same judgment call as the Milano Pizza row above. Needs a per-tab click-through (bigger job) before publishing. |
 
