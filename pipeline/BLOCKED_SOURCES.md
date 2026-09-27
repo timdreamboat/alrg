@@ -280,3 +280,45 @@ fallback. A paid scraping-proxy/headless-browser service (residential
 or high-reputation IPs) would very likely get past Akamai-class blocks
 like McDonald's programmatically instead of needing a human each time
 — see `pipeline/PAID_UPGRADE_POINTS.md` #4.
+
+**Resolved 2026-09-27 — Bama Hotdogs, Giuseppe's Cafe, and Bob Sykes Bar-B-Q
+(Birmingham/Bessemer, AL), all published.** AL's Track B queue was down to
+one thin `pending` lead (an OpenTable client-ref link, not a real menu
+source), so a fresh `discover_places.py` pull was run against Birmingham,
+AL (10mi radius, 0.75 min confidence) to reseed the state. Three real
+single-location independents worked and published this pass:
+- **Bama Hotdogs** (`restaurants` id 398) — full priced menu, item names
+  and prices only, no per-item ingredient text; flags derived from
+  standard American diner recipe composition per ALRG's cautious-flagging
+  convention.
+- **Giuseppe's Cafe** (id 399) — full dinner menu with real per-item
+  ingredient descriptions for most items, a strong directly-usable
+  source; pesto items flagged `treenut: contains` per the hidden-source
+  "pesto→tree nuts+dairy" rule, Caesar dressing and mayo-based items
+  flagged `egg: may`.
+- **Bob Sykes Bar-B-Q** (id 400) — family-owned single location since
+  1957, full priced menu (item names/prices only); "our dinner plates
+  consist of Bar B Q and choice of two side items and bread" makes bread
+  a fixed component of every plate (`wheat: contains`, not `may`), plus
+  `dairy: may`/`egg: may` for the side-choice ambiguity (mac and cheese,
+  mayo-based sides).
+
+**Rejected this pass (Birmingham, AL) — chains/dead domains, not genuine
+independents:** Salvatore's Pizza and Pasta (confirmed 4-location AL
+chain — Hoover, Birmingham/280, downtown BHM, Chelsea) and Cookie Fix
+(confirmed 3-location chain — Auburn AL, Fairhope AL, Jacksonville FL,
+plus franchise-opportunity language on its own site). Magic Muffins
+(magicmuffinsonline.com) 301-redirects to `gardenbarphx.com`, an
+unrelated Phoenix, AZ business — domain lost/repurposed, same pattern as
+the Mr. Pulpo hijacked-domain finding in Indianapolis. Chris Z's, Inc
+(chriszs.com) now serves an unrelated online gambling site ("SUPER88") —
+same hijacked-domain pattern.
+
+**AL Track B, additional leads found this pass, left `pending` (not
+published):**
+
+| Costa's Famous BBQ (Birmingham AL) | costasfamousbbq.com | Tab-based menu (Appetizers / Plates / Ribs / Chicken / Steaks / Platters / Child's Plate / Potatoes / Sandwiches & Burgers / Salads / Side Items / Pounds To Go / Family Specials / Desserts / Drinks) — only the default "Appetizers" tab rendered via `fetch_rendered.js`; the other 14 category tabs never populated without a click. Single real address confirmed (613 Springville Rd) despite "CALL THE LOCATION NEAREST YOU" boilerplate language. | 2026-09-27, first attempt. Not a bot block — a per-tab click-through gap, same category as J-N-J Southern Kitchen/Milano Pizza. Publishing off the Appetizers tab alone would risk a false-clear on the rest of the menu (mains, sandwiches, sides), so left unpublished this pass. |
+| Eli's Jerusalem Grill (Birmingham AL) | elisjerusalemgrill.com | `fetch_rendered.js` rendered no visible text at all (empty), not diagnosed further this pass | 2026-09-27, first attempt. Needs a diagnostic pass (screenshot/HTML length) before a second clean attempt. |
+| Post Office Pies (Mountain Brook AL) | postofficepies.com/menu | `fetch_rendered.js` rendered real nav chrome but the menu content itself never populated — same "nav mounts, main content never does" shape as Starbucks/Burger King | 2026-09-27, first attempt. Needs a longer settle wait or a diagnostic pass before concluding further. |
+| Snapper Grabbers Land & Sea (Vestavia Hills AL) | snappergrabbers.com | `fetch_rendered.js` rendered real nav chrome and a "VIEW OUR MENU" link but the actual menu content is behind that link/lazy-loaded, only "Load More Content" placeholders showed | 2026-09-27, first attempt. Needs the actual menu page/link followed directly before concluding further. |
+| Taqueria Los Primos (Hoover AL) | taquerialosprimoshoover.e-tab.com | `fetch_rendered.js` rendered only "etabWebOrdering" — an e-tab ordering widget that never surfaced menu content in a single settle-and-read pass | 2026-09-27, first attempt. Same category as the HungerRush/Toast ordering-platform gaps already logged for DiOrio's (Louisville KY) — needs an interactive click-through, not a quick retry. |
