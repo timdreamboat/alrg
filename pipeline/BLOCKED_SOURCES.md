@@ -401,3 +401,48 @@ descriptions — no reconstruction or third-party aggregator needed. Published a
 `restaurants` id 411, `verified=true`, 101 items, `discovery_candidates` id 926 marked
 `promoted`. Worth checking other stuck own-site menu pages for a similarly-named PDF
 link before concluding a structural dead end.
+
+## WV (Charleston/Huntington) pass, 2026-09-27
+
+**Charleston, WV queue exhausted this pass** — the 3 remaining pending
+candidates (out of 15 originally pulled) all hit blocks; all 15 have now
+been touched (3 promoted, 9 rejected as chains, 3 pending-blocked below).
+Per COVERAGE_PLAN.md's add-a-second-city rule, added Huntington/Barboursville
+as a second WV metro and ran a fresh `discover_places.py` pull there (8mi,
+0.7 min confidence) — 294 raw candidates, 29 genuine independents seeded.
+
+| Tidewater Grill (Charleston WV, `discovery_candidates` id 189) | tidewatergrillrestaurant.com | Plain WebFetch: HTTP 503. `fetch_rendered.js` (two attempts, one retried after a 3s backoff): "upstream request failed" both times. | 2026-09-27, first attempt (multiple hits, but all in the same session) — not yet confirmed hard-blocked per this file's own rule. Left `pending`, needs a second separate-pass attempt. |
+| Dem 2 Brothers and a Grill Downtown (Charleston WV, `discovery_candidates` id 192) | direct.chownow.com/order/25221/locations | Cloudflare block page: "Sorry, you have been blocked" (ChowNow's own ordering-platform domain, not the restaurant's own site — no other URL on file for this candidate). | 2026-09-27, first attempt. Left `pending`, needs a second separate-pass attempt or a WebSearch for a non-ChowNow source. |
+| Guadalajara Modern Mexican (Belle WV, `discovery_candidates` id 196) | toasttab.com/local/order/guadalajara-modern-mexican-new | Cloudflare "Performing security verification" challenge — same Toast-ordering-page signature seen repeatedly elsewhere in this file (Pembroke Pizza, Racca's, DiOrio's Prospect location). | 2026-09-27, first attempt. Left `pending`, needs a second separate-pass attempt. |
+
+**Not independent — domain hijack found this pass (Huntington, WV):**
+Savannah's Bistro (`discovery_candidates` id 935, savannahsbistro.net) —
+WebFetch 301-redirects to an entirely unrelated pediatric endocrinology
+hospital site (littlemiraclechildrenhospital.com), no restaurant content
+anywhere despite the restaurant's name still appearing in Overture's lead
+data. Same domain-hijack pattern as Taste Of India Grill (Bountiful UT,
+logged above) and the Magic Muffins/Chris Z's finding from an earlier AL
+pass. Marked `rejected` — needs a WebSearch for a current URL or aggregator
+listing before concluding the restaurant itself has closed.
+
+**Resolved 2026-09-27 — three Huntington, WV independents published.**
+The Grill on Third (1513 3rd Ave, `restaurants` id 412) — full, complete
+own-site menu (`thegrillonthird.com`) with real per-item ingredient text
+across every section (starters, handhelds, salads, soups, beef/chicken/
+seafood entrees, pasta, sides, brunch, lunch), 82 audited items, no
+reconstruction needed. Nawab Fine Indian Cuisine (600 4th Ave, `restaurants`
+id 413) — full own-site menu (`nawabwv.com/menu-1`) with real per-item
+descriptions and prices, 117 audited items, same cautious flagging
+conventions as Himalayan Indian Cuisine above (dairy/treenut/shellfish
+called out per dish, naan/bread items wheat:contains). Jim's Steak and
+Spaghetti House (920 5th Ave, `restaurants` id 414) — James Beard Award-
+recognized, family-owned since 1938; own-site homepage/menu page only
+teased items, but its 4 linked menu PDFs (Lunch, Dinner, Kids) rendered as
+raw binary via WebFetch's PDF-to-text path — worked around by reading the
+saved PDF files directly with the PDF-capable file reader instead, which
+extracted the full real menu text and prices cleanly. 57 audited items.
+None are national chains — three distinct single-location independents,
+own domains, no chain-table or multi-location match. `discovery_candidates`
+ids 934 (Grill on Third), 936 (Jim's), 937 (Nawab) marked `promoted`.
+26 more Huntington/Barboursville candidates left `pending` for a future
+WV pass.
