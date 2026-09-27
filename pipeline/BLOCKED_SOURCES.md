@@ -439,6 +439,27 @@ was rate-limited for several minutes at the start of this pass).
 | Silver Fox Steakhouse (independent, Casper WY) | silverfoxcasper.com | First hit: Cloudflare "Checking the site connection security" cookie-check interstitial. Retry (10s settle): plain `403 - Forbidden`. Two different signatures in the same session — same-session throttling-confounded, not a confirmed block. | 2026-09-27, first attempt. `discovery_candidates` id 907 left `pending`, needs a second separate-pass attempt. |
 | Racca's Pizzeria Napoletana (independent, Casper WY) | raccaspizzeria.com/menu | Not a bot block — real content renders (confirmed via `fetch_rendered.js`, both a 6s and 15s settle wait) but only the "STARTERS" tab (8 items) ever populates; the other 10 category tabs (Brunch, Salads, Sandwiches, Signature Dishes, Italian Classics, Assemble Your Own Pizza, Specialty Pizzas, Bambini/Kids, Desserts, Pickup Bundles) never load without a click — same "nav mounts, tab content does not" structural gap as J-N-J Southern Kitchen (Owings Mills MD). Its own linked "Allergen Guide" turned out to be a third-party Picknic widget (search.picknic.app) — a curated dietary-feature summary (Gluten-Free/Vegan/Vegetarian/Dairy-Free "featured items" callouts), not a full per-item allergen matrix, so it doesn't substitute for the missing 10 tabs either. Its Toast ordering page (toasttab.com/raccas-pizzeria) hit a Cloudflare "Performing security verification" challenge, same as other Toast links elsewhere in this file. | 2026-09-27, first attempt. `discovery_candidates` id 929 left `pending`, not published — a menu missing 10 of 11 categories risks a false-clear on all the unreviewed items, same judgment call as Milano Pizza/J-N-J above. Needs a per-tab click-through (bigger job) before publishing. |
 
+| Cuts Steakhouse (independent-looking, Atlanta GA) | cutsatlanta.com (root, /downtown, /menu-downtown) | Cloudflare bot-challenge ("Just a moment...") on every page tried, via both WebFetch and a direct curl with a browser user-agent — HTTP 403, no menu content reachable. Also turned out NOT to be a single independent: a second "Cuts Steakhouse Sugarloaf" location (1500 Satellite Blvd NW, Suwanee GA) exists on the same domain (parallel /downtown and /sugarloaf pages) — would need the shared-menu-across-locations treatment (same pattern as Clasica Victoria) if this site is ever unblocked. | 2026-09-27, first attempt. `discovery_candidates` id 993 left `pending` — needs a second separate-pass attempt before this can move to "Confirmed hard blocks" per this file's own rule. |
+
+**Resolved 2026-09-27 — Mojo Pizza and Pub (Decatur, GA), published.** Real own-site
+PDF menu (mojopizzanpub.com/menu, revised 2024-08-07) — image-based, no text layer, so
+rendered and read directly rather than parsed as text. Single confirmed location
+("Celebrating 26 years!", no other locations found). Published as `restaurants` id 418,
+`verified=false`, 40 audited items. `discovery_candidates` id 995 marked `promoted`.
+
+**Resolved 2026-09-27 — Yalla (Krog Street Market, Atlanta GA), published with a
+disclosed weaker source.** Yalla's own site (yallaatl.com) has no itemized menu text —
+the Menu link routes to an order.online storefront that 403'd, and a Squarespace /menu
+path 404s. Full itemized menu instead compiled from a third-party aggregator
+(allmenus.com), cross-checked against the general dish descriptions given on the
+official site for consistency (bowls/pita/laffa, herb-filled falafel, chicken shawarma,
+a near-exact Sabich description) — real but weaker than a restaurant-published source,
+disclosed as such in `source_document`. Also not a strict single independent: part of
+the local "Rye Restaurants" group (different concepts, not more Yalla branches) and has
+a second Yalla location (The Canteen, Georgia Tech) per web search, not independently
+confirmed — only the Krog Street Market location was published. `restaurants` id 419,
+`verified=false`, 29 audited items. `discovery_candidates` id 994 marked `promoted`.
+
 **Resolved 2026-09-27 — Himalayan Indian Cuisine (Casper, WY), published.** Own-site
 `himalayanindiancuisine.com` menu page and `/menu/` path are both partial/broken (a
 "Popular Dishes" teaser of 6 items, and a 500 error respectively), but link-extraction
