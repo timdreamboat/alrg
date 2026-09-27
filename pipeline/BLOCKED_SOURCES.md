@@ -364,3 +364,23 @@ fetch attempt. Milano Pizza (id 535, New Castle DE) already logged above
 (2026-09-26) as unresolved — own domain dead, singleplatform.com listing
 too thin to publish from; still `pending`. Sid's at C26 - BBQ & Jerky (id
 733, Claymont DE) not attempted this pass — next DE pass's work.
+
+**VA (Virginia Beach) Track B, this pass (2026-09-27) — published Racha
+Thai Cuisine and J&K Style Grill (see ops_log `batch_published`); other
+candidates attempted but not publishable, all structural gaps, not bot
+blocks:**
+
+| Pembroke Pizza (already `pending`, id 519) | pembrokepizza.com and /menu | Homepage and `/menu` both only name categories (pan pizza, hot subs, pasta, wings, cannoli) with no itemized list. The linked Toast ordering page (`order.toasttab.com/online/pembroke-pizza2-633-independence-boulevard`) hit a Cloudflare "Performing security verification" checkpoint via `fetch_rendered.js` — worth checking whether this is a toasttab.com-wide block from this sandbox (would affect many other independents that route through Toast), not just this one restaurant. | 2026-09-27, first attempt at the Toast page specifically (site itself attempted before, per its 2026-09-23 discovery). Left `pending`. |
+| China Ocean (already `pending`, id 526) | chinaoceanvb.com order-online page | Not a bot block — an accordion/click-required gap. `fetch_rendered.js` renders "Specialties" and "Appetizers" in full (29 items with real descriptions) but the remaining ~19 categories (Soup, Fried Rice, Chow Mein, Chop Suey, Egg Foo Young, Lo Mein, Chow Mei Fun, Chicken, Beef, Sweet & Sour, Seafood, Pork, Moo Shu, Vegetable, Special Diet, Combination Dinner, Chef's Specialties, Party Catering) never expand without a click — same "nav mounts, most content never does" shape as several chains above. Publishing off just 2 of ~21 categories would risk a false-clear on the unreviewed majority of the menu (same judgment call as Milano Pizza/J-N-J Southern Kitchen), so left unpublished. | 2026-09-27, first attempt at the actual ordering page (raw HTML confirmed no embedded JSON to read around the click requirement). Needs a per-category click-through before concluding a full menu can be extracted. |
+| Kyushu Japanese Restaurant (already `pending`, id 525) | kyushujapanese.com | TLS handshake through the sandbox proxy never completed (CONNECT tunnel established, then hung) on both the homepage and `/menu` — not a bot-block signature, looks like a dead/misconfigured server. | 2026-09-27, first attempt. Needs a retry next pass before concluding a permanent outage. |
+| Interlude at Westin Downtown Restaurant (already `pending`, id 523) | westinvirginiabeach.com/westin-restaurant-and-bar | Domain redirects to a Marriott.com hotel page, which itself returned HTTP 403 (Marriott's own bot-check, not this restaurant's). This is a hotel restaurant on a major hotel brand's domain, not a national restaurant chain — still fine for Track B if a working source is ever found. | 2026-09-27, first attempt. Needs a WebSearch for a standalone menu source before another attempt. |
+
+Two new genuine independents published this pass instead (own-site menus,
+full item text, no chain-table or multi-location match): Racha Thai
+Cuisine (805 Battlefield Blvd N, Chesapeake — `restaurants` id 405) and
+J&K Style Grill (6557 College Park Square, Virginia Beach — `restaurants`
+id 406, College Park location only; the site also mentions a General
+Booth location not yet added). Lat/lng for both taken directly from the
+Overture discovery-lead record rather than re-geocoding via Nominatim
+(open dataset coordinates, not Google-restricted data — Nominatim itself
+was rate-limited for several minutes at the start of this pass).
