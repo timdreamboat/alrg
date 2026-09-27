@@ -386,3 +386,18 @@ Booth location not yet added). Lat/lng for both taken directly from the
 Overture discovery-lead record rather than re-geocoding via Nominatim
 (open dataset coordinates, not Google-restricted data — Nominatim itself
 was rate-limited for several minutes at the start of this pass).
+
+| HQ Southern BBQ (independent, Evansville/Casper WY) | hq-bbq.com | `fetch_rendered.js` returned "upstream request failed" on two attempts (plain and 8s settle) | 2026-09-27, first attempt. Both hits were in the same session so not confirmed hard-blocked per this file's own rule — `discovery_candidates` id 917 left `pending`, needs a second separate-pass attempt. |
+| Silver Fox Steakhouse (independent, Casper WY) | silverfoxcasper.com | First hit: Cloudflare "Checking the site connection security" cookie-check interstitial. Retry (10s settle): plain `403 - Forbidden`. Two different signatures in the same session — same-session throttling-confounded, not a confirmed block. | 2026-09-27, first attempt. `discovery_candidates` id 907 left `pending`, needs a second separate-pass attempt. |
+| Racca's Pizzeria Napoletana (independent, Casper WY) | raccaspizzeria.com/menu | Not a bot block — real content renders (confirmed via `fetch_rendered.js`, both a 6s and 15s settle wait) but only the "STARTERS" tab (8 items) ever populates; the other 10 category tabs (Brunch, Salads, Sandwiches, Signature Dishes, Italian Classics, Assemble Your Own Pizza, Specialty Pizzas, Bambini/Kids, Desserts, Pickup Bundles) never load without a click — same "nav mounts, tab content does not" structural gap as J-N-J Southern Kitchen (Owings Mills MD). Its own linked "Allergen Guide" turned out to be a third-party Picknic widget (search.picknic.app) — a curated dietary-feature summary (Gluten-Free/Vegan/Vegetarian/Dairy-Free "featured items" callouts), not a full per-item allergen matrix, so it doesn't substitute for the missing 10 tabs either. Its Toast ordering page (toasttab.com/raccas-pizzeria) hit a Cloudflare "Performing security verification" challenge, same as other Toast links elsewhere in this file. | 2026-09-27, first attempt. `discovery_candidates` id 929 left `pending`, not published — a menu missing 10 of 11 categories risks a false-clear on all the unreviewed items, same judgment call as Milano Pizza/J-N-J above. Needs a per-tab click-through (bigger job) before publishing. |
+
+**Resolved 2026-09-27 — Himalayan Indian Cuisine (Casper, WY), published.** Own-site
+`himalayanindiancuisine.com` menu page and `/menu/` path are both partial/broken (a
+"Popular Dishes" teaser of 6 items, and a 500 error respectively), but link-extraction
+found the real source: `Menu_new_prices.pdf`, a genuine own-site 8-page PDF with every
+category (appetizers, soups/salad, chicken/lamb/seafood entrées, biryani, tandoori,
+Himalayan specials, naan/breads, sides, beverages, desserts) and full prices/ingredient
+descriptions — no reconstruction or third-party aggregator needed. Published as
+`restaurants` id 411, `verified=true`, 101 items, `discovery_candidates` id 926 marked
+`promoted`. Worth checking other stuck own-site menu pages for a similarly-named PDF
+link before concluding a structural dead end.
