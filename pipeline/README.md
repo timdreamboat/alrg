@@ -355,6 +355,33 @@ pass doesn't have to rediscover it), and move on. Never fall back to
 guessing chain allergen data from third-party aggregators — that
 remains a hard no per `chain-menu-importer`.
 
+## Chains with no single-matrix US source — Jersey Mike's, Wendy's, Starbucks
+
+Found 2026-09-28: these 3 chains are a different failure mode than
+`BLOCKED_SOURCES.md`'s bot-wall list — no technical block was hit, there
+just isn't one downloadable/static allergen matrix on the US site to
+find. All three US sites only expose a per-item interactive nutrition
+calculator (pick category → product → size, one item's allergen data at
+a time via a JS-rendered tool), not a single page or PDF covering the
+whole menu. The only static PDFs discoverable were international
+versions on the same corporate domain — `jerseymikes.ca` (Canada) and a
+UK menu at `wendys.com/sites/default/files/.../Core%20Menu.pdf` — and
+both use the EU/UK 14-allergen taxonomy (Celery, Gluten Barley/Rye,
+Mustard, etc.) on a genuinely different regional menu, not the US FDA-9
+menu. Per the honesty rule above, a different country's menu is not a
+valid substitute for the US chain's data, so these were left
+`analyzed_at IS NULL` rather than imported from the wrong market.
+Starbucks wasn't even searched past this point once the same pattern
+repeated a third time.
+
+**Not logged in `BLOCKED_SOURCES.md`** — that file is specifically for
+confirmed bot/WAF walls needing a human-provided seed; this is a
+different, "keep searching or scrape per-item" situation. A future pass
+could attempt scripted per-item interaction with the calculator (pick
+each product/size combination and read the resulting allergen panel) if
+these chains come up again with nothing better available — not attempted
+this pass given the volume of items each of these three menus has.
+
 ## Hard blocks that need a human — pipeline/BLOCKED_SOURCES.md
 
 Some blocks (McDonald's Akamai WAF "Access Denied" is the confirmed case
