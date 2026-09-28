@@ -655,3 +655,21 @@ no `chains`-table or multi-location match.
 
 | Quinton's Bar & Deli (independent-ish, Iowa City/Coralville/Des Moines/Cedar Rapids IA — real 4-location local brand confirmed via its own site nav, `discovery_candidates` id 239) | quintonsbaranddeli.com/food | Client-rendered shell — `fetch_rendered.js` only shows a "View menu" button, no item content mounts, and the page has no static hrefs to follow (checked via raw curl). Plain `http://` also hit the sandbox proxy's "plain-HTTP not supported" relay message before the `https://` retry. | 2026-09-27, first attempt. Not a bot block — a client-rendered-menu-modal structural gap. Needs a screenshot or a click-through on "View menu" before concluding further; not inserted/rejected. |
 | Sharon's Place Hawaiian Restaurant (independent, Derby KS, `discovery_candidates` id 804) | ordersharonsplace.com | `fetch_rendered.js`: `net::ERR_TUNNEL_CONNECTION_FAILED`, page rendered but visible text empty — looks like transient network/proxy failure, not a real block (note: this candidate's `source_updated` is 2021-10-13, the oldest Overture record seen so far per `COVERAGE_PLAN.md`'s staleness warning — worth extra skepticism the restaurant still operates as described even once fetchable). | 2026-09-27, first attempt. Needs a clean retry before concluding anything. |
+
+**Resolved 2026-09-28 — VT (Burlington/Essex Junction) Track B pass, 4 published.** Jericho
+Cafe & Tavern (`restaurants` id 462, 88 items) from its own site, jerichocafeandtavern.com/menu
+— a strong own-site source with full ingredient descriptions across brunch/lunch/dinner/dessert.
+Rocky's NY Pizza and Ice Cream (id 464, 63 items) from the restaurant's own live SpotOn ordering
+platform (order.spoton.com) after the own-domain menu page 404'd. Zachary's Pizza, South
+Burlington (id 465, 67 items) and El Gato Cantina, Essex Junction (id 463, 64 items) both from
+Allmenus.com after their own-site PDF link and menu page respectively came back empty/403'd —
+`source_document` on both honestly notes the third-party-source status per README's rule.
+
+**Not independent — national franchise identified this pass (VT).** Wings Over Burlington
+(`discovery_candidates` id 60, 150 Dorset St, South Burlington) rejected — confirmed via
+WebSearch to be Wings Over USA/Wings Over America, a national takeout/delivery wing chain
+with 30+ locations across college towns nationwide, operating since 1999. Not in the `chains`
+table, but the same exclusion logic already applied to Giliberto's/The Attic/Murphy's/Tavolo in
+prior passes — a recognized multi-location brand isn't a genuine independent. Worth a future
+`chain-menu-importer` pass on Wings Over USA given its real national footprint (not attempted
+this pass, out of scope for a routine Track B hourly pass).
