@@ -200,10 +200,16 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       in parallel — db-publisher's address-dedup check and Nominatim
       geocoding (1 request/second, hard rate limit) both need to run
       serially against the shared database or they'll race each other.
-      Publish on PASS or PASS WITH CORRECTIONS with no owner review. Only
-      open a needs-owner card on a second consecutive audit fail for the
-      same target, or a safety-relevant community report. Update the
-      GitHub Projects board per CLAUDE.md."
+      Subagents report their findings back to the main thread; the main
+      thread alone writes to ops_log, BLOCKED_SOURCES.md, and this
+      repo's git history, with ONE commit and push per firing at the
+      end, after all subagents finish — never let a subagent commit or
+      push on its own, that's how concurrent git writers from the same
+      firing corrupt this repo's history. Publish on PASS or PASS WITH
+      CORRECTIONS with no owner review. Only open a needs-owner card on
+      a second consecutive audit fail for the same target, or a
+      safety-relevant community report. Update the GitHub Projects
+      board per CLAUDE.md."
    (2026-09-28: added the 6-way parallel-subagent instruction for Track B
    — previously the routine processed one independent restaurant per
    firing, serially, which was the main throughput bottleneck. Chain
