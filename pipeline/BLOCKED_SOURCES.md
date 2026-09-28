@@ -673,3 +673,20 @@ table, but the same exclusion logic already applied to Giliberto's/The Attic/Mur
 prior passes — a recognized multi-location brand isn't a genuine independent. Worth a future
 `chain-menu-importer` pass on Wings Over USA given its real national footprint (not attempted
 this pass, out of scope for a routine Track B hourly pass).
+
+**Resolved 2026-09-28 — WY (Casper) Track B pass, 2 published.** Racca's Pizzeria Napoletana
+(`restaurants` id 466, 79 items) from the restaurant's own menu page (raccaspizzeria.com/menu)
+combined with its Picknic-partnered allergen guide (search.picknic.app/biz/raccas-pizzeria-casper)
+— a genuinely strong two-source combination, own menu + a dedicated allergen-safety platform
+with per-category (gluten/dairy/egg/soy/peanut/tree-nut/fish/shellfish/wheat) guidance and named
+ingredients (pine nuts in the house pesto, anchovies in Caesar dressing, soy in the Calabrian wing
+sauce). Shogun Restaurant (id 467, 127 items) from its own MenuSifu-powered ordering platform
+(order.shogunwy.com) — full menu with per-item ingredient descriptions for nearly every roll and
+appetizer; the site's own hibachi-dinner/combo descriptions state every hibachi entree is served
+with 2 pcs of shrimp regardless of the named protein, which is reflected as a shellfish flag across
+that whole section rather than only on items named "shrimp."
+
+| Silver Fox Steakhouse (independent, Casper WY, `discovery_candidates` id 907) | silverfoxcasper.com | Plain WebFetch returned empty content; `fetch_rendered.js` (https, 8s wait) got a genuine HTTP 403 Forbidden page | 2026-09-28, first attempt. Left `pending` — needs a second separate clean attempt before concluding a real bot wall vs. transient. |
+| Tacos Mexico (independent, Casper WY, `discovery_candidates` id 911) | tacosmexicocasper.com | DNS lookup failure (`ENOTFOUND`) — domain does not resolve at all | 2026-09-28, first attempt. Same failure shape as the Rose City Fish Market row above — needs a WebSearch for a current URL/aggregator listing before concluding a permanent close. |
+| The Cheese Barrel (independent, Casper WY, `discovery_candidates` id 930) | caspercheesebarrel.com | DNS lookup failure (`ENOTFOUND`) — domain does not resolve at all | 2026-09-28, first attempt. Same DNS-dead pattern as Tacos Mexico above — needs a WebSearch for a current URL before concluding a permanent close. |
+| Hokkaido Ramen (independent, Casper WY, `discovery_candidates` id 922) | casperhokkaido.com and /menu | Both pages render real restaurant info (phone, address, hours) but no menu item content — the site links out to `order.mealkeyway.com` for the actual menu/ordering, not yet fetched this pass | 2026-09-28, first attempt. Not a block — a structural gap (menu lives on a separate ordering platform not yet checked), same shape as several resolved rows above. Left `pending`. |
