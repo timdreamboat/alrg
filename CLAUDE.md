@@ -93,24 +93,30 @@ GitHub Actions (`.github/workflows/nightly.yml`) exists only as a fallback
 if Routines are ever unavailable; don't mention it otherwise.
 
 Each firing, in priority order (superseded in full detail by
-`pipeline/COVERAGE_PLAN.md`, owner decision 2026-09-23 — read that file,
-this is just the summary):
+`pipeline/COVERAGE_PLAN.md`, owner decisions 2026-09-23 and
+2026-09-28 — read that file, this is just the summary):
 1. Any chain in `chains` with `analyzed_at IS NULL`? Run chain-menu-importer
    on it — one-time menu analysis only, not location discovery (that's
-   step 3, capped and lower priority — see below for why).
-2. Else, any US state with `count(restaurants) < 50`? Work it with the
-   restaurant-menu-extractor → allergen-analyzer → qa-allergen-auditor →
-   db-publisher flow on independents, using that state's `metros`
-   row(s) as the starting point. This is the primary lever now
-   (2026-09-23 owner decision) — independents are the coverage gap that
-   matters; chains are standardized, lower-risk, and not worth chasing
-   address-by-address.
-3. Else, any US state still under 50 after a real independent pass?
-   Find an already-analyzed chain's real locations there (Overpass
-   brand-tag query first, chain's own store locator as fallback) and
-   copy its already-audited menu into a new `restaurants` row per
-   location, capped at ~8 locations per chain per state — no fresh
-   menu/allergen analysis, ever, for a chain location.
+   step 3, gated and lower priority — see below for why).
+2. Else, any US state with `count(restaurants) < 50` and independent
+   candidates still available (no logged `independent_well_dry` for
+   that state)? Work it with the restaurant-menu-extractor →
+   allergen-analyzer → qa-allergen-auditor → db-publisher flow on
+   independents, using that state's `metros` row(s) as the starting
+   point. This is the primary lever now (2026-09-23 owner decision) —
+   independents are the coverage gap that matters; chains are
+   standardized, lower-risk, and not worth chasing address-by-address.
+3. Else, any US state still under 50 **whose independent well has
+   genuinely run dry** (2026-09-28 owner decision — tightened from "one
+   attempt" to actually exhausted; see `pipeline/COVERAGE_PLAN.md`'s
+   "run dry" test)? Find an already-analyzed chain's real locations
+   there (Overpass brand-tag query first, chain's own store locator as
+   fallback) and copy its already-audited menu into a new `restaurants`
+   row per location, capped at ~8 locations per chain per state — no
+   fresh menu/allergen analysis, ever, for a chain location. Expect
+   this step to do close to nothing for a long stretch while
+   independent candidates are still available almost everywhere — that
+   is the intended effect, not a bug.
 4. Else — every state at 50+ and the chains backlog empty, nationwide
    coverage reached for the current target — switch to maintenance mode:
    a freshness sweep on the oldest-`last_reviewed` restaurants. Report

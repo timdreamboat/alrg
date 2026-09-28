@@ -92,6 +92,42 @@ says.
 
 ---
 
+## Give allergen-analyzer the auditor's own checklist up front
+
+Throughput note, 2026-09-28: about 1 in 5 independent restaurants have
+been failing qa-allergen-auditor's pass-1 review and needing the
+automatic retry (e.g. CAET Seafood, 22.7% discrepancy; Li's Noodles,
+5%; both PASS WITH CORRECTIONS on pass 2, both real safety catches, not
+false positives). That's working exactly as designed — the auditor did
+its job — but every retry costs a second extractor/analyzer/audit cycle,
+and the misses cluster around a small, predictable set of prep patterns
+the auditor already knows to look for
+(`skills/qa-allergen-auditor/SKILL.md` step 3's hidden-source list) but
+`allergen-analyzer` isn't necessarily applying as proactively on its
+first pass. Recurring patterns actually caught on retry so far:
+- Fried/battered/breaded items ("crispy", "fritter", tempura-style) →
+  wheat (batter/coating) and often egg (batter or egg wash), even when
+  the core ingredient itself isn't a wheat/egg source.
+- Brioche, pastry, pie/tart crust, or other laminated/enriched dough as
+  a component (not just standalone bread) → dairy and egg, from the
+  dough itself, not just an obvious "contains bread" case.
+- Classic preparations that imply an allergen by name even without an
+  explicit ingredient list (piccata → egg/dairy in the sauce base;
+  "board"/charcuterie accompaniments → treenut from spreads or candied
+  nuts commonly served alongside).
+
+**When running allergen-analyzer for ALRG, apply these three patterns
+during the first pass**, the same way the peanut-oil override above is
+applied — don't wait for the audit to catch them. This doesn't relax
+the auditor at all (it keeps re-deriving independently and catching
+whatever's left) — it just aims to shrink the fraction of batches that
+need a second extractor/analyzer/audit cycle before publishing, since
+each retry is real pipeline throughput spent on a now-predictable miss.
+If a batch still fails audit for a different reason, that's the system
+working as intended, not a problem with this note.
+
+---
+
 ## Capture real ingredients, not just allergen flags
 
 The owner wants menu items in the app to expand and show real ingredient
@@ -155,18 +191,38 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
    clears as fast as the audit pipeline can sustain:
      "Every hour, follow CLAUDE.md's autonomous priority order exactly:
       chains first, then metros, then maintenance mode once both are
-      empty. Publish on PASS or PASS WITH CORRECTIONS with no owner
-      review. Only open a needs-owner card on a second consecutive audit
-      fail for the same target, or a safety-relevant community report.
-      Update the GitHub Projects board per CLAUDE.md."
+      empty. When working Track B (independents), pull up to 6 pending
+      candidates from discovery_candidates for the target state/metro
+      (fewer if that many aren't available) and process them CONCURRENTLY
+      as parallel subagent tasks, each running restaurant-menu-extractor
+      -> allergen-analyzer -> qa-allergen-auditor to completion
+      independently. Then publish one at a time in the main thread, not
+      in parallel — db-publisher's address-dedup check and Nominatim
+      geocoding (1 request/second, hard rate limit) both need to run
+      serially against the shared database or they'll race each other.
+      Publish on PASS or PASS WITH CORRECTIONS with no owner review. Only
+      open a needs-owner card on a second consecutive audit fail for the
+      same target, or a safety-relevant community report. Update the
+      GitHub Projects board per CLAUDE.md."
+   (2026-09-28: added the 6-way parallel-subagent instruction for Track B
+   — previously the routine processed one independent restaurant per
+   firing, serially, which was the main throughput bottleneck. Chain
+   imports and Track A chain-copy stay serial/scripted, no change there.
+   **This prompt is saved on claude.ai, not in this repo — editing this
+   file alone does not change the live Routine's behavior.** If a Routine
+   is already scheduled, open it at claude.ai/code/routines and replace
+   its saved prompt with the text above, then "Run now" once to confirm
+   it actually fans out before trusting the next hourly fire.)
    One-time setup in the routine's environment settings: widen network
    access beyond the default "Trusted" allowlist (Custom or Full) — the
    extractor and chain-importer both need to reach ordinary restaurant and
    chain websites, not just package registries. Test with "Run now" before
    trusting the hourly fire. Watch subscription usage at
-   claude.ai/settings/usage for the first few days at this cadence and dial
-   the interval back (e.g. every 4 hours) if it's burning faster than
-   expected — hourly is the ceiling, not a fixed requirement.
+   claude.ai/settings/usage for the first few days at this cadence — a
+   6-way fan-out burns noticeably more usage per firing than one
+   restaurant did — and dial the interval back (e.g. every 4 hours) or
+   the batch size down if it's burning faster than expected. Hourly and
+   6-per-firing are ceilings to test against, not fixed requirements.
 
 C) GITHUB ACTIONS (fallback only, not the default): use only if Routines
    are ever unavailable. Enable .github/workflows/nightly.yml and add repo

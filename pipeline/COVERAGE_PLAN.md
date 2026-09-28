@@ -19,6 +19,22 @@ priority list below — Track B (independents) runs before Track A
 (chain expansion) for any under-50 state, and Track A is capped per
 chain per state so it tops states up rather than dominating them.
 
+**2026-09-28 update — Track A gate tightened, and it's now nationwide,
+not per-state.** Original wording above ("any under-50 state... after
+a real independent-discovery attempt") let Track A fire for a state
+after just one independent pass came up short. Owner decision
+2026-09-28: that's too early — chain-location copying should not
+start ANYWHERE until independent discovery has genuinely been
+exhausted, state by state, everywhere it's going to be tried. A single
+thin pass isn't exhaustion. See the redefined trigger in "Track A —
+chain location expansion" below and the updated priority order — step
+3 (Track A) is now gated on a state's independent well being **run
+dry**, not merely attempted, and this applies across all 50 states
+before Track A does any real volume of work, not state-by-state in
+isolation. Until then, a state under 50 with independent candidates
+still available just... stays under 50 and gets worked again next
+pass. That's expected, not a bug.
+
 1. **APIs stay off until user adoption is real.** Map/geocoding
    (Mapbox) and place discovery/contact data (Google Places) remain on
    their free substitutes — see `pipeline/PAID_UPGRADE_POINTS.md`. That
@@ -176,12 +192,40 @@ This doesn't change the audit/publish rules at all — it only replaces
 slow part (menu/allergen analysis) has real leads to work through
 immediately instead of spending pipeline time on discovery guesswork.
 
-### Track A — chain location expansion (supplement only, capped)
+### Track A — chain location expansion (supplement only, capped, gated)
 
 Chains are lower-value to expand exhaustively — they're standardized,
 already publish their own allergen info, and one McDonald's is a lot
 like the next. Use Track A to **top up** a state that's still short of
-50 after a real independent-discovery attempt, not as the first move.
+50 — but only once that state's independent well has genuinely **run
+dry**, not just after one attempt.
+
+**"Run dry" — the operational test (owner decision, 2026-09-28):**
+a state's independent well counts as dry only when, in the same or a
+recent pass:
+1. `discover_places.py` has been run against every `metros` row
+   currently seeded for that state (adding a second/third city per
+   `COVERAGE_PLAN.md`'s existing "don't stall on one metro" guidance
+   if the seeded city's radius is clearly exhausted), AND
+2. After filtering out chains, existing `restaurants` rows, and
+   already-`rejected` candidates, the pull returns **zero new viable
+   pending candidates** for that state — nothing left to insert into
+   `discovery_candidates`, AND
+3. `discovery_candidates` has no remaining `pending` rows for that
+   state either (they've all been worked to published/promoted or
+   rejected).
+
+Log this with an `ops_log` entry (`event: independent_well_dry`,
+`detail: {state, metros_tried, last_checked}`) the first time a state
+hits this — same spirit as `pipeline/BLOCKED_SOURCES.md` for chains.
+Once logged, don't re-run the full check on that state every single
+pass (Overture data does refresh, so recheck occasionally — e.g. once
+every couple weeks — rather than never again, same retry cadence
+already used for blocked chain sources). Only states with a logged
+`independent_well_dry` entry (or a fresh recheck confirming it's still
+dry) are eligible for Track A. A state that's merely under 50 with
+candidates still sitting in `discovery_candidates` is NOT eligible —
+keep working it with Track B.
 
 **Cap: at most ~8 locations per chain per state.** The goal is
 covering the chain's real presence in that state, not enumerating
@@ -264,15 +308,24 @@ detail lives here, `CLAUDE.md` should point at this file:
    still highest leverage as a one-time investment — a chain not yet
    analyzed can't be expanded later, but this step does NOT chase
    location addresses, just the one-time menu analysis).
-2. Any state with `count(restaurants) < 50` -> Track B (independent
-   restaurants) first, via that state's `metros` row(s).
-3. Any state still `< 50` after a real independent-discovery attempt
-   -> Track A (chain location expansion), capped at ~8 locations per
-   chain per state, spread across chains not yet represented there
-   rather than piling onto one.
+2. Any state with `count(restaurants) < 50` AND independent candidates
+   still available (no logged `independent_well_dry`, or pending rows
+   still sit in `discovery_candidates`) -> Track B (independent
+   restaurants), via that state's `metros` row(s).
+3. Any state still `< 50` **with a logged `independent_well_dry`**
+   (2026-09-28: genuinely exhausted, not just attempted once — see
+   Track A above) -> Track A (chain location expansion), capped at ~8
+   locations per chain per state, spread across chains not yet
+   represented there rather than piling onto one. A state under 50
+   without a dry well is NOT eligible yet — falls back to step 2.
 4. All 50 states >= 50 and chains backlog empty -> maintenance mode
    (freshness sweep), same as before. Report "coverage complete"
    once, same rule as before.
+
+Note: because step 3 now requires a dry well, it's realistic that
+Track A does close to nothing for a long stretch while Track B still
+has candidates everywhere — that's the intended effect of the
+2026-09-28 decision, not a sign something's broken.
 
 ## What doesn't change
 
