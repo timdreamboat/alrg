@@ -145,6 +145,23 @@ event `chain_imported`, 2026-09-24).
 | The Fountain Room (independent, Indianapolis IN) | thefountainroom.com; real menu lives at clancyshospitality.orderexperience.net/68b05eafb9edfd5469056694/menu (Paytronix ordering widget) | `fetch_rendered.js` (12s wait) rendered the Paytronix widget's real nav chrome and full category list (Brunch Starters, Soup & Salads, Breakfast Specialties, Sandwiches, etc.) but no item content under any category — same "nav mounts, item content never does" structural gap already logged for Starbucks/Jersey Mike's/Wendy's, not a bot block. | 2026-09-26, first attempt. `discovery_candidates` row (id 784) left `pending` — would need a per-category click-through (bigger job than a routine hourly pass), not a quick retry. |
 | K and K Bar B-Que Inn (independent, Kailua HI) | kkbarbequeinnincorporated.food73.com (Overture's website field) | The food73.com URL 301-redirects to a third-party aggregator (foodeist.com/place/k-and-k-barbeque-inn-incorporated) that has no real itemized menu — only dish names mentioned inside customer reviews (spicy fried chicken, garlic shrimp, garlic chicken, BBQ short ribs/chicken, lemon chicken, mochiko chicken, loco moco), no prices or ingredient text. Not a bot block — the restaurant's own site (food73.com, a menu-hosting platform) appears to have been retired in favor of this thin aggregator profile. | 2026-09-28, first attempt. `discovery_candidates` row (id 287) left `pending` — needs a WebSearch for a current own-site/social-media/ordering-platform URL, or a Facebook/Instagram check, before concluding no real source exists; not promoted this pass. |
 
+| Miku Japanese Cuisine (independent, Barrington RI) | mikusushirestaurant.m988.com/order/menu.aspx | `fetch_rendered.js` (10s wait) renders the real ordering platform (Category picker: Japanese/Chinese/Thai menu) but selecting a category only shows sub-note text (e.g. lunch-special pricing), not the actual item list — same "nav/picker mounts, full item content never does without a click-through" structural gap already logged for Jersey Mike's/Wendy's/The Fountain Room. Own domain (mikusushirestaurant.com) has no menu content itself, just a link to this ordering platform. | 2026-09-28, first attempt at the actual ordering tool (was already sitting as a `pending` discovery_candidates row, id 83, from an earlier pass that never worked it). Left `pending` — needs a per-category click-through (bigger job than a routine hourly pass), not a quick retry. |
+
+**Not independent — local restaurant group identified this pass (Providence, RI).** Tavolo Wine Bar & Tuscan Grille (Overture candidate at 289 Atwells Ave, Providence, confidence 0.998) is one of 3 real RI locations (Providence, Smithfield/970 Douglas Pike, Warwick/2099 Post Rd) operating under one brand and one website (tavolowinebar.com) since 2005, confirmed via WebSearch. Same exclusion logic as Giliberto's/The Attic (Sioux Falls) and Murphy's (Indianapolis) — a recognized local multi-location group isn't a genuine single independent even though it's absent from the `chains` table. Never inserted as a `discovery_candidates` row.
+
+**Resolved 2026-09-28 — Minerva's Pizza House (Providence, RI), published.** Own
+domain (minervapizza.com) now 301-redirects to an unrelated site
+(industrialnoises.com) and was unusable. The restaurant's real current
+ordering platform — `order.online/en/store/minerva-pizza-house-providence-277924`,
+found via WebSearch — rendered a genuine full menu via `fetch_rendered.js`
+(179 items across subs, specialty pizza, plain pizza, appetizers, soups,
+salads, pastas, burgers, wraps, Lebanese specialties, dinner platters,
+calzones, sauces, and desserts, all with real ingredient text). Published
+as `restaurants` id 440, `verified=false`, `data_source='ai_pipeline'`.
+Worth checking `minervapizza.com`'s new owner/redirect target again on a
+much later pass in case the domain gets reclaimed, but the ordering
+platform is a solid source on its own regardless.
+
 **Resolved 2026-09-26 — Los Taquitos (Arcadia, Phoenix AZ), published.** Own-site
 `lostaquitosaz.com` only surfaces a 9-item taco preview, but its "Order Now"
 link goes to the restaurant's real ordering-platform storefront
