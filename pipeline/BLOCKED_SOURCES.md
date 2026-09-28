@@ -571,3 +571,49 @@ discrepancies, verdict PASS WITH CORRECTIONS, auto-published.
 | Oma Oma O Poke and Sushi (independent, Omaha NE) | omaomaopoke.com | HTTP 503 on the homepage itself via WebFetch | 2026-09-28, first attempt. `discovery_candidates` id 445 left `pending` — needs a separate-pass retry, ideally via `fetch_rendered.js`. |
 | Great Dragon (independent, Omaha NE) | greatdragonomahachinese.com | DNS lookup failure (`ENOTFOUND`) | 2026-09-28, first attempt. `discovery_candidates` id 689 left `pending` — needs a WebSearch for a current URL before concluding a permanent close. |
 | Inner Rail Food Hall (independent-ish, Omaha NE) | innerrailfoodhall.com | Not a bot block — a structural multi-vendor gap. The hall has 9 independent food vendors (All American Burger, Backstretch Bar, Kathmandu Momo Station, Nori Sushi, Papi's Mexican Grill, Piato Modern Mediterranean, Sammy's Sub Shop, The Grove, Tiny's Pizza Joint), each with its own separate menu PDF or image, sharing one address. Not a single restaurant's menu to extract in one pass. | 2026-09-28, first attempt. `discovery_candidates` id 452 left `pending` — needs a dedicated multi-source pass (9 separate menu documents, several image-based) budgeted as a bigger job than a routine hourly pass, not a quick retry. |
+
+**Resolved 2026-09-28 — CT (Bridgeport/Milford/New Haven) Track B pass, 1
+published.** All 14 unanalyzed `chains` rows skipped again this pass, same
+reasoning logged repeatedly above. CT was tied-lowest-coverage state (4
+restaurants) per COVERAGE_PLAN.md's left-join query, selected over the other
+tied states by lowest `metros.rank` (Bridgeport, rank 43). Bella Napoli
+Pizza (`restaurants` id 447, `discovery_candidates` id 156 promoted)
+published with 213 audited items — its own domain
+(bellanapolipizzaonline.com) is a JS shell with no content, but its real
+ordering storefront (`bellanapolipizzamfct.allhungry.com`) only rendered
+the Pizzas category via a plain `fetch_rendered.js` pass (15s settle), same
+as the prior partial pull. Found the fix by reading the page's raw HTML: a
+`window.__INITIAL_STATE__` JSON blob names the platform's own JSON API
+(`plaza.allhungry.com/menus/{restaurantID}/categories/{categoryID}/items`);
+a network-sniffing Playwright pass that clicked each of the 14 remaining
+category nav links captured a genuine complete 213-item menu across all 15
+real categories (Pizzas, Specialty Pizzas, Calzones, Stuffed Bread, Wings,
+Grinders, Cold Grinder, Wraps, Cold Wraps, Hot Sandwiches, Cold Deli,
+Dinners, Combo Platters, Salads, Appetizers, Soup, Sides, Beverages,
+Desserts — Catering excluded per project convention). The same JSON blob's
+embedded restaurant profile (phone (203) 877-1102, address 864 Boston Post
+Rd, Milford CT 06460) independently matched the Overture-sourced
+`discovery_candidates` row, serving as the address/phone cross-check.
+Self-audit (full 213-item pass) found and fixed several real false-clear
+risks before publish: (1) "Parm"-style dishes (Chicken/Veal/Eggplant Parm
+across grinders, wraps, deli sandwiches and dinners) were initially only
+`dairy: may` from the generic "cold sandwich" default — upgraded to
+`dairy: contains` since melted cheese is definitional to a "parm" dish,
+same base-cheese pattern flagged repeatedly elsewhere in this file; (2)
+classic Italian-American preparations (ravioli, manicotti, lasagna, stuffed
+shells, baked ziti, eggplant rollatini, piccata, marsala, francese, scampi,
+clam sauce) were initially wheat/dairy-blank because their descriptions
+don't spell out "cheese" or "flour" — fixed with prep-method keyword rules
+(ricotta/mozzarella filling = dairy contains, flour-dredge or pasta base =
+wheat contains, butter-finished sauces = dairy contains); (3) Cobb Salad and
+Chef's Salad both explicitly list "hard boiled egg(s)" in their own
+descriptions but were initially egg-blank — fixed to `egg: contains`; (4)
+mayo-based sides (macaroni salad, potato salad, coleslaw) and Chicken Noodle
+Soup (egg noodles) were initially blank — added `egg: may`/`wheat: contains`
+as appropriate; (5) the plain "Wings" item (no stated prep) was initially
+blank — added `wheat: may` for shared-fryer/possible dredge caution, per the
+project's flag-cautiously default. Verdict: PASS WITH CORRECTIONS,
+auto-published.
+
+| Dumpling House (independent, 868 Boston Post Rd, Milford CT) | dumpling-house.com/menus-1 (Wix site) | Not a bot block — a per-tab content gap, confirmed on a second, differently-shaped attempt this pass (previous pull: single `fetch_rendered.js` render; this pass: 15s settle retry, still only "Dumpling & Buns" populated, plus a dedicated network-sniffing Playwright pass that clicked all 11 remaining category tabs and captured only Wix editor/framework JSON traffic — no Wix-Restaurants-Menu data API call ever fired for any tab). | 2026-09-28, second attempt (different method, same "only first tab populates" symptom) — per this file's own escalation rule, staying in Watching rather than moving to Confirmed since the underlying cause (per-tab content simply never loads, no bot-check signature seen at all) hasn't been diagnosed, only reproduced. `discovery_candidates` id 157 left `pending`. Not published — the 18-item Dumpling & Buns category alone would misrepresent an 11-category menu as complete. Next attempt should try scrolling each tab into view before clicking (Wix lazy-loads by viewport in some themes) or inspecting the tab elements' `data-hook`/component IDs directly rather than a text-based click. |
+| Rawa Mediterranean Fusion (independent, 838 Whalley Ave, New Haven CT) | rawainc.com | `fetch_rendered.js` (10s settle) landed on a Cloudflare "Performing security verification" challenge page (Ray ID present) before any real content loaded; plain curl to the bare domain got HTTP 403 at the edge, consistent with a Cloudflare-level block rather than a slow render. Visible text included a stray "toast.app" line, suggesting the site's real menu may live on a Toast ordering storefront reached via a client-side redirect this pass never got past. | 2026-09-28, first attempt. `discovery_candidates` id 168 left `pending` — same Cloudflare-challenge category as Applebee's/Lazaro's Pizzeria elsewhere in this file; worth a WebSearch next pass for a direct `toasttab.com`/`toast.app` storefront URL for this restaurant instead of retrying the challenged homepage. |
