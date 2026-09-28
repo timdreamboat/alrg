@@ -189,13 +189,15 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
    Create with `/schedule` in Claude Code, or at claude.ai/code/routines.
    Suggested setup — schedule at the minimum interval (hourly) so the queue
    clears as fast as the audit pipeline can sustain:
-     "Every hour, follow CLAUDE.md's autonomous priority order exactly:
-      chains first, then metros, then maintenance mode once both are
-      empty. When working Track B (independents), pull up to 6 pending
-      candidates from discovery_candidates for the target state/metro
-      (fewer if that many aren't available) and process them CONCURRENTLY
-      as parallel subagent tasks, each running restaurant-menu-extractor
-      -> allergen-analyzer -> qa-allergen-auditor to completion
+     "Read CLAUDE.md and pipeline/README.md in this repo first for full
+      context, then run one pass of the ALRG batch pipeline. Every hour,
+      follow CLAUDE.md's autonomous priority order exactly: chains first,
+      then metros, then maintenance mode once both are empty. When
+      working Track B (independents), pull up to 6 pending candidates
+      from discovery_candidates for the target state/metro (fewer if
+      that many aren't available) and process them CONCURRENTLY as
+      parallel subagent tasks, each running restaurant-menu-extractor ->
+      allergen-analyzer -> qa-allergen-auditor to completion
       independently. Then publish one at a time in the main thread, not
       in parallel — db-publisher's address-dedup check and Nominatim
       geocoding (1 request/second, hard rate limit) both need to run
@@ -209,7 +211,9 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       CORRECTIONS with no owner review. Only open a needs-owner card on
       a second consecutive audit fail for the same target, or a
       safety-relevant community report. Update the GitHub Projects
-      board per CLAUDE.md."
+      board per CLAUDE.md (issue per batch, moved to Done with a
+      one-line summary at the end). Write an ops_log entry summarizing
+      what was done."
    (2026-09-28: added the 6-way parallel-subagent instruction for Track B
    — previously the routine processed one independent restaurant per
    firing, serially, which was the main throughput bottleneck. Chain
