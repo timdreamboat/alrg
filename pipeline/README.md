@@ -465,6 +465,17 @@ throttling rather than a real block), move it from "Watching" to
 This is a repo file specifically so it's easy for the owner to glance at
 and act on, not just another `ops_log` row.
 
+**This applies to chains only.** An independent restaurant's fetch attempt
+— blocked, dead domain, structural gap, wrong-match, anything — does NOT go
+in `BLOCKED_SOURCES.md` anymore (2026-09-28). Write it to that candidate's
+`discovery_candidates.fetch_notes`/`fetch_attempts`/`last_attempted_at`
+instead — see `BLOCKED_SOURCES.md`'s own "Independent-restaurant attempt
+notes now live in the database" section for the exact pattern and why. This
+matters more now that a firing can fan out to 6 parallel independents at
+once (see the Routine prompt above) — that's 6x the old per-firing note
+volume, and a markdown file can't absorb that growth rate without becoming
+the next bottleneck. The database can.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the

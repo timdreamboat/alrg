@@ -183,6 +183,16 @@ store an Overture field directly.** The flow per state:
    (permanently closed, a duplicate, no real menu found anywhere) set
    `status='rejected'` instead — same effect, it drops off the map
    without ever being confused for a real entry either way.
+6a. **If a candidate hits a block, dead domain, structural gap, or
+   anything else worth remembering for next time (and isn't ready to
+   promote or reject yet)**, write it to that row's `fetch_notes`
+   (text), incrementing `fetch_attempts` and setting
+   `last_attempted_at = now()` — NOT to `pipeline/BLOCKED_SOURCES.md`,
+   which is chains-only as of 2026-09-28 (see that file's own
+   "Independent-restaurant attempt notes now live in the database"
+   section). Check `fetch_notes` before re-attempting a `pending`
+   candidate, same spirit as checking `BLOCKED_SOURCES.md` before
+   re-attempting a chain.
 7. Only fall back to cold WebSearch discovery (the original method,
    still described below) if a metro's Overture pull comes back thin
    or a state still needs more cities than are seeded in `metros`.
