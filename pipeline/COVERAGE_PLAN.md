@@ -163,6 +163,31 @@ store an Overture field directly.** The flow per state:
    like a chain for filtering purposes — don't source it as an
    independent, and don't treat its document as that location's own
    data.
+
+   **Related but distinct — found 2026-09-29, a real small multi-location
+   family group, not a ghost kitchen.** An OR Track B candidate ("Puerto
+   Mazatlan," King City) turned out to be one of 5 sibling restaurants
+   under different local names (Puerto Mazatlan in Ashland OR, El Indio de
+   Oro and Indio Mexican Restaurant in Portland OR, Hacienda Tequila in
+   Buckley WA, and the King City location itself branded "Mazatlan
+   Mexican Restaurant") sharing one standardized menu document, run by one
+   family. Unlike the Denny's virtual-brand case, this is a genuine small
+   independent restaurant group — just not a single-name chain the
+   name-match filter would catch, and not yet a `chains` row. Rejected
+   this candidate from Track B (a shared standardized menu across
+   locations is the same red flag as the ghost-kitchen case, so it
+   shouldn't be extracted/audited as if it were one-off independent data)
+   — logged in `discovery_candidates` (id 829, status `rejected`) with
+   full detail. **Not yet actioned further**: this family is a plausible
+   future `chains` table candidate (chain-menu-importer flow: one
+   analysis + audit of the shared menu, then location-copy same as any
+   other chain) but that's a separate, bigger unit of work than a Track B
+   pass and wasn't started this pass. If this pattern recurs — a
+   candidate whose own site reveals sibling locations under different
+   names sharing one menu — treat it the same way: reject from Track B,
+   log the sibling list, and flag as a chain-menu-importer candidate
+   rather than silently publishing it as an independent or silently
+   dropping it.
 4. **Insert picked candidates into `discovery_candidates`**
    (`status='pending'`) — this is what makes them show up on the map as
    a distinct "coming soon" pin (see `app/index.html`
