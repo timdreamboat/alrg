@@ -49,6 +49,18 @@ input{font-family:var(--fb)}
 .app{position:relative;height:100dvh;overflow:hidden}
 .map-layer{position:absolute;inset:0}
 #map{position:absolute;inset:0;z-index:1}
+/* Leaflet's default zoom control renders top-left inside #map, which has
+   its own low z-index (1) relative to .chrome (600) — since #map has no
+   explicit z-index of its own at the .app level beyond that, the ENTIRE
+   map subtree (including the zoom control, whatever z-index Leaflet gives
+   it internally) always paints below .chrome, regardless of any z-index
+   set deeper inside it. Bumping z-index inside #map can't fix that — the
+   control has to be moved to a screen position that doesn't overlap
+   .chrome's brand pill in the first place. 76px clears the topbar's
+   height (14px chrome padding + ~48-62px row) on both the mobile and
+   desktop layouts, landing in the gap the desktop .list-panel already
+   reserves above its own top:138px. */
+.leaflet-top.leaflet-left{top:76px}
 
 /* ---------- floating top chrome ---------- */
 .chrome{position:absolute;top:0;left:0;right:0;z-index:600;padding:14px 16px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none}
@@ -81,7 +93,7 @@ input{font-family:var(--fb)}
 .ap-card .apname{font-size:.76rem;font-weight:700;color:var(--ink-soft);text-align:center}
 .ap-card.on{background:var(--mint);border-color:var(--pine);box-shadow:var(--sh-sm)}
 .ap-card.on .apname{color:var(--pine-deep)}
-.picker-done{margin:4px 22px 20px;background:var(--pine);color:#fff;border:none;border-radius:999px;padding:14px;font-size:.9rem;font-weight:700;flex:none}
+.picker-done{margin:4px 22px calc(20px + env(safe-area-inset-bottom,0px));background:var(--pine);color:#fff;border:none;border-radius:999px;padding:14px;font-size:.9rem;font-weight:700;flex:none}
 @media(min-width:821px){.allergen-picker-grid{grid-template-columns:repeat(5,1fr)}.picker-sheet{left:auto;right:16px;bottom:16px;width:380px;border-radius:var(--r-lg);max-height:70dvh}}
 
 /* ---------- location-first onboarding ---------- */
@@ -101,8 +113,20 @@ input{font-family:var(--fb)}
 .pin-label{background:var(--surface);color:var(--ink);font-family:var(--fb);font-weight:700;font-size:.72rem;padding:3px 9px;border-radius:999px;box-shadow:var(--sh-sm);border:none!important}
 .pin-label::before{display:none}
 
-.legend{position:absolute;right:14px;bottom:14px;z-index:400;background:var(--surface);border-radius:var(--r-md);padding:10px 13px;box-shadow:var(--sh-md);display:flex;flex-direction:column;gap:5px}
-.legend-row{display:flex;align-items:center;gap:7px;font-size:.68rem;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+/* env() falls back to 0 on non-notched devices, so this is harmless
+   everywhere — but on an iPhone with viewport-fit=cover (see the meta
+   viewport tag), an element anchored flush to the true screen bottom
+   with no safe-area padding sits partly under the home-indicator bar. */
+.legend{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:400;background:var(--surface);border-radius:var(--r-md);padding:10px 13px;box-shadow:var(--sh-md);display:flex;flex-direction:column;gap:5px}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:.68rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;border:none;background:none;padding:2px;border-radius:6px;font-family:var(--fb);transition:opacity .15s}
+/* Legend rows double as a visibility filter (tap a tier to hide/show it
+   on the map and list) — see initLegendFilter(). The "pick allergens"
+   row stays a plain, non-interactive label: it's a UI state (no profile
+   chosen yet), not a per-restaurant data state, so there's nothing
+   meaningful to toggle there. */
+button.legend-row{cursor:pointer;text-align:left;color:inherit}
+button.legend-row:hover{background:var(--surface-2)}
+.legend-row.off{opacity:.35}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
 
 /* ---------- list panel (desktop: floating card; mobile: bottom sheet) ---------- */
@@ -118,7 +142,7 @@ input{font-family:var(--fb)}
 .loc-active{display:none;align-items:center;gap:6px;margin-top:8px;font-size:.74rem;color:var(--pine-deep);background:var(--mint);border-radius:9px;padding:7px 11px}
 .loc-active.on{display:flex}
 .loc-active button{margin-left:auto;flex:none;border:none;background:none;color:var(--pine-deep);font-family:var(--fm);font-size:.85rem;line-height:1}
-.list-scroll{flex:1;overflow-y:auto;padding:8px 10px 16px;overscroll-behavior:contain}
+.list-scroll{flex:1;overflow-y:auto;padding:8px 10px calc(16px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
 .empty-state{padding:32px 18px;text-align:center;color:var(--ink-soft);font-size:.85rem;line-height:1.6}
 .empty-state strong{display:block;color:var(--ink);font-family:var(--fd);font-size:1rem;margin-bottom:7px}
 
@@ -154,7 +178,7 @@ input{font-family:var(--fb)}
 .meta-tag.src-verified{background:var(--blue-bg);color:#1D4FB0}
 .meta-tag.verified{background:var(--mint);color:var(--pine-deep)}
 
-.sheet-body{flex:1;overflow-y:auto;padding:18px 22px 28px;overscroll-behavior:contain}
+.sheet-body{flex:1;overflow-y:auto;padding:18px 22px calc(28px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
 .sec-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pine);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
 .sec-label:first-child{margin-top:0}
 .sec-label .line{flex:1;height:1px;background:var(--line)}
@@ -260,12 +284,16 @@ input{font-family:var(--fb)}
     </div>
   </div>
 
+  <!-- Doubles as a filter: tap a tier to hide/show it on the map and
+       list (see initLegendFilter()). "Pick allergens to score" stays a
+       plain label, not a button — it's a UI state, not per-restaurant
+       data, so there's nothing to toggle there. -->
   <div class="legend" id="legend">
-    <div class="legend-row"><span class="legend-dot" style="background:#1F9D5C"></span>High confidence</div>
-    <div class="legend-row"><span class="legend-dot" style="background:#D98C1F"></span>Proceed with care</div>
-    <div class="legend-row"><span class="legend-dot" style="background:#D14B3D"></span>High risk</div>
+    <button class="legend-row" data-tier="safe" type="button"><span class="legend-dot" style="background:#1F9D5C"></span>High confidence</button>
+    <button class="legend-row" data-tier="care" type="button"><span class="legend-dot" style="background:#D98C1F"></span>Proceed with care</button>
+    <button class="legend-row" data-tier="risk" type="button"><span class="legend-dot" style="background:#D14B3D"></span>High risk</button>
     <div class="legend-row"><span class="legend-dot" style="background:#AEB8AF"></span>Pick allergens to score</div>
-    <div class="legend-row"><span class="legend-dot" style="background:transparent;border:2px dashed #9AA39B"></span>Discovered — coming soon</div>
+    <button class="legend-row" data-tier="candidate" type="button"><span class="legend-dot" style="background:transparent;border:2px dashed #9AA39B"></span>Discovered — coming soon</button>
   </div>
 
   <!-- Allergen picker — a real grid, not a scroll row a user could miss half of -->
@@ -364,6 +392,20 @@ const SRC={
 let profile=JSON.parse(localStorage.getItem("alrg_profile")||'["peanut","dairy"]');
 let DATA=[],selected=null,map,markers={},clusterGroup,locFilter=null;
 let expandedItems=new Set();
+// Which tiers are visible on the map/list — the legend rows double as
+// toggles (see initLegendFilter()). "candidate" = the dashed "Discovered
+// — coming soon" pins (discovery_candidates). A restaurant's own
+// null/grey "pick allergens to score" state is never filtered — see
+// that CSS comment for why.
+let visibleTiers=new Set(JSON.parse(localStorage.getItem("alrg_tiers")||'["safe","care","risk","candidate"]'));
+// ITEM_COUNTS is the ground truth for "has this restaurant actually been
+// analyzed" (from the restaurant_item_counts DB view — cheap, one row
+// per restaurant, no item bodies). loadedItemIds tracks which
+// restaurants' full item bodies this CLIENT has fetched — see
+// ensureItemsNear(). Keeping these separate matters: without it, a real
+// audited restaurant whose items just haven't been lazy-loaded yet would
+// be indistinguishable from one that's genuinely still "coming soon".
+let ITEM_COUNTS={},loadedItemIds=new Set();
 
 /* ---------- Supabase REST ---------- */
 const C=window.ALRG_CONFIG||{};
@@ -404,22 +446,65 @@ let selectedCandidate=null;
 async function load(){
   if(!configured){document.getElementById("setupBanner").style.display="grid";return;}
   try{
-    const rests=await sbAll("restaurants?select=*&order=name");
-    const items=await sbAll("menu_items?select=*&order=id");
-    const chains=await sbAll("chains?select=id,name,source_document");
+    // menu_items is NOT fetched here. At 50,000+ rows today — and growing
+    // every hour as the pipeline runs — pulling every restaurant's full
+    // menu nationwide on every single page load was the actual cause of
+    // slow load times (50+ sequential paginated requests before anything
+    // could render), not a missing cache. restaurants/chains/candidates
+    // and the item-COUNT view are all small even at full nationwide scale
+    // (a few thousand rows, no item bodies), so those stay eager; real
+    // item bodies load lazily, scoped to wherever the user actually is —
+    // see ensureItemsNear(), called once a location resolves.
+    const [rests,chains,counts,candidates]=await Promise.all([
+      sbAll("restaurants?select=*&order=name"),
+      sbAll("chains?select=id,name,source_document"),
+      sbAll("restaurant_item_counts?select=*"),
+      // Discovered-but-not-yet-analyzed leads (see pipeline/COVERAGE_PLAN.md,
+      // pipeline/discover_places.py) — shown as a distinct muted pin, never
+      // scored, never mixed into DATA/the list. db-publisher flips a row's
+      // status to 'promoted' once the real restaurant is published, which
+      // drops it out of this query.
+      sbAll("discovery_candidates?status=eq.pending&select=*")
+    ]);
     CHAINS_BY_ID=Object.fromEntries(chains.map(c=>[c.id,c]));
-    const byRest={};
-    for(const it of items)(byRest[it.restaurant_id]??=[]).push(it);
-    DATA=rests.map(r=>({...r,items:byRest[r.id]||[]}));
-    // Discovered-but-not-yet-analyzed leads (see pipeline/COVERAGE_PLAN.md,
-    // pipeline/discover_places.py) — shown as a distinct muted pin, never
-    // scored, never mixed into DATA/the list. db-publisher flips a row's
-    // status to 'promoted' once the real restaurant is published, which
-    // drops it out of this query.
-    CANDIDATES=await sbAll("discovery_candidates?status=eq.pending&select=*");
+    ITEM_COUNTS=Object.fromEntries(counts.map(c=>[c.restaurant_id,c.item_count]));
+    DATA=rests.map(r=>({...r,items:[]}));
+    CANDIDATES=candidates;
     initMap();renderAll();
+    // If the location onboarding already resolved a center before this
+    // fetch finished (a real race — geolocation can return fast), pick up
+    // the item load it deferred; see finishOnboard()'s matching guard.
+    if(pendingCenter)ensureItemsNear(pendingCenter.center);
   }catch(e){
     document.getElementById("listMeta").textContent="Couldn't reach database — check config.js values";
+    console.error(e);
+  }
+}
+// Fetches full item bodies only for restaurants near a point, so a page
+// load never has to pull every menu_items row nationwide before showing
+// anything. Widens the search radius automatically in sparse/rural areas
+// so a thin-coverage location still returns a reasonable number of
+// scored restaurants instead of an empty-looking map.
+async function ensureItemsNear(center,{minCount=6,startRadius=60,maxRadius=300}={}){
+  if(!center||!DATA.length)return;
+  let radius=startRadius,need=[];
+  while(true){
+    need=DATA.filter(r=>r.lat&&r.lng&&!loadedItemIds.has(r.id)&&(ITEM_COUNTS[r.id]||0)>0
+      &&haversineMiles(center[0],center[1],r.lat,r.lng)<=radius);
+    if(need.length>=minCount||radius>=maxRadius)break;
+    radius=Math.min(radius*2,maxRadius);
+  }
+  if(!need.length)return;
+  const ids=need.map(r=>r.id);
+  need.forEach(r=>loadedItemIds.add(r.id)); // mark before awaiting so a second call (e.g. re-search) doesn't refetch the same ids
+  try{
+    const items=await sbAll(`menu_items?restaurant_id=in.(${ids.join(",")})&select=*&order=id`);
+    const byRest={};
+    for(const it of items)(byRest[it.restaurant_id]??=[]).push(it);
+    for(const r of need)r.items=byRest[r.id]||[];
+    renderAll();
+  }catch(e){
+    need.forEach(r=>loadedItemIds.delete(r.id)); // failed — allow a retry on the next location change
     console.error(e);
   }
 }
@@ -498,6 +583,21 @@ function closeAllergenPicker(){
 document.getElementById("allergenBtn").onclick=openAllergenPicker;
 renderAllergenButton();
 
+/* ---------- legend doubles as a tier/coming-soon visibility filter ---------- */
+function initLegendFilter(){
+  document.querySelectorAll(".legend-row[data-tier]").forEach(btn=>{
+    const tier=btn.dataset.tier;
+    if(!visibleTiers.has(tier))btn.classList.add("off");
+    btn.onclick=()=>{
+      if(visibleTiers.has(tier)){visibleTiers.delete(tier);btn.classList.add("off");}
+      else{visibleTiers.add(tier);btn.classList.remove("off");}
+      localStorage.setItem("alrg_tiers",JSON.stringify([...visibleTiers]));
+      renderAll();
+    };
+  });
+}
+initLegendFilter();
+
 /* ---------- location-first onboarding ----------
    Show a location prompt before the map/list render broadly — a
    whole-country view with two unlabeled cluster blobs told a real user
@@ -527,7 +627,7 @@ function finishOnboard(center,zoom){
   pendingCenter={center,zoom};
   document.getElementById("onboard").classList.add("hidden");
   if(map)map.setView(center,zoom,{animate:true});
-  if(DATA.length)renderList(); // distance is only known once pendingCenter is set
+  if(DATA.length){renderList();ensureItemsNear(center);} // distance/scores are only known once pendingCenter and items are set; load()'s own guard covers the reverse race
 }
 document.getElementById("onboardLocate").onclick=()=>{
   if(!navigator.geolocation){setOnboardStatus("Location isn't available in this browser — try search instead.");return;}
@@ -604,8 +704,18 @@ function renderPins(){
   for(const r of DATA){
     if(!r.lat||!r.lng)continue;
     const s=scoreRestaurant(r,profile),t=s===null?null:tierOf(s);
-    if(markers[r.id])markers[r.id].setIcon(pinIcon(s,t,selected===r.id));
-    else{
+    // null (no profile picked, or items not lazily loaded yet) is never
+    // filtered — see the legend's own comment for why. Only a real
+    // computed tier can be toggled off.
+    const show=t===null||visibleTiers.has(t);
+    if(markers[r.id]){
+      if(show){
+        if(!clusterGroup.hasLayer(markers[r.id]))clusterGroup.addLayer(markers[r.id]);
+        markers[r.id].setIcon(pinIcon(s,t,selected===r.id));
+      }else if(clusterGroup.hasLayer(markers[r.id])){
+        clusterGroup.removeLayer(markers[r.id]);
+      }
+    }else if(show){
       // Apple-Maps-style: a name label sits with the pin so a user can tell
       // what they're looking at without clicking first, and two nearby
       // pins (e.g. two restaurants in the same suburb) read as distinct
@@ -630,10 +740,17 @@ function candidatePinIcon(sel){
     html:`<div style="width:100%;height:100%;border-radius:50%;background:rgba(174,184,175,.35);border:${sel?"2.5px dashed #6B756D":"2px dashed #9AA39B"}"></div>`});
 }
 function renderCandidatePins(){
+  const show=visibleTiers.has("candidate");
   for(const c of CANDIDATES){
     if(!c.lat||!c.lng)continue;
-    if(candidateMarkers[c.id])candidateMarkers[c.id].setIcon(candidatePinIcon(selectedCandidate===c.id));
-    else{
+    if(candidateMarkers[c.id]){
+      if(show){
+        if(!clusterGroup.hasLayer(candidateMarkers[c.id]))clusterGroup.addLayer(candidateMarkers[c.id]);
+        candidateMarkers[c.id].setIcon(candidatePinIcon(selectedCandidate===c.id));
+      }else if(clusterGroup.hasLayer(candidateMarkers[c.id])){
+        clusterGroup.removeLayer(candidateMarkers[c.id]);
+      }
+    }else if(show){
       const m=L.marker([c.lat,c.lng],{icon:candidatePinIcon(false)}).on("click",()=>openCandidateDrawer(c.id));
       m.bindTooltip(c.name,{permanent:false,direction:"top",offset:[0,-4],className:"pin-label",opacity:1});
       candidateMarkers[c.id]=m;clusterGroup.addLayer(m);
@@ -670,10 +787,10 @@ const geocodeCache={};
 // though both are correctly in the list. Zoom 14 keeps genuinely distinct
 // restaurants far enough apart on-screen to each get their own pin.
 async function geocodeAndFly(query){
-  if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});pendingCenter={center:geocodeCache[query],zoom:14};renderList();return;}
+  if(geocodeCache[query]){map.flyTo(geocodeCache[query],14,{duration:0.6});pendingCenter={center:geocodeCache[query],zoom:14};renderList();ensureItemsNear(geocodeCache[query]);return;}
   try{
     const pt=await geocodeQuery(query);
-    if(pt){geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});pendingCenter={center:pt,zoom:14};renderList();}
+    if(pt){geocodeCache[query]=pt;map.flyTo(pt,14,{duration:0.6});pendingCenter={center:pt,zoom:14};renderList();ensureItemsNear(pt);}
   }catch(e){/* map stays put — list filtering still works without this */}
 }
 function applyLocationFilter(){
@@ -732,6 +849,10 @@ function renderList(){
   const rows=DATA.map(r=>({r,s:scoreRestaurant(r,profile),d:distanceOf(r)}))
     .filter(({r})=>!q||r.name.toLowerCase().includes(q)||(r.cuisine||"").toLowerCase().includes(q))
     .filter(({r})=>matchesLocation(r,locFilter))
+    // Same tier-visibility toggle as the map pins (legend rows) — keeps
+    // the list and map showing the same set. null (no profile picked
+    // yet, or items still lazy-loading) is never filtered, matching renderPins().
+    .filter(({s})=>{const t=s===null?null:tierOf(s);return t===null||visibleTiers.has(t);})
     .sort((a,b)=>{
       if(profile.length){
         const bys=(b.s??-1)-(a.s??-1);
@@ -927,9 +1048,7 @@ function renderDrawerBody(r){
     <div class="sec-label">Menu · your profile<span class="line"></span></div>${itemsHtml}
     <div class="disclaimer"><strong>Discovery tool, not a guarantee.</strong> Menus and kitchens change. Always confirm allergen handling with restaurant staff before ordering.</div>`;
 }
-function openDrawer(id){
-  selected=id;selectedCandidate=null;expandedItems.clear();
-  const r=DATA.find(x=>x.id===id);if(!r)return;
+function renderDrawerHead(r){
   const s=scoreRestaurant(r,profile),t=s===null?"care":tierOf(s);
   const circ=2*Math.PI*32,off=s===null?circ:circ*(1-s/100);
   const profNames=profile.map(p=>ALLERGENS.find(a=>a.id===p)?.name).filter(Boolean).join(", ")||"none selected";
@@ -947,10 +1066,27 @@ function openDrawer(id){
         </div></div>
     </div>
     <div class="meta-row">${r.verified?`<span class="meta-tag verified">✓ Verified partner</span>`:""}<span class="meta-tag ${src.cls}">${src.label}</span></div>`;
+}
+function openDrawer(id){
+  selected=id;selectedCandidate=null;expandedItems.clear();
+  const r=DATA.find(x=>x.id===id);if(!r)return;
+  renderDrawerHead(r);
   renderDrawerBody(r);
   document.getElementById("drawer").classList.add("open");
   document.getElementById("overlay").classList.add("on");
   renderList();renderPins();renderCandidatePins();
+  // Reached via name search, or opened before ensureItemsNear() finished
+  // for this location — this restaurant has real audited data (per
+  // ITEM_COUNTS) but this client hasn't fetched the item bodies yet.
+  // Fetch just this one rather than block the drawer opening on it.
+  if(!loadedItemIds.has(id)&&!r.items.length&&(ITEM_COUNTS[id]||0)>0){
+    loadedItemIds.add(id);
+    sbAll(`menu_items?restaurant_id=eq.${id}&select=*&order=id`).then(items=>{
+      r.items=items;
+      if(selected===id){renderDrawerHead(r);renderDrawerBody(r);}
+      renderList();renderPins();
+    }).catch(e=>{loadedItemIds.delete(id);console.error(e);});
+  }
 }
 function closeDrawer(){
   document.getElementById("drawer").classList.remove("open");
