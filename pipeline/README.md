@@ -448,6 +448,25 @@ each product/size combination and read the resulting allergen panel) if
 these chains come up again with nothing better available — not attempted
 this pass given the volume of items each of these three menus has.
 
+## Independent-restaurant ordering platforms (Toast, DoorDash) — Cloudflare-blocked, same as chain SPAs
+
+Found 2026-09-29 while working Kuno (Portland, ME, independent): a restaurant's
+own online-ordering identity, when it's hosted on Toast
+(`order.toasttab.com/online/<slug>`) or reached via DoorDash, can hit the same
+Cloudflare interactive bot-verification wall documented for chains above —
+neither plain WebFetch nor `fetch_rendered.js` (real rendered Chromium through
+the sandbox proxy) got past it. This isn't chain-specific, so it's worth
+checking for on any independent whose own site redirects to a Toast/DoorDash
+storefront instead of a static menu page. Workaround used this pass: fall back
+to independent third-party ordering-aggregator pages (e.g. 2dinein.com,
+carhopme.com) that mirror the restaurant's live POS menu, cross-checked against
+each other and against whatever fragments are visible (not fetchable) on the
+blocked platform — weaker than a first-party source, so say so explicitly in
+`source_document`, same honesty rule as any other secondary source. Per
+`BLOCKED_SOURCES.md`'s 2026-09-28 rule, this stays a per-candidate
+`discovery_candidates.fetch_notes` entry, not a row in that file — this section
+is just the reusable technique, not a specific restaurant's log.
+
 ## Hard blocks that need a human — pipeline/BLOCKED_SOURCES.md
 
 Some blocks (McDonald's Akamai WAF "Access Denied" is the confirmed case
