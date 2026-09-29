@@ -213,6 +213,36 @@ store an Overture field directly.** The flow per state:
    Ba Le, KFire) through chain-menu-importer once there's room — each is
    a one-time analysis that then covers multiple real locations, same
    leverage as any other chain.
+
+   **Separate recurring issue, not a chain/group problem — PA pass,
+   2026-09-29: Overture's `website` field is wrong at a meaningfully high
+   rate, not just occasionally stale.** 3 of 6 PA/Philadelphia candidates
+   this pass had a `website` value that was flat-out wrong, not just
+   outdated:
+   - **Crab Shack** (4800 N 16th St) — Overture's website
+     (theoriginalcrabshack.com) belongs to an unrelated, well-known
+     restaurant of the same generic name on Tybee Island, GA. The real
+     restaurant's actual first-party source was its Toast ordering page,
+     found independently, not via the Overture field.
+   - **City Line Diner and Deli** (7547 Haverford Ave) — Overture's
+     website (franksdeliandcatering.com) is a different, related-but-distinct
+     business (a catering-only operation a few doors down, different
+     address/phone) — plausibly a family connection, but not the same
+     restaurant.
+   - **New Mandarin House** (3 W Girard Ave) — Overture's website
+     (phillymandarinpalace.com) belongs to an entirely unrelated Center
+     City restaurant ("Mandarin Palace").
+   All 3 were still worked and published (menu sourced from the
+   restaurant's own first-party ordering platform, or a third-party
+   aggregator when that failed) — this is a **verify-before-trust**
+   finding, not a fetch failure: don't skip a candidate just because its
+   Overture website is dead/wrong, but also never publish a `website`
+   value straight from Overture without independently confirming it
+   resolves to the same business at the same address first (same
+   discipline already applied to menu content, just extended to the
+   website field itself). When a mismatch is found, set `website` to the
+   independently-confirmed correct URL, or `null` if none can be found
+   (never leave the wrong Overture URL in place).
 4. **Insert picked candidates into `discovery_candidates`**
    (`status='pending'`) — this is what makes them show up on the map as
    a distinct "coming soon" pin (see `app/index.html`
