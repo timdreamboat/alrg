@@ -188,6 +188,31 @@ store an Overture field directly.** The flow per state:
    log the sibling list, and flag as a chain-menu-importer candidate
    rather than silently publishing it as an independent or silently
    dropping it.
+
+   **Confirmed recurring, not a one-off — IL pass, 2026-09-29.** 3 of 6
+   IL/Chicago Track B candidates this pass turned out to be exactly this
+   pattern (50%, unusually high but a real signal that independent
+   subagents are now catching this reliably before publishing bad data):
+   - **El Gallo Bravo** (3714 W Lawrence Ave) — official Chicago DPH
+     business-license DBA on file is "El Gallo Bravo #6," a numbered
+     multi-location designation. Sibling addresses (#1-#5, #7+) not
+     found this pass.
+   - **Ba Le Sandwiches** (5014 N Broadway) — real, actively-expanding
+     3-location group (Chicago + Schaumburg IL, Rockville MD; Naperville
+     IL and Rolling Meadows IL opening 2027), one shared site
+     (balesandwich.com) and one shared `/menu` page across all locations.
+   - **KFire Korean BBQ** (2528 N Milwaukee Ave) — real 2-location group
+     (Logan Square + Old Town), one unified menu confirmed identical at
+     both locations via kfire.com and both locations' Toast pages.
+
+   All 3 were rejected from Track B (`discovery_candidates.fetch_notes`
+   has the full finding) rather than published as independents, and all
+   3 are flagged as future `chains` table candidates — not actioned this
+   pass, same as Puerto Mazatlan above. Worth a dedicated pass at some
+   point to work through this small backlog (Puerto Mazatlan's family,
+   Ba Le, KFire) through chain-menu-importer once there's room — each is
+   a one-time analysis that then covers multiple real locations, same
+   leverage as any other chain.
 4. **Insert picked candidates into `discovery_candidates`**
    (`status='pending'`) — this is what makes them show up on the map as
    a distinct "coming soon" pin (see `app/index.html`
