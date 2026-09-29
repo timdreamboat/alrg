@@ -243,6 +243,36 @@ store an Overture field directly.** The flow per state:
    website field itself). When a mismatch is found, set `website` to the
    independently-confirmed correct URL, or `null` if none can be found
    (never leave the wrong Overture URL in place).
+
+   **Confirmed again, not PA-specific — MA/Lynn pass, 2026-09-29.**
+   Charlie's Seafood (188 Essex St, Lynn) had an Overture `website`
+   (charlieseafood.com) that turned out to belong to an entirely
+   unrelated San Francisco seafood wholesaler, different state and
+   industry — not just a different restaurant of the same name. No
+   working first-party site or social page could be found after an
+   extensive search, so `website` was set to `null` rather than carrying
+   the wrong domain forward or the PA pass's fallback (a working
+   secondary source still existed there; here the menu itself came from
+   the restaurant's own live Uber Eats/Postmates ordering catalog
+   instead, honestly noted as a secondary/aggregator source in
+   `source_document`).
+
+   **New distinction worth recording — same pass: a multi-concept
+   restaurateur is NOT the same red flag as a shared-menu chain/group.**
+   The Blue Ox (191 Oxford St, Lynn) surfaced two things that looked like
+   they might trigger the multi-location rejection above but didn't: (1)
+   Overture separately listed "Safra Restaurant Group LLC" at the same
+   address — plausibly just the restaurant's own legal entity filing, not
+   a second business (no second restaurant at that address was found
+   anywhere); (2) the proprietor also owns two other named restaurants
+   elsewhere (Prezza, Tonno) — but those are distinct concepts with their
+   own separate, unshared menus, not sibling locations serving the same
+   standardized menu under different names (the actual pattern that made
+   Puerto Mazatlan/Ba Le/KFire/El Gallo Bravo real rejects above). One
+   owner running several different restaurants is normal small-business
+   structure, not a chain — the test stays "do multiple locations share
+   one standardized menu," not "does this person/LLC touch more than one
+   restaurant." Published as an independent.
 4. **Insert picked candidates into `discovery_candidates`**
    (`status='pending'`) — this is what makes them show up on the map as
    a distinct "coming soon" pin (see `app/index.html`
