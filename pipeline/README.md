@@ -499,6 +499,29 @@ once (see the Routine prompt above) — that's 6x the old per-firing note
 volume, and a markdown file can't absorb that growth rate without becoming
 the next bottleneck. The database can.
 
+## Supabase MCP connector can drop auth mid-batch — `pipeline/pending_publish/`
+
+Found 2026-09-30: partway through a Track B batch (MN/Minneapolis, 6 parallel
+independent-restaurant subagents), the Supabase MCP connector's auth expired
+mid-firing — every `execute_sql` call after that point failed with "needs you
+to sign in again," which requires an interactive `/mcp` re-auth the Routine's
+unattended sandbox cannot perform. 5 of 6 restaurants for that pass had
+already published cleanly before the drop; the 6th (fully extracted, audited,
+and geocoded, just not yet inserted) would otherwise have been lost work.
+
+**When this happens**: don't discard a subagent's finished, audited result
+just because the DB is unreachable. Write its ready-to-run INSERT statements
+(restaurant + menu_items + the `discovery_candidates` promotion + the
+`ops_log` entry) to `pipeline/pending_publish/<state>_<restaurant-slug>_<date>.sql`,
+commit and push it (this doesn't need Supabase), and say so plainly in the
+ops summary/issue comment — this is a genuine blocker needing the owner to
+re-authenticate the connector (via claude.ai connector settings or `/mcp` in
+an interactive session), not a routine retry. The next pass (or the owner,
+interactively) should run the staged file's steps in order, substituting the
+real `restaurants.id` the first INSERT returns for `<RESTAURANT_ID>`, then
+delete the file once published — it's a durable staging area for exactly this
+failure mode, not a permanent alternative to the database.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
