@@ -536,6 +536,28 @@ will keep blocking every firing until the owner re-authenticates the connector
 or a different priority-order step can route around, since every step 1-4 needs
 a DB read before anything else.
 
+**2026-09-30, this firing:** still unauthenticated — confirmed no Supabase
+tool loaded at all before attempting anything, so no DB read was attempted or
+failed. Nothing new to check, extract, or publish; `pending_publish/mn_oyama_2026-09-30.sql`
+is still untouched. Not adding another comment thread to #187 beyond noting
+this pass there too, since the blocker and the fix needed are unchanged.
+
+**Side effect of the outage worth flagging separately:** each hourly firing
+gets its own auto-generated git branch, and while Supabase access was
+degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
+merged their branch back into `main` before ending — three of them had done
+real, successful work (GA/Atlanta: 5 independents published, MA/Boston: 6,
+OH/Columbus: 2 — about 1,400 menu items combined) that had no git record on
+`main` until this firing found and merged all three orphaned branches back in.
+Two further orphaned branches held only duplicate "third consecutive outage"
+log entries (no data work) and were left unmerged as redundant. This is the
+same failure mode `pipeline/README.md`'s git history has needed manual
+recovery from before (see the ME/OR "orphaned branch" merge commits) — worth
+a look if the owner wants a more durable fix (e.g. always merging into `main`
+before a firing ends, even when it published nothing), since the underlying
+restaurant data itself was never at risk (it publishes to Supabase directly,
+independent of git), only this repo's own history of what happened.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
