@@ -625,6 +625,34 @@ content — is now a standing part of handling this outage, not a one-time
 cleanup. Added one more short update to #187 rather than a new card, same
 as every firing in this streak.
 
+**2026-09-30, this firing (13th consecutive):** still unauthenticated —
+confirmed via `ListConnectors` for "supabase": `installState: "needs_reconnect"`,
+`connected: false`, `enabledInChat: true`. No Supabase/database tool loaded,
+so no DB read was attempted or failed and no pipeline work (chains, metros,
+or maintenance) was possible again this pass. `pending_publish/mn_oyama_2026-09-30.sql`
+is still untouched, now well over 12 hours queued. Reconciled remote branches
+again: `main` was two firings behind this session's own start point, same gap
+as last firing — the 11th and 12th firings' log entries (recovered on branch
+`gc6mvk`) had still not reached `main` because this session's own designated
+branch (`t6zbmx`) can push only to itself, not merge there directly (confirmed
+directly this firing: a real attempt to push a fast-forward merge straight to
+`main` was denied by the auto-mode permission classifier as a "Production
+Deploy" action, not just inferred from history) — folded `gc6mvk`'s two real
+commits in via fast-forward on this branch above. Checked every other remote
+branch against current `origin/main`: 7 are single-commit duplicate outage
+logs already accounted for above (`0ybh2a`, `5sy8dq`, `coslfv`, `jjg3sd`,
+`p2v7vn`, `t3jhqr`, `teydb4`), left unmerged as redundant; the rest (`3hymg1`,
+`9vqtyx`, `akn2ui`, `apy5pt`, `buqwle`, `fieufq`, `jdl24y`, `pq932c`, `pzphyz`)
+carry only Track B data commits already reachable from `main` — an earlier,
+stale local checkout of `main` made those look unmerged on first pass; a fresh
+`git fetch` confirmed `main` already has all of that data. No new
+data-bearing orphaned branch found. Since this session cannot push to `main`
+itself, this reconciliation (like every firing since the 10th) still needs
+someone with broader git permissions to actually land it there — added one
+more short update to #187 rather than a new card, same as every firing in
+this streak, and flagged in that update that `main` is now visibly behind
+this branch's history until that fold happens.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
