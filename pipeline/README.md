@@ -593,6 +593,25 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, 19th consecutive firing:** still unauthenticated — `ListConnectors`
+confirms `installState: "needs_reconnect"`, `connected: false`. No DB tool loaded,
+no pipeline work possible again. `pending_publish/mn_oyama_2026-09-30.sql` remains
+unpublished (17+ hrs queued).
+
+**Stopping the branch-reconciliation chase here.** Firings 11-18 each tried to
+fold the prior firings' outage-log branches forward and merge into `main`, and
+each one hit the same "Production Deploy"-style permission denial on a direct
+push/merge to `main` — confirmed repeatedly, not a fluke. Repeating that attempt
+every hour has stopped being useful: it burns a firing's whole turn re-deriving
+the same "no new data, just log entries" conclusion, produces another orphaned
+branch, and adds nothing `main` doesn't already effectively know (the connector
+is down; nothing here is at risk since publishes go straight to Supabase,
+independent of git). This firing confirms the outage and stops there rather than
+opening a 19th reconciliation branch. The real fix for the branch pile-up is a
+human with `main` write access merging any one of the existing reconciliation
+branches (`lev2oh` is the most complete) once — future firings should not keep
+re-attempting this until that happens.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
