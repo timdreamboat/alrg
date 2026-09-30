@@ -536,6 +536,15 @@ will keep blocking every firing until the owner re-authenticates the connector
 or a different priority-order step can route around, since every step 1-4 needs
 a DB read before anything else.
 
+**2026-09-30, third consecutive hourly firing:** still unauthenticated —
+no `execute_sql`/Supabase tool was even offered this firing (same
+"needs authorization" state as the prior one), so once again nothing
+could be read, extracted, or published. `pending_publish/mn_oyama_2026-09-30.sql`
+is still sitting untouched from two firings ago. Not opening a second
+needs-owner issue — #187 already covers this and stays open until the
+owner re-authenticates; this is just a same-cause repeat, logged here
+and as a comment on #187 rather than a new card.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
