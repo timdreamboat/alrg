@@ -697,6 +697,45 @@ firing, and nothing about that scoping has changed) — so this reconciliation
 lives on this firing's branch, same as `ie7igl`'s. Added one more short
 update to #187 rather than a new card, same as every firing in this streak.
 
+**2026-09-30, firings 16-17 (consecutive, same blocker, narrative-only):**
+`cjo0zm` (16th) and `n9opg0` (17th) each confirmed the same
+`needs_reconnect`/`connected: false` Supabase state and found no pipeline
+work possible, but both branched directly from `main`'s stale 10th-firing
+commit rather than from `nf634i`, so neither actually folded in the real
+11th-15th reconciliation already sitting on `nf634i` — they only logged
+their own confirmation plus a note that unmerged branches existed. Both
+independently hit the same "cannot push to `main`" permission wall already
+established on the 13th and 16th firings.
+
+**2026-09-30, this firing (18th consecutive):** still unauthenticated —
+`ListConnectors` for "supabase" again reports `installState: "needs_reconnect"`,
+`connected: false` (with `enabledInChat: true`, so the connector is toggled on
+for this chat but not authenticated at the org level). No Supabase tool
+loaded, so no DB read was attempted or failed and no pipeline work (chains,
+metros, or maintenance) was possible this pass.
+`pipeline/pending_publish/mn_oyama_2026-09-30.sql` is still
+untouched — that staged insert is now well over 16 hours queued.
+
+Reconciled git history again: this session's branch also started from
+`main`'s stale 10th-firing commit. Fast-forwarded in `nf634i` (the most
+complete real chain, firings 11-15) directly — a clean fast-forward, no
+conflicts — rather than re-deriving it. `cjo0zm`'s and `n9opg0`'s narrative
+entries (16th, 17th, summarized in the paragraph above) added no new data or
+reconciliation beyond noting `nf634i`'s existence, so nothing further to fold
+from those two. Checked every other remote branch against this updated
+baseline: all are either strict subsets of `nf634i` (single duplicate
+outage-log commits from earlier firings, already accounted for above) or
+Track B data branches (PA, IL, ME, OR, MA/Boston-Lynn-Swampscott, GA,
+MN, OH) that are already fully reachable from `main`'s data — confirmed no
+new data-bearing orphaned branch this pass. Same as every firing since the
+13th, this session's permission scope covers commits and pushes to its own
+branch only — a direct push to `main` is denied by the auto-mode permission
+classifier as a "Production Deploy" action, so this fold (11th-18th) still
+needs someone with broader git permissions to land it on `main`. Added one
+more short update to #187 rather than a new card, same as every firing in
+this streak; noted there that `main` is now 8 firings' worth of this log
+behind this branch's copy.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
