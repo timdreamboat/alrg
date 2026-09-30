@@ -555,6 +555,44 @@ the two skipped last time, no restaurant/menu data — left unmerged as
 redundant rather than merging noise into `main`. Added one more short update
 to #187 rather than a new card, per that issue's own standing note.
 
+**2026-09-30, firings 6-9 (consecutive, same blocker each time):** the
+Supabase MCP connector stayed unauthenticated across all four — each firing
+confirmed no Supabase/database tool was loadable before attempting anything,
+so no DB read was ever attempted or failed, and no pipeline work was
+possible in any of them. `pending_publish/mn_oyama_2026-09-30.sql` sat
+untouched through all four. Each firing ran on its own designated branch
+(`claude/upbeat-volta-coslfv` [6th], `-5sy8dq` [7th], `-0ybh2a` [8th, itself
+folding 6-7], `-t3jhqr` [9th, folding 6-8]) and none of them could merge into
+`main` or push there directly — each hit a "Modify Shared Resources"/
+"Auto-Mode Bypass"-style permission denial scoping that session to commits
+and pushes on its own branch only. So this file's history on `main` jumped
+straight from the 5th-consecutive entry above to this one; the paragraph
+above reconstructs firings 6-9 from a direct read of all four orphaned
+branches rather than a literal merge. No new data-bearing orphaned branch
+turned up in that window beyond the `p2v7vn`/`teydb4` pair already noted for
+the 5th firing — every one of `coslfv`, `5sy8dq`, `0ybh2a`, `t3jhqr` holds
+only its own short outage-log commit, no restaurant/menu data. Each firing
+added one short update to #187 rather than opening a new card, per that
+issue's own standing note.
+
+**2026-09-30, this firing (10th consecutive):** still unauthenticated —
+confirmed no Supabase/database tool loadable this session (a `ToolSearch`
+for "supabase execute_sql database" came back with nothing but the
+unrelated Artifact-page database tool), so no DB read was attempted or
+failed and no pipeline work was possible again. `pending_publish/mn_oyama_2026-09-30.sql`
+is still untouched — that insert is now waiting on 6+ hours of accumulated
+outage on top of its original firing.
+Re-checked every remote branch (16 total, `main` plus this session's own
+`rdegim` aside): none carry any restaurant/menu data — the ones with any
+commits at all (`coslfv`, `5sy8dq`, `0ybh2a`, `p2v7vn`, `teydb4`, `t3jhqr`)
+are each a single duplicate outage-log commit already accounted for above,
+and the rest have no commits beyond `main`. Nothing left unmerged and at
+risk; the only real gap is this file's own account on `main` being several
+entries behind until someone with broader git permissions folds the
+orphaned branches in — same bookkeeping note as firings 7-9, not a new
+issue. Added one more short update to #187 rather than a new card, same as
+every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
