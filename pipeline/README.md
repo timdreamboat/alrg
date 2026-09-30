@@ -536,6 +536,14 @@ will keep blocking every firing until the owner re-authenticates the connector
 or a different priority-order step can route around, since every step 1-4 needs
 a DB read before anything else.
 
+**2026-09-30, third consecutive firing:** still unauthenticated — no Supabase
+tool was even loadable this session (confirmed before attempting any DB call,
+not assumed). Third firing in a row with zero pipeline work possible;
+`pending_publish/mn_oyama_2026-09-30.sql` is still unpublished. Not opening a
+second issue — added a follow-up comment to the existing #187 instead, since
+it already describes exactly this recurring condition and stays open until
+the owner re-authenticates.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
