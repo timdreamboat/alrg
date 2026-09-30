@@ -593,6 +593,18 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, this firing (11th consecutive):** still unauthenticated —
+this time confirmed more directly than a bare tool-search miss: `ListConnectors`
+for "supabase" reports the connector itself as `installState: "needs_reconnect"`,
+`connected: false`. No Supabase/database tool loaded, so no DB read was
+attempted or failed and no pipeline work was possible again.
+`pending_publish/mn_oyama_2026-09-30.sql` is still untouched. Remote branches
+are down to just `main` and this session's own branch — the orphaned-branch
+backlog noted in firings 4-10 has been cleaned up by someone with broader git
+permissions since the last firing, so that bookkeeping gap is now closed; no
+new orphaned branches to recover this pass. Added one more short update to
+#187 rather than a new card, same as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
