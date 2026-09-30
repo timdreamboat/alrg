@@ -555,6 +555,19 @@ the two skipped last time, no restaurant/menu data — left unmerged as
 redundant rather than merging noise into `main`. Added one more short update
 to #187 rather than a new card, per that issue's own standing note.
 
+**2026-09-30, next firing (6th consecutive):** same blocker, confirmed the
+same way (keyword search for a Supabase/database tool before touching
+anything — none loaded; the only match was the unrelated Artifacts-page
+`ArtifactData` tool, not this project's Supabase connector). No pipeline
+work possible again; `pending_publish/mn_oyama_2026-09-30.sql` still
+untouched. Re-checked all remote branches against `origin/main` (not a
+stale local `main` ref, which gave a misleading full-history diff on the
+first pass this firing) — no newly-orphaned branch holds real data work;
+`claude/upbeat-volta-p2v7vn` and `claude/upbeat-volta-teydb4` are still the
+only two unmerged branches, still just the same single duplicate "third
+consecutive outage" log commit each, left unmerged as before. Added one
+more short update to #187 rather than a new card, same standing note.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
