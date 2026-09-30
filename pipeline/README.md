@@ -593,6 +593,35 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, stopping the branch-reconciliation chase (still blocked,
+firing count now well past 19 across a tangle of orphaned branches):**
+every firing since the 10th has hit the same two facts — Supabase still
+unauthenticated, and this session's designated branch cannot push directly
+to `main` (denied as a "Production Deploy" action). Each one, reasonably,
+tried to fold the previous firings' outage-log entries forward onto its
+own branch so `main` wouldn't fall behind. That chase has become the
+problem: a dozen-plus orphaned branches now exist
+(`jjg3sd`/`gc6mvk`/`t6zbmx`/`ie7igl`/`nf634i`/`lev2oh`/`cjo0zm`/`n9opg0`/
+`id4ytj`/`p2v7vn`/`teydb4`/others), each re-deriving and re-folding the
+same handful of facts, several **mis-numbering the firing count** in the
+process (two different branches both called themselves "the 11th"). None
+of them carry any restaurant/menu data — confirmed repeatedly, nothing is
+actually at risk — so this is pure log bookkeeping consuming whole firings
+for zero benefit. One branch (`id4ytj`) already reached this conclusion
+independently ("stop the branch-reconciliation chase") but never reached
+`main` to be seen by later firings, which is exactly the failure mode:
+reconciliation-by-orphaned-branch doesn't converge.
+
+**Going forward, until a firing has real Supabase access again:** don't
+fold, don't re-derive a firing count from scattered branches, don't hunt
+the branch list for stragglers. Just confirm the connector is still
+unauthenticated, add (at most) one short comment to #187 if the prior
+comment is stale, and stop — no README edit needed most passes. This entry
+is the last detailed one; a future firing can delete the orphaned
+reconciliation branches in bulk once someone has a moment (they hold no
+data, only superseded copies of this log), but that's owner housekeeping,
+not something worth another automated pass.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
