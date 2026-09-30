@@ -214,6 +214,21 @@ store an Overture field directly.** The flow per state:
    a one-time analysis that then covers multiple real locations, same
    leverage as any other chain.
 
+   **Fourth instance, GA/Atlanta pass, 2026-09-29 — Rosie's (Coffee)
+   Cafe.** A candidate at 48 Northside Dr SW, Atlanta (Castleberry Hill)
+   turned out to be one of 3-4 locations of "Rosie's Coffee Cafe," a
+   family-owned group (Platt Restaurant Group, owner Ericka Platt) —
+   Castleberry Hill, East Point (2330 Sylvan Rd), Carrollton, and a
+   planned 4th location (Roosevelt Hall, University of West Georgia
+   campus) — all trading under the identical name and the same Southern
+   breakfast/brunch + coffee concept. The same-name signal here is even
+   stronger than Puerto Mazatlan's (different names per location) and
+   closer to the Ba Le/El Gallo Bravo pattern. Rejected from Track B
+   (`discovery_candidates` id 1114, status `rejected`, full detail in
+   `fetch_notes`) rather than extracted as a one-off independent. Add to
+   the same chain-menu-importer backlog as the three above — still not
+   actioned, a growing list worth a dedicated pass.
+
    **Separate recurring issue, not a chain/group problem — PA pass,
    2026-09-29: Overture's `website` field is wrong at a meaningfully high
    rate, not just occasionally stale.** 3 of 6 PA/Philadelphia candidates
