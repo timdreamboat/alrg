@@ -555,6 +555,38 @@ the two skipped last time, no restaurant/menu data — left unmerged as
 redundant rather than merging noise into `main`. Added one more short update
 to #187 rather than a new card, per that issue's own standing note.
 
+**2026-09-30, this firing (9th consecutive):** still unauthenticated —
+confirmed no Supabase/database tool loadable this session before attempting
+anything (a `ToolSearch` for "supabase" and for "database" both came back
+with nothing but the unrelated Artifact-page database tool). No pipeline
+work possible again; `pending_publish/mn_oyama_2026-09-30.sql` (staged
+2 firings ago) is still untouched — still needs the owner to run it once
+the connector is back.
+
+Firings 6-8 in this streak logged themselves on three branches
+(`claude/upbeat-volta-coslfv`, `-5sy8dq`, `-0ybh2a`) that never made it into
+`main` — this file's git history jumps straight from the 5th-consecutive
+entry above to this one as a result. Read all three directly rather than
+assume main was current: `-0ybh2a` (the latest, 08:44 UTC) already folds
+6-8 into one paragraph and confirms no new data-bearing orphaned branch
+turned up in that window either, beyond the same `p2v7vn`/`teydb4` pair
+noted for the 5th firing. `-5sy8dq` additionally recorded that its git
+tooling refused both `git merge` and `git cherry-pick` of `-coslfv` with a
+"Modify Shared Resources" permission denial, so it pushed its own log entry
+to its own branch by hand instead of consolidating — this firing hit the
+same shape of restriction (this session is scoped to commit and push only
+to its own designated branch, `claude/upbeat-volta-t3jhqr`, not to merge
+other firings' branches or fast-forward `main` directly), so it's doing the
+same: writing this paragraph from a direct read of `-0ybh2a`/`-5sy8dq`/
+`-coslfv` rather than a literal merge, and leaving all three branches
+unmerged for the owner (or a firing with broader git permissions) to fold
+in. Nothing about the substance changes: 9 straight hourly firings now
+blocked purely on Supabase auth, no restaurant data lost (publishing goes
+straight to Supabase, independent of git), only this repo's own account of
+what happened is fragmented across branches until someone with merge
+permission consolidates them. Added one more short update to #187 rather
+than a new card, same as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
