@@ -593,6 +593,39 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, this firing — still blocked; ending the branch-reconciliation chase for good.**
+Confirmed the same way as every firing above: `ToolSearch` for a Supabase/
+database tool came back with nothing but the unrelated Artifact-page
+database tool, so no DB read was attempted or failed and no pipeline work
+was possible. `pipeline/pending_publish/mn_oyama_2026-09-30.sql` is still
+sitting untouched.
+
+`main`'s own git history only shows this file through the 10th-consecutive
+entry above (`claude/upbeat-volta-rdegim`), but at least nine more firings
+happened after that (11th through 19th, each confirmed independently
+blocked), every one of them spending its entire firing trying to fold the
+previous firings' outage-log branches back into `main` — and every one of
+those merge attempts was denied as a "Production Deploy"-scoped action, per
+the firings' own branch history (`claude/upbeat-volta-id4ytj`,
+`-vq01xm`). That chase produced nothing but another orphaned branch each
+time; the firing on `claude/upbeat-volta-vq01xm` (21:42 UTC) already called
+it off, and this firing agrees and will not resume it.
+
+**What actually matters, checked directly rather than assumed:** every
+branch from this outage window that carries real restaurant/menu data (GA,
+MA, OH, MN, OR, ME, PA, IL Track B batches) is already fully merged into
+`main` — `git log main..origin/<branch>` is empty for every one of them.
+The only branches still ahead of `main` are pure outage-log commits with no
+data, exactly the kind `vq01xm` already flagged as not worth chasing. So the
+real underlying risk (published data with no git record) that motivated the
+original branch recovery is not present here — this is now just a git
+bookkeeping gap on `main`'s copy of this file, not a data-loss risk, and not
+worth a human's time to fix by hand either. Future firings: don't
+re-attempt merging old outage-log branches into `main`; just confirm the
+blocker the same way and add (at most) one short update to the ops issue.
+The fix that actually ends this is the owner re-authenticating the Supabase
+connector — nothing else here moves that forward.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
