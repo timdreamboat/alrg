@@ -605,6 +605,26 @@ permissions since the last firing, so that bookkeeping gap is now closed; no
 new orphaned branches to recover this pass. Added one more short update to
 #187 rather than a new card, same as every firing in this streak.
 
+**2026-09-30, this firing (12th consecutive):** still unauthenticated —
+confirmed via `ListConnectors` for "supabase": `installState: "needs_reconnect"`,
+`connected: false`, despite `enabledInChat: true`. No Supabase/database tool
+loaded, so no DB read was attempted or failed and no pipeline work was
+possible again. `pending_publish/mn_oyama_2026-09-30.sql` is still untouched.
+The "cleaned up" state noted last firing didn't hold: this firing's own
+designated branch (`gc6mvk`) started one firing behind `main` (main was at
+the 10th-firing commit; the 11th firing's log lived only on an unmerged
+branch, `jjg3sd`) and a fresh fetch turned up 7 more single-commit orphaned
+branches beyond that — `jjg3sd` (real content: the missing 11th-firing log,
+merged into this branch above) plus 6 duplicate outage-log-only commits
+(`0ybh2a`, `5sy8dq`, `coslfv`, `p2v7vn`, `t3jhqr`, `teydb4`, all already
+accounted for in firings 3, 6, 7, 9 above) left unmerged as redundant, same
+disposition as every prior pass. Each hourly firing still gets a fresh
+branch that can't push straight to `main`, so this reconciliation step —
+fetch, diff every remote branch against `main`, recover anything with real
+content — is now a standing part of handling this outage, not a one-time
+cleanup. Added one more short update to #187 rather than a new card, same
+as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
