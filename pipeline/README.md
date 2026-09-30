@@ -593,6 +593,33 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, this firing (16th consecutive):** still unauthenticated — a
+targeted `ToolSearch` for Supabase/database tools returned nothing usable
+(only the unrelated Artifact-page database tool), confirming no DB read was
+attempted or failed and no pipeline work was possible again this pass.
+`pending_publish/mn_oyama_2026-09-30.sql` remains untouched.
+
+This session's own designated branch (`claude/upbeat-volta-cjo0zm`) started
+from the same base as the "10th consecutive" entry above (commit `3806d53`),
+and this firing does not have permission to merge sibling branches into
+`main` (a `git merge` of another branch was denied by this session's
+permission policy) — so unlike the 4th/10th-consecutive entries, this pass
+could not fold in or reconcile other branches' work itself. For the record,
+a direct read of the remote branch list found **five** more firings already
+logged this same outage independently on their own unmerged branches since
+the 10th-consecutive entry above, each starting from an earlier point and
+not seeing the others' work: `claude/upbeat-volta-jjg3sd` (11th),
+`-gc6mvk` (12th, recovers 11th), `-t6zbmx` (13th, folds 11th/12th),
+`-ie7igl` (14th, folds 13th), and `-nf634i` (15th, folds 11th-14th — this
+is the most complete/up-to-date account of the streak, a strict superset of
+this file's `main` copy). None of those five branches carry any
+restaurant/menu data either — diffed `nf634i` (the most advanced) against
+`main` and confirmed the only change is additions to this file. So nothing
+data-bearing is at risk, but `main`'s own copy of this log is now genuinely
+stale (missing firings 11-15) until someone with permission to write to
+`main` directly folds `nf634i` in. Added one more short update to #187
+rather than a new card, same as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
