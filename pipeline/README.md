@@ -593,6 +593,35 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, this firing (11th consecutive):** still unauthenticated —
+confirmed no Supabase/database tool loadable this session (`ToolSearch` for
+"supabase execute_sql database" returned only the unrelated Artifact-page
+database tool), so no DB read was attempted or failed and no pipeline work
+was possible again. `pending_publish/mn_oyama_2026-09-30.sql` is still
+untouched — that insert has now been waiting since the #186 firing, through
+the entire 11-firing outage on top of it.
+This session's own designated branch (`vmnm4l`) had been created from an
+old point well behind `main` (pre-dating the 6th–10th-firing reconciliation
+merges) — reset it to `main`'s tip before writing this entry so it doesn't
+become another orphaned divergent branch itself, per the standing
+instruction to restart a stale designated branch from the current default
+branch rather than stack on top of old history.
+Re-checked every remote branch (26 total, `main` plus this session's own
+aside): none carry any restaurant/menu, app, or pipeline-script data — every
+one of `3hymg1`, `9vqtyx`, `akn2ui`, `apy5pt`, `buqwle`, `cjo0zm`, `coslfv`,
+`fieufq`, `gc6mvk`, `id4ytj`, `ie7igl`, `jdl24y`, `jjg3sd`, `lev2oh`,
+`n9opg0`, `nf634i`, `p2v7vn`, `pq932c`, `pzphyz`, `t3jhqr`, `t6zbmx`,
+`teydb4`, `un21hk`, `0ybh2a`, `5sy8dq` diffs against `main` as doc-only
+(duplicate `README.md`/`COVERAGE_PLAN.md` outage-log entries plus the same
+already-tracked `pending_publish/mn_oyama_2026-09-30.sql`) — confirmed via
+`git diff main <branch> --stat` on each, not just commit-message skimming.
+Nothing real left unmerged; the growing pile of doc-only orphaned branches
+(10 more than the 16 firing #10 counted) is itself the "side effect" noted
+below compounding — left unmerged as redundant rather than merging 25
+branches of near-identical duplicate log text into `main`. Added one more
+short update to #187 rather than a new card, same as every firing in this
+streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
