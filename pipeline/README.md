@@ -555,6 +555,31 @@ the two skipped last time, no restaurant/menu data — left unmerged as
 redundant rather than merging noise into `main`. Added one more short update
 to #187 rather than a new card, per that issue's own standing note.
 
+**2026-09-30, next firing (6th consecutive, per issue #187's comment log —
+not reflected in this file's git history until now):** that firing logged its
+own entry on branch `claude/upbeat-volta-coslfv` and posted a 6th-consecutive
+comment to #187, but its branch was never merged back into `main`, so its
+log paragraph never landed here. Confirmed 2026-09-30 by inspecting
+`origin/claude/upbeat-volta-coslfv` directly: same blocker, still
+unauthenticated, no new orphaned data-bearing branches found that pass either
+(`p2v7vn`/`teydb4` still just duplicate log commits).
+
+**2026-09-30, this firing (7th consecutive):** still unauthenticated —
+confirmed no Supabase/database tool loadable this session before attempting
+anything. `pending_publish/mn_oyama_2026-09-30.sql` still untouched. This
+pass also hit a new wrinkle worth recording: this session's git access is
+gated by a permission classifier that denied both `git merge` and
+`git cherry-pick` of the orphaned `coslfv` branch into this one ("Modify
+Shared Resources"), so the 6th-firing paragraph above had to be written by
+hand from a direct read of that branch rather than recovered by merging it —
+`coslfv` itself is left unmerged and still holds that original commit,
+available for a future firing or the owner to fold in properly if a
+merge/cherry-pick is permitted there. The same classifier is expected to
+gate a direct push to `main`, so this firing pushes only to its own
+designated branch (`claude/upbeat-volta-5sy8dq`) rather than fast-forwarding
+main the way several earlier firings did — main will lag this branch by one
+entry until the owner or a future firing merges it in.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
