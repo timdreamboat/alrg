@@ -593,6 +593,62 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-09-30, this firing (16th consecutive):** still unauthenticated — a
+targeted `ToolSearch` for Supabase/database tools returned nothing usable
+(only the unrelated Artifact-page database tool), confirming no DB read was
+attempted or failed and no pipeline work was possible again this pass.
+`pending_publish/mn_oyama_2026-09-30.sql` remains untouched.
+
+This session's own designated branch (`claude/upbeat-volta-cjo0zm`) started
+from the same base as the "10th consecutive" entry above (commit `3806d53`),
+and this firing does not have permission to merge sibling branches into
+`main` (a `git merge` of another branch was denied by this session's
+permission policy) — so unlike the 4th/10th-consecutive entries, this pass
+could not fold in or reconcile other branches' work itself. For the record,
+a direct read of the remote branch list found **five** more firings already
+logged this same outage independently on their own unmerged branches since
+the 10th-consecutive entry above, each starting from an earlier point and
+not seeing the others' work: `claude/upbeat-volta-jjg3sd` (11th),
+`-gc6mvk` (12th, recovers 11th), `-t6zbmx` (13th, folds 11th/12th),
+`-ie7igl` (14th, folds 13th), and `-nf634i` (15th, folds 11th-14th — this
+is the most complete/up-to-date account of the streak, a strict superset of
+this file's `main` copy). None of those five branches carry any
+restaurant/menu data either — diffed `nf634i` (the most advanced) against
+`main` and confirmed the only change is additions to this file. So nothing
+data-bearing is at risk, but `main`'s own copy of this log is now genuinely
+stale (missing firings 11-15) until someone with permission to write to
+`main` directly folds `nf634i` in. Added one more short update to #187
+rather than a new card, same as every firing in this streak.
+
+**2026-09-30, this firing (17th consecutive):** still unauthenticated — a
+targeted `ToolSearch` for Supabase/database tools again returned nothing
+usable (only the unrelated Artifact-page database tool), confirming no DB
+read was attempted or failed and no pipeline work was possible this pass
+either. `pending_publish/mn_oyama_2026-09-30.sql` remains untouched.
+
+This session's own designated branch (`claude/upbeat-volta-n9opg0`) also
+started from the same base as the "10th consecutive" entry (commit
+`3806d53`) and also cannot merge sibling branches or push to `main`
+directly — same permission scoping every firing since the 10th has hit.
+Re-checked the full remote branch list (24 branches beyond `main`): besides
+this session's own branch and the six already-known outage-log-only
+branches from firings 6-10 (`coslfv`, `5sy8dq`, `0ybh2a`, `p2v7vn`,
+`teydb4`, `t3jhqr`, all pre-dating and already accounted for above), ten
+branches (`3hymg1`, `9vqtyx`, `akn2ui`, `apy5pt`, `buqwle`, `fieufq`,
+`jdl24y`, `pq932c`, `pzphyz`, `un21hk`) carry no commits beyond `main` at
+all, and six carry only outage-log reconciliation commits, no
+restaurant/menu data: `jjg3sd` (11th), `gc6mvk` (11th-12th), `t6zbmx`
+(11th-13th), `ie7igl` (11th-14th), `nf634i` (11th-15th, still the most
+complete individual-entry account), and `cjo0zm` (10th-from-`main` plus a
+16th-consecutive entry summarizing 11th-15th — the version this entry is
+itself built from, since it's the most complete single-file account
+available to this session). So the actual streak is 17 consecutive
+outaged firings, not the 10 `main` currently shows; `main` stays stale
+until a session with write access to it folds one of these branches in.
+Nothing data-bearing is at risk — every non-empty branch above is
+confirmed outage-log-only. Added one more short update to #187 rather than
+a new card, same as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
