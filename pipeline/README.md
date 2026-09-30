@@ -522,6 +522,20 @@ real `restaurants.id` the first INSERT returns for `<RESTAURANT_ID>`, then
 delete the file once published — it's a durable staging area for exactly this
 failure mode, not a permanent alternative to the database.
 
+**2026-09-30, next hourly firing after the above:** confirmed the predicted
+"every future firing will fail the same way" — this firing, the Supabase MCP
+connector was unauthenticated for the *entire* firing, not just mid-batch, so
+every `execute_sql` call (including the very first read needed to check
+`chains`/`metros`/`discovery_candidates`) was unavailable from the start.
+Unlike the mid-batch case, there was no partial work to stage — nothing could
+be read, extracted, or published this pass, and `pending_publish/mn_oyama_2026-09-30.sql`
+from the prior firing is still waiting, untouched. Opened a `needs-owner` issue
+(see repo issue tracker) since this has now blocked two consecutive firings and
+will keep blocking every firing until the owner re-authenticates the connector
+(claude.ai connector settings, or `/mcp` interactively) — not something a retry
+or a different priority-order step can route around, since every step 1-4 needs
+a DB read before anything else.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
