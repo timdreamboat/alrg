@@ -555,6 +555,24 @@ the two skipped last time, no restaurant/menu data — left unmerged as
 redundant rather than merging noise into `main`. Added one more short update
 to #187 rather than a new card, per that issue's own standing note.
 
+**2026-09-30, three more firings (6th, 7th, 8th consecutive):** same
+blocker each time — no Supabase/database tool available before attempting
+anything, so no DB call was attempted or failed. No pipeline work possible
+in any of the three; `pending_publish/mn_oyama_2026-09-30.sql` still
+untouched. Each firing again checked for newly-orphaned branches with real
+data work; none were found beyond the ones already on record here
+(`claude/upbeat-volta-p2v7vn`, `claude/upbeat-volta-teydb4`, plus two more
+this window — `claude/upbeat-volta-coslfv`, `claude/upbeat-volta-5sy8dq` —
+that hold only their own short outage-log commits, now folded into this
+paragraph rather than left scattered across branches). Each firing added a
+short update to #187 rather than a new card, per that issue's standing
+note. This session's git tooling declined a couple of the routine
+branch-merge/consolidation steps outright this window, which is why the
+detail here is a summary reconstructed from those branches' own commits
+rather than a literal merge history — nothing about the substance changes:
+still 8 straight firings blocked purely on Supabase auth, still no data
+lost, still waiting on the owner to re-authenticate the connector.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
