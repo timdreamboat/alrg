@@ -675,6 +675,28 @@ this reconciliation lives on this firing's branch, same as `t6zbmx`'s.
 Added one more short update to #187 rather than a new card, same as every
 firing in this streak.
 
+**2026-09-30, this firing (15th consecutive):** still unauthenticated —
+confirmed via `ListConnectors` for "supabase": `installState: "needs_reconnect"`,
+`connected: false`, `enabledInChat: true`. No Supabase/database tool loaded,
+so no DB read was attempted or failed and no pipeline work (chains, metros,
+or maintenance) was possible again this pass. `pending_publish/mn_oyama_2026-09-30.sql`
+is still untouched, now well over 13 hours queued. This session's own
+designated branch started at `origin/main`'s 10th-firing commit, one firing
+behind the 14th-firing state already reconciled on branch `ie7igl` — folded
+that branch in via a clean fast-forward (no conflicts) rather than
+re-deriving the same reconciliation from scratch. Re-checked every remote
+branch against the now-current baseline: 6 branches (`0ybh2a`, `5sy8dq`,
+`coslfv`, `p2v7vn`, `t3jhqr`, `teydb4`) still carry exactly one single-commit
+duplicate outage-log entry each (firings 3, 6, 6-8, 7, 9 — all already
+accounted for above), left unmerged as redundant; every other remote branch
+is now fully contained in `ie7igl`'s history. No new data-bearing orphaned
+branch found this pass. Same as the last several firings, this session
+cannot push straight to `main` (a direct attempt was denied by the auto-mode
+permission classifier as a "Production Deploy" action back on the 13th
+firing, and nothing about that scoping has changed) — so this reconciliation
+lives on this firing's branch, same as `ie7igl`'s. Added one more short
+update to #187 rather than a new card, same as every firing in this streak.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
