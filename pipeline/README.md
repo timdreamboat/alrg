@@ -542,6 +542,19 @@ failed. Nothing new to check, extract, or publish; `pending_publish/mn_oyama_202
 is still untouched. Not adding another comment thread to #187 beyond noting
 this pass there too, since the blocker and the fix needed are unchanged.
 
+**2026-09-30, next firing (5th consecutive):** same blocker, confirmed the
+same way (keyword search for a Supabase/database tool before touching
+anything — none loaded, so no DB call was attempted or failed). No pipeline
+work possible again; `pending_publish/mn_oyama_2026-09-30.sql` still
+untouched. Checked for any newly-orphaned Track B branches from firings
+during this outage window in case one had done real work before losing its
+merge, the way GA/MA/OH did last firing — found two more
+(`claude/upbeat-volta-p2v7vn`, `claude/upbeat-volta-teydb4`), but both hold
+only a single duplicate "third consecutive outage" log commit each, same as
+the two skipped last time, no restaurant/menu data — left unmerged as
+redundant rather than merging noise into `main`. Added one more short update
+to #187 rather than a new card, per that issue's own standing note.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
