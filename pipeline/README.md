@@ -593,6 +593,25 @@ orphaned branches in — same bookkeeping note as firings 7-9, not a new
 issue. Added one more short update to #187 rather than a new card, same as
 every firing in this streak.
 
+**2026-10-01, still ongoing (outage now past 30 hours):** confirmed via
+`ListConnectors` that the Supabase connector is `installState:
+"needs_reconnect"`, `connected: false` (`enabledInChat: true`, so this is
+genuine unauthenticated state, not a per-chat toggle) — same blocker as
+every firing since 2026-09-30 01:42. No DB tool loaded, so no pipeline
+work was possible this firing either; `pending_publish/mn_oyama_2026-09-30.sql`
+remains unpublished. Every firing since the 10th-consecutive entry above
+has hit the identical wall and logged its own short confirmation as a
+comment on issue #187 rather than a full paragraph here each time — that
+issue is the complete per-firing record going forward; this file's own
+account intentionally stops summarizing each individual hourly repeat to
+avoid the entry becoming unbounded while the outage continues. 29 remote
+branches beyond `main` exist from firings during this window (confirmed no
+new ones this firing); per the standing call logged on #187, not resuming
+repeated fold/merge attempts into `main` — those have been denied by a
+"Production Deployment"-style permission scope on this session type, not
+worth re-attempting every firing. Nothing to do here until the owner
+re-authenticates the connector.
+
 **Side effect of the outage worth flagging separately:** each hourly firing
 gets its own auto-generated git branch, and while Supabase access was
 degrading (roughly 2026-09-29 22:00–2026-09-30 03:40), several firings never
