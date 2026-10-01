@@ -31,6 +31,20 @@ Refuse to publish otherwise and say why.
     Shrimply Baja Salad -> `shellfish`) rather than guessing. Don't
     reintroduce either pattern — always normalize to this exact key list
     before insert, never a synonym and never a merged category.
+1b. **Canonical allergen flag VALUES — the same rule applies to values, not
+    just keys:** the ONLY values `app/index.html` recognizes are `clear`,
+    `may`, `shared`, `contains` (its `RANK` object maps exactly these four;
+    anything else is `undefined` there, which a plain `>` comparison always
+    treats as *less than* `clear` — so an unrecognized value doesn't just
+    fail to render, it silently renders as fully CLEAR, the worst possible
+    failure mode for a safety-adjacent product). Found 2026-10-01: 314
+    rows across 5 already-published restaurants used `may_contain` instead
+    of `may` — a natural synonym to type, never caught because the
+    normalization note above only ever called out keys. Fixed by replacing
+    the value in place (`may_contain`->`may`, nothing else touched).
+    Before inserting, normalize every flag value to this exact four-value
+    list the same way key normalization already works — never a synonym
+    like `may_contain`, `possible`, or `cross_contact` for `may`/`shared`.
 2. Upsert restaurants on place_id (or name+zip when no place_id):
    POST /rest/v1/restaurants with Prefer: resolution=merge-duplicates.
    Set data_source, last_reviewed=now.
