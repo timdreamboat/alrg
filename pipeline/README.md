@@ -193,7 +193,7 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       context, then run one pass of the ALRG batch pipeline. Every hour,
       follow CLAUDE.md's autonomous priority order exactly: chains first,
       then metros, then maintenance mode once both are empty. When
-      working Track B (independents), pull up to 6 pending candidates
+      working Track B (independents), pull up to 12 pending candidates
       from discovery_candidates for the target state/metro (fewer if
       that many aren't available) and process them CONCURRENTLY as
       parallel subagent tasks, each running restaurant-menu-extractor ->
@@ -214,10 +214,12 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       board per CLAUDE.md (issue per batch, moved to Done with a
       one-line summary at the end). Write an ops_log entry summarizing
       what was done."
-   (2026-09-28: added the 6-way parallel-subagent instruction for Track B
-   — previously the routine processed one independent restaurant per
-   firing, serially, which was the main throughput bottleneck. Chain
-   imports and Track A chain-copy stay serial/scripted, no change there.
+   (2026-09-28: added the parallel-subagent instruction for Track B —
+   previously the routine processed one independent restaurant per
+   firing, serially, which was the main throughput bottleneck. Raised
+   from 6 to 12 per firing on 2026-10-01 once the owner confirmed
+   subscription usage had headroom; no other change to how it works.
+   Chain imports and Track A chain-copy stay serial/scripted, no change there.
    **This prompt is saved on claude.ai, not in this repo — editing this
    file alone does not change the live Routine's behavior.** If a Routine
    is already scheduled, open it at claude.ai/code/routines and replace
