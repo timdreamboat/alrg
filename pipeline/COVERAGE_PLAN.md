@@ -214,6 +214,44 @@ store an Overture field directly.** The flow per state:
    a one-time analysis that then covers multiple real locations, same
    leverage as any other chain.
 
+   **Four more instances, IN/Indianapolis pass, 2026-10-01 — a near-50%
+   reject rate on this pass's 12 parallel subagents (5 of 12), all
+   caught before publish, none leaked through as false independents:**
+   - **"Juicy Seafood" franchise** (candidate: "Snow Crab Juicy Seafood,"
+     8340 Kelly Ln) — a documented multi-state Midwest chain
+     (Chinese-owned, 10+ locations) operating under rotating storefront
+     names per location (Blue Crab/Snow Crab/Mr. & Mrs. Crab Juicy
+     Seafood, The Juicy Seafood, Juicy Crab) — same address was "Blue
+     Crab Juicy Seafood" per a 2019 article, renamed since, same
+     standardized build-your-own seafood-boil menu structure confirmed
+     recurring across differently-named locations.
+   - **Indiana State Park Inns** (candidate: "Garrison," actually
+     Garrison Restaurant at Fort Harrison State Park Inn) — a state
+     government-operated group of 7 inns/restaurants (Abe Martin Lodge,
+     Canyon Inn, Clifty Inn, Fort Harrison, Potawatomi Inn, Spring Mill
+     Inn, Turkey Run Inn) sharing one standardized core menu document
+     (verbatim items/descriptions/prices confirmed) — the first
+     government-operated instance of this pattern seen so far.
+   - **Murphy's Pubhouse/Craft House** (candidate: "Murphy's Pubhouse
+     South") — a confirmed 3-location Stonebraker-family group (Fishers,
+     Thompson Rd/"South", Geist) sharing signature menu items across
+     differently-branded locations.
+   - **Hoaglin To Go** (candidate: "Stardust Terrace Cafe," operated by
+     Hoaglin To Go at the Indiana History Center) — a smaller, purely
+     local 2-location group (this + a Mass Ave location) with the same
+     dishes renamed cosmetically per location; flagged as the same
+     pattern but likely too small on its own to justify a dedicated
+     `chains` row — owner's call.
+
+   All 4 flagged as future chain-menu-importer candidates (full detail
+   in each `discovery_candidates.fetch_notes`), not actioned this pass —
+   growing the same backlog as Puerto Mazatlan/Ba Le/KFire/El Gallo
+   Bravo/Rosie's Coffee Cafe above. The State Park Inns case in
+   particular is worth prioritizing if this backlog is ever worked: one
+   analysis would cover 7 real, already-standardized locations across
+   multiple states' worth of coverage pressure (Indiana specifically,
+   but the same multi-state-inn-system pattern likely recurs elsewhere).
+
    **Fourth instance, GA/Atlanta pass, 2026-09-29 — Rosie's (Coffee)
    Cafe.** A candidate at 48 Northside Dr SW, Atlanta (Castleberry Hill)
    turned out to be one of 3-4 locations of "Rosie's Coffee Cafe," a
