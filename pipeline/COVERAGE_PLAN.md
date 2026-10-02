@@ -472,6 +472,43 @@ restaurant before you visit." This is implemented in `app/index.html`
 (see the detail-drawer rendering) and applies to every restaurant with
 a `chain_id` set, regardless of `verified`.
 
+   **Fifth cluster, IA/Des Moines pass, 2026-10-02 — three instances in one
+   12-candidate batch (25% reject rate, all caught before publish):**
+   - **Teriyaki House Japanese Grill** (candidate: 9250 University Ave Ste
+     106, West Des Moines) — Overture's listed website (teriyakihouse.co)
+     actually belongs to a *different* Teriyaki House location (1014 E
+     14th St, Des Moines, different phone). A third same-named location
+     (1802 SE Delaware Ste 108, Ankeny) has an identical menu
+     structure/protein lineup, and a fourth, differently-named sibling
+     concept ("Teriyaki Eats Japanese Grill," Windsor Heights) uses
+     word-for-word identical business-model description — a standardized
+     build-your-own-teriyaki-bowl concept recurring under slightly
+     different storefront names across the metro, the same rotating-name
+     shape as "Juicy Seafood" (IN, 2026-10-01).
+   - **Tavern Pizza & Pasta Grill** (candidate: 1755 50th St, West Des
+     Moines) — independent sources explicitly describe this address as
+     "a second location" of The Tavern (205 Fifth St, Historic Valley
+     Junction, est. 1945). A third location (1106 Army Post Rd, Des
+     Moines) shares a verbatim-identical grinder lineup ("The Italian
+     Grinder," "The Special Grinder," "The Sting") plus shared staples
+     (onion rings, Fettuccine Alfredo, Lasagna, Chicken Parmesan) — a real
+     3-location local group, not a one-off independent.
+   - **El Toreado Restaurant Bar & Grill** (candidate: 3751 EP True Pkwy,
+     West Des Moines) — the restaurant's own site lists a second location
+     under the identical brand (4521 Fleur Dr, Des Moines, "the Airport
+     location") with one shared menu/ordering flow and no
+     location-specific variation.
+
+   All 3 flagged as future chain-menu-importer candidates (full detail in
+   each `discovery_candidates.fetch_notes`, ids 1179-1181), not actioned
+   this pass — growing the same backlog as Puerto Mazatlan/Ba Le/KFire/El
+   Gallo Bravo/Rosie's Coffee Cafe/Juicy Seafood/Indiana State Park
+   Inns/Murphy's Pubhouse above. Des Moines in particular is shaping up as
+   a metro with an unusually high density of small local restaurant
+   groups — worth keeping in mind if a dedicated chain-menu-importer pass
+   through this backlog is ever scheduled, since 3 of the ~15 candidates
+   found there so far are groups, not one-offs.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
