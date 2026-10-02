@@ -423,6 +423,37 @@ pass doesn't have to rediscover it), and move on. Never fall back to
 guessing chain allergen data from third-party aggregators — that
 remains a hard no per `chain-menu-importer`.
 
+## Chains attempted 2026-10-02, not resolved — Jack in the Box, Rivas Mexican Grill, Master Kim's Korean BBQ
+
+Three previously-unattempted `chains` rows were worked this pass. None hit a bot wall — each is a
+different structural gap, worth knowing before the next pass burns time re-discovering them:
+
+- **Jack in the Box** — site is a Next.js SPA; the nav's "Nutrition & Allergens" link resolves
+  (via real link extraction, not guessed URLs) to
+  `https://api.jackintheboxdigital.com/digital-account/menu-experience-api/v1/pdf/nutrition` — an
+  authenticated API endpoint that 404s even when fetched from a browser context carrying the
+  site's own session cookies (route not found, not an auth-denied response, so it likely needs a
+  location/restaurant ID or a token injected by a client-side click handler we didn't reproduce).
+  Needs dedicated multi-step work (sniff the real XHR the click handler fires, or find the param
+  it needs), not a quick retry.
+- **Rivas Mexican Grill** — small NV-based regional chain (9+ locations). Own site
+  (rivasmexicangrill.com/menu.html) is a client-side accordion with zero item text in the rendered
+  DOM (category headers only — the earlier text-only fetch that appeared to list items was later
+  found to have hallucinated them from the category names, not real content). The site's own
+  "Order Online" link goes to `order.online/business/...`, which hit a bot-check interstitial.
+  Third-party aggregator (singleplatform.com) returned empty. Needs either a link-extraction pass
+  to find the real per-category item data, or a human-provided menu.
+- **Master Kim's Korean BBQ** — 3-4 location Las Vegas AYCE Korean BBQ group (Sapporo Group
+  Management). No official website/menu document found at all in a real search pass — this one
+  needs real discovery work (press coverage only gives a general dish list, not an itemized
+  allergen-taggable menu), not just a fetch retry.
+
+None of these are confirmed hard blocks (no bot wall hit), so they don't go in
+`BLOCKED_SOURCES.md` per that file's own criteria — logging here instead so the next pass doesn't
+re-run the same dead-end searches. Worth a dedicated pass with more time budget, not a routine
+hourly attempt. Re-confirmed 2026-10-02 (next firing): still no new diagnostic signal, skipped per
+this note.
+
 ## Chains with no single-matrix US source — Jersey Mike's, Wendy's, Starbucks
 
 Found 2026-09-28: these 3 chains are a different failure mode than
@@ -632,6 +663,23 @@ that's a sign this setting isn't being honored by the Routine's
 environment (project settings may need to be set in the Routine's own
 `claude.ai/code/routines` config too, not just committed to the repo) —
 don't just keep merging them back by hand, revisit this setting instead.
+
+**2026-10-02, the firing right after this fix landed — the fix did not take effect.** A firing
+starting at 2026-10-02 02:00 UTC (right after the `bgIsolation: none` commit landed on `main`) still
+created its own isolated branch (`claude/affectionate-curie-5b7k8u`) and did real work on it (Costa
+Vida chain import + WI/Milwaukee Track B, 11 restaurants, 1112 items) that never got merged back —
+the same pattern the fix was supposed to eliminate. The *next* firing after that (this entry's
+author, working RI/Providence) found the orphaned branch, confirmed via `git diff` that it held real
+unmerged data, and attempted to merge it into `main` directly — that attempt was denied by the same
+"Modify Shared Resources" / "Production Deployment"-style permission gate noted for firings 6-9
+above, confirming this session is *also* scoped to commits/pushes on its own branch only, same as
+those outage firings. Net: `worktree.bgIsolation: "none"` does not appear to fully prevent the
+isolated-branch behavior, or isn't honored consistently across firing environments — the project
+settings may genuinely need to be set in the Routine's own `claude.ai/code/routines` config too, as
+this section already speculated. This firing's own work (RI Track B, 10 restaurants published) is
+sitting on this session's own branch for the same reason and will need the same manual-recovery
+treatment as the GA/MA/OH branches before it — flagging again rather than re-attempting the merge,
+since a session-level permission scope isn't something a retry fixes.
 
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
