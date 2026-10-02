@@ -611,6 +611,28 @@ before a firing ends, even when it published nothing), since the underlying
 restaurant data itself was never at risk (it publishes to Supabase directly,
 independent of git), only this repo's own history of what happened.
 
+**Durable fix applied 2026-10-02 — `.claude/settings.json`'s
+`worktree.bgIsolation`.** Root cause identified: Claude Code's default
+`worktree.bgIsolation` setting is `"worktree"`, which blocks a *background*
+session (exactly what an hourly Routine firing is — non-interactive,
+unattended) from editing this repo's main checkout directly until it
+explicitly calls `EnterWorktree`/merges back. Every branch logged above
+(`claude/upbeat-volta-*`, `claude/affectionate-curie-*`) matches this
+pattern exactly — an auto-named isolated worktree branch per firing that
+needed an explicit merge-back step the Routine's own prompt never asked
+for, and which a "Production Deployment"-style permission gate sometimes
+denied outright when it did try (see the 2026-10-01 outage log above).
+Set `worktree.bgIsolation: "none"` in this repo's committed
+`.claude/settings.json` so a Routine firing writes straight to `main` the
+way its own prompt already describes ("ONE commit and push per firing"),
+with no isolated branch created in the first place — nothing left to
+forget to merge back. If a firing ever creates a new
+`claude/<adjective>-<noun>-<id>`-style branch again after this date,
+that's a sign this setting isn't being honored by the Routine's
+environment (project settings may need to be set in the Routine's own
+`claude.ai/code/routines` config too, not just committed to the repo) —
+don't just keep merging them back by hand, revisit this setting instead.
+
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
 Found 2026-09-23: the Routine's cloud sandbox doesn't have `duckdb` (the
