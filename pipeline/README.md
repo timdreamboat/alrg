@@ -203,23 +203,37 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       geocoding (1 request/second, hard rate limit) both need to run
       serially against the shared database or they'll race each other.
       Subagents report their findings back to the main thread; the main
-      thread alone writes to ops_log, BLOCKED_SOURCES.md, and this
-      repo's git history, with ONE commit and push per firing at the
-      end, after all subagents finish — never let a subagent commit or
-      push on its own, that's how concurrent git writers from the same
-      firing corrupt this repo's history. Publish on PASS or PASS WITH
-      CORRECTIONS with no owner review. Only open a needs-owner card on
-      a second consecutive audit fail for the same target, or a
-      safety-relevant community report. Update the GitHub Projects
-      board per CLAUDE.md (issue per batch, moved to Done with a
-      one-line summary at the end). Write an ops_log entry summarizing
-      what was done."
+      thread writes everything — including chain-block and
+      structural-gap findings that used to go in BLOCKED_SOURCES.md or
+      COVERAGE_PLAN.md — to ops_log only, as a 'pipeline_note' event. Do
+      NOT attempt a git commit or push during a firing, not even once,
+      not even on a clean retry — this session type is permission-scoped
+      to its own branch only (confirmed repeatedly: 2026-09-30 through
+      2026-10-02, every attempt to push to main was denied by a
+      'Modify Shared Resources'/'Production Deployment'-style gate, no
+      exceptions found), so any attempt either creates an orphaned
+      branch nobody merges back or wastes the firing on a denied push.
+      Publish on PASS or PASS WITH CORRECTIONS with no owner review.
+      Only open a needs-owner card on a second consecutive audit fail
+      for the same target, or a safety-relevant community report.
+      Update the GitHub Projects board per CLAUDE.md (issue per batch,
+      moved to Done with a one-line summary at the end) — this uses the
+      GitHub API/gh, not a git push, so it's unaffected and keeps
+      working normally. Write an ops_log entry summarizing what was
+      done."
    (2026-09-28: added the parallel-subagent instruction for Track B —
    previously the routine processed one independent restaurant per
    firing, serially, which was the main throughput bottleneck. Raised
    from 6 to 12 per firing on 2026-10-01 once the owner confirmed
    subscription usage had headroom; no other change to how it works.
    Chain imports and Track A chain-copy stay serial/scripted, no change there.
+   2026-10-02: removed the per-firing git commit/push instruction
+   entirely — see "Why the Routine never touches git anymore" below for
+   the full root-cause story. The `worktree.bgIsolation: "none"` setting
+   added earlier that same day did NOT fix it (confirmed by a firing that
+   ran after the setting landed and still got denied) — leaving that
+   setting in place is harmless but it is not the actual fix; this
+   prompt change is.
    **This prompt is saved on claude.ai, not in this repo — editing this
    file alone does not change the live Routine's behavior.** If a Routine
    is already scheduled, open it at claude.ai/code/routines and replace
@@ -516,10 +530,17 @@ already known; only retry those occasionally, e.g. once every several
 passes, in case the site's rules changed). When a chain hits the *same*
 block signature on a second separate pass (not immediately after a prior
 attempt against the same domain in the same session, which can be
-throttling rather than a real block), move it from "Watching" to
-"Confirmed hard blocks" in that file — append the row, commit, and push.
-This is a repo file specifically so it's easy for the owner to glance at
-and act on, not just another `ops_log` row.
+throttling rather than a real block), that's a confirmed-block finding —
+**write it to `ops_log` as a `pipeline_note` event** (`{file:
+"BLOCKED_SOURCES.md", section: "Confirmed hard blocks", chain, url,
+signature, first_confirmed, attempts}`), not a git commit (2026-10-02: the
+Routine's session type is permission-scoped and can never push to this
+repo — see "Why the Routine never touches git anymore" below; every
+attempt either gets denied or lands on an orphaned branch). A human
+session periodically folds accumulated `pipeline_note` rows into this
+file in one batched commit — that's still what keeps it a glanceable repo
+file for the owner, just with the actual file write happening in an
+approval-gated session instead of an unattended one.
 
 **This applies to chains only.** An independent restaurant's fetch attempt
 — blocked, dead domain, structural gap, wrong-match, anything — does NOT go
@@ -680,6 +701,36 @@ this section already speculated. This firing's own work (RI Track B, 10 restaura
 sitting on this session's own branch for the same reason and will need the same manual-recovery
 treatment as the GA/MA/OH branches before it — flagging again rather than re-attempting the merge,
 since a session-level permission scope isn't something a retry fixes.
+
+**Final verdict, 2026-10-02 (owner session) — this is a deliberate platform
+guardrail, not a bug, and not something to route around.** "Modify Shared
+Resources" / "Production Deployment" is the same auto-mode classifier
+category that also blocks an owner's own interactive session from doing
+things like deleting a branch or editing its own permission settings
+without a human explicitly approving first — it exists specifically to
+stop an unattended agent from modifying a shared/production resource with
+no one watching. An hourly Routine firing has no human present to approve
+anything, so it is *correctly* denied every time, consistently, across
+every firing and every branch tried so far. `worktree.bgIsolation: "none"`
+doesn't fix this because it was never the real cause — it governs whether
+a background session is isolated into a worktree at all, not whether that
+session's own git pushes are permitted once isolated. Don't try to find a
+settings-based bypass for this specific gate; that's not a config gap to
+close, it's the guardrail doing its job.
+
+**The actual fix: the Routine's prompt no longer asks it to touch git at
+all** (see the "Running it" prompt above, updated the same day). Every
+finding that used to go in `BLOCKED_SOURCES.md` or `COVERAGE_PLAN.md` as a
+file edit now goes to `ops_log` as a `pipeline_note` event instead — a
+plain database write, which has never once hit this wall, because it
+isn't a modification to a shared git resource. GitHub issue/board updates
+(`gh`/API, not `git push`) are unaffected for the same reason and keep
+working exactly as before. A human session (interactive, with normal
+approval-gated git access) periodically reads the accumulated
+`pipeline_note` rows out of `ops_log` and folds anything durable into the
+actual markdown files in one clean, human-approved commit — the Routine
+stops trying to be the one to write repo files, and the orphaned-branch
+failure mode has nothing left to trigger it.
 
 ## `discover_places.py` sandbox setup — duckdb + AWS env var fix
 
