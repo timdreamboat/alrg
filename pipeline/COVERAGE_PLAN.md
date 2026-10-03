@@ -509,6 +509,17 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **NC/Charlotte pass, 2026-10-03 — one instance in a 12-candidate
+   batch:**
+   - **Rico's Acai** (candidate: discovery_candidates id 1405) — confirmed
+     3-4 location standardized-menu chain/group across the Charlotte
+     metro, not a one-off independent. Rejected from Track B before
+     publish (not a transcription slip — flagged during candidate
+     screening).
+
+   Flagged as a future chain-menu-importer candidate, growing the same
+   backlog as the groups above — not actioned this pass.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
