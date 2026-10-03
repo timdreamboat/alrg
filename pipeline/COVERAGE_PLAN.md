@@ -509,6 +509,36 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **Sixth cluster, OK/Oklahoma City pass, 2026-10-03 — six instances in one 12-candidate
+   batch (50% reject rate, all caught before publish):**
+   - **S&B's Burger Joint** (candidate: 7640 Northwest Expy, OKC) — ~10 OKC-metro locations
+     (Northwest Expy, S Walker Ave, 2 Edmond locations, Lawton), one shared site
+     (sandbburgersokc.com), identical signature items across locations.
+   - **Bee Healthy Cafe / "Health Nut Cafe"** (candidate: 722 N Broadway Ave, "Automobile
+     Alley") — standardized Toast ordering identity across ~7 OKC locations (Central Park Dr,
+     S Western Ave, N Lincoln Blvd x2, Robinson Ave, YMCA Earlywine Park, and a just-announced
+     Bar K takeover).
+   - **DOT WO** (candidate: 3000 W Memorial Rd) — 2 OKC locations (Memorial Rd + 10600 S
+     Pennsylvania Ave), word-for-word identical lunch/dinner menu descriptions confirmed via
+     TravelOK listings for both addresses.
+   - **Boomarang Diner** (candidate: 6315 NW 39th Expy, Bethany) — ~61 locations statewide
+     (Tulsa metro, OKC metro, Enid, Lawton, plus many smaller OK cities), single shared menu at
+     boomarangdiner.com/menu. Founded 1998 in Muskogee; the largest single-brand location count
+     seen in this backlog so far — one analysis would cover 61 real locations.
+   - **Volcano Sushi Bar and Hibachi** (candidate: 5612 W Memorial Rd) — 6 OK locations (Edmond,
+     Moore, Del City, two OKC addresses, Norman), verbatim-identical item names/prices confirmed
+     across two locations via allmenus.com, shared brand site volcanook.com.
+   - **Alfredo's Mexican Cafe** (candidate: 2701 S I-35 Service Rd, Moore) — 3 OK locations
+     (Yukon, Moore, Edmond), one shared site (alfredosok.com) explicitly stating "three Oklahoma
+     locations" with a single site-wide menu nav. Founded 1998 in Weatherford.
+
+   All 6 flagged as future chain-menu-importer candidates (full detail in each
+   `discovery_candidates.fetch_notes`, ids 1409/1413/1414/1415/1417/1419), not actioned this
+   pass — growing the same backlog as Puerto Mazatlan/Ba Le/KFire/El Gallo Bravo/Rosie's Coffee
+   Cafe/Juicy Seafood/Indiana State Park Inns/Murphy's Pubhouse/IA's three groups above. Boomarang
+   Diner in particular is worth prioritizing if this backlog is ever worked: one analysis would
+   cover more real locations (61) than this entire backlog has flagged combined so far.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
