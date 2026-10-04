@@ -509,6 +509,45 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+## Sixth cluster, SD/Sioux Falls pass, 2026-10-04 — three more chain/group
+rejects in one 12-candidate batch (25% reject rate):
+
+- **Pizza Shop** (candidate: "Pizzashop Sioux Falls," 4104 W 41st St) — a
+  multi-state chain (owner Josiah Urban, NJ-origin) with confirmed MS and TX
+  locations also expanding under the same brand/menu as of this pass. Full
+  menu already extracted from the site's own menu images (directly read,
+  not guessed) and saved in `discovery_candidates` fetch_notes (id 762) for
+  reuse — a real chain-menu-importer pass still needs to audit it properly,
+  not just copy the preliminary read.
+- **Tinners Public House / Tinners North** — confirmed 2-location Sioux
+  Falls group (Kirby Muilenburg/Bryant Soberg), same standardized menu
+  carried through a 2023 rebrand (Northstar Grill & Pub → Tinners North).
+  Same ownership group also owns Tavern 180 and part of Wileys — watch for
+  those names surfacing as separate candidates with the same issue.
+- **Jacky's Restaurant** — confirmed 2-location Sioux Falls group (3101 W
+  41st St + 3308 E 10th St) via the restaurant's own homepage copy ("two
+  convenient locations"), one shared jackysrestaurants.com/menu. Guatemalan/
+  Mexican-influenced menu plus Chinese and breakfast/lunch/dinner items,
+  founded 2009 by Jacky Vanloh.
+
+All 3 flagged as future chain-menu-importer candidates (full detail in each
+`discovery_candidates.fetch_notes`, ids 762/764/1611, and in `ops_log`
+`pipeline_note` events from this pass), not actioned this pass — growing the
+same backlog as the IA/Des Moines, IL, IN, GA, and OR clusters above. 6 of
+this pass's 12 candidates did publish cleanly (Boki European Street Food,
+Swamp Daddy's Cajun Kitchen, Fuji Sushi & Hibachi Grill, The Rush Bar &
+Grill, Szechwan Chinese Restaurant, and Ninja Ramen & Thai — the last one
+found under a stale "Pad Thai" discovery-candidate name but confirmed via
+the site's own banner/footer to be a dual Thai/ramen concept actually
+trading as Ninja Ramen & Thai); one (Intoxibakes) was rejected as defunct
+(closed storefront, 2+ years stale at the candidate's address); two
+(Lao Szechuan, Pilot Mike's Roadhouse) stayed `pending` — both real,
+current, single businesses with no extractable ingredient-level menu found
+yet (Lao Szechuan's site is Vercel-bot-walled; Pilot Mike's Roadhouse has no
+website/social/delivery presence found at all, just one weak press mention
+naming 5 unidentified items with no ingredient detail — correctly not
+fabricated). SD restaurant count: 12 → 18.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
