@@ -509,6 +509,27 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **Sixth cluster, ID/Boise-Meridian pass, 2026-10-04 — three instances in one 12-candidate batch
+   (25% reject rate):**
+   - **Big Daddy's BBQ** (candidate: 1551 W Cherry Ln #102, Meridian) — confirmed 2-location
+     family-owned group (this + 4903 W Overland Rd, Boise, opened 2025), same ownership/Toast
+     ordering/catering per boisebbq.com (`discovery_candidates` id 1637, rejected).
+   - **Fujiyama** (candidate: 1701 E Fairview Ave, Meridian) — confirmed 2-location group (this +
+     283 N Milwaukee St, Boise), one shared site/menu (fujiyamaboise.com) operating since 2002
+     (`discovery_candidates` id 1639, rejected).
+   - **Hyde Perk Coffee House** (candidate: 1507 N 13th St, Boise/North End) — confirmed 2-location
+     group (this + 5963 W Avimor Dr, Avimor), per a commercial real-estate listing and joe.coffee's
+     own location page (`discovery_candidates` id 1629, rejected). Candidate's website lead
+     (hydehouseboise.com) is also a dead domain, worth knowing if revisited.
+
+   All 3 flagged as future chain-menu-importer candidates (full detail in each
+   `discovery_candidates.fetch_notes`), not actioned this pass — growing the same backlog as
+   Puerto Mazatlan/Ba Le/KFire/El Gallo Bravo/Rosie's Coffee Cafe/Juicy Seafood/Indiana State Park
+   Inns/Murphy's Pubhouse/Teriyaki House/Tavern Pizza/El Toreado above. Two other ID candidates this
+   same pass were dead Overture leads rather than chain/group cases (Ramen Sho — permanently closed
+   2025-03-19; Taqueria El Torito — the given address is a preschool, the real restaurant closed
+   2021 at a different address) — both just rejected, not added to this backlog.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
