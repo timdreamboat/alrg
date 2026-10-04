@@ -509,6 +509,50 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **Sixth cluster, SC/Charleston pass, 2026-10-04 — 4 of 8 candidates in
+   one batch (50% reject rate), plus 2 separately confirmed permanently
+   closed:**
+   - **Maine Line Seafood** (candidate: 3801 Betsy Kerrison Pkwy, Johns
+     Island) — a seasonal food-truck brand (owners Jacob Bichrest/Chuck
+     Buser, Harpswell ME) running "three food trucks," one standardized
+     menu (lobster rolls in three sizes, fish sandwiches, lobster sourced
+     weekly from the owners' own Maine fishing operation). Confirmed
+     sites: Folly Beach SC (20 Center St) and this Johns Island site
+     (parked at the Rosebank Farms stand). A third truck referenced but
+     not located this pass.
+   - **Gilligan's Seafood Restaurant** (candidate: 160 Main Rd, Johns
+     Island) — 4 active sibling locations (Johns Island, Beaufort,
+     Moncks Corner, Summerville/Ladson; a 5th in Goose Creek is closed)
+     sharing one centralized menu at gilligans.net/menus/ with no
+     per-location variant.
+   - **Thailicious** (candidate: "Thailicious Thai Cuisine and Hotpot,"
+     1975 Magwood Dr Unit T) — a second location, "Thailicious 2" (7013
+     Dorchester Rd, North Charleston), shares an identical coded Toast
+     menu template (D1 Pad Thai, D3 Pad See Ew, H1/H2/H4 curries etc.)
+     with matching descriptions and near-identical prices.
+   - **Bushido** (candidate: "Bushido Japanese Restaurant," 1975 Magwood
+     Dr suite V — coincidentally the same plaza as Thailicious above, but
+     a confirmed-unrelated separate business, not a group with it) — a
+     Summerville sibling (bushidosummerville.com) shares the same brand,
+     logo, and near-identical menu item descriptions (e.g. Crab Crunch
+     Roll identical at both). Full reference menu (apps/rolls/hibachi,
+     official Charleston PDF) already extracted and attached to this
+     batch's `ops_log`/GitHub issue #256 to save a future pass
+     re-extraction.
+
+   All 4 flagged as future chain-menu-importer candidates (full detail in
+   each `discovery_candidates.fetch_notes` and GitHub issue #256), not
+   actioned this pass — growing the same backlog as every cluster above.
+   Separately, 2 more candidates in the same batch were confirmed
+   permanently closed (not a chain-group case, just dead leads): **Chez
+   Fish** (3966 Betsy Kerrison Pkwy, Johns Island — closed per
+   Yelp/Gayot/Foursquare, last real web presence dated 2011-2012) and
+   **Underground Chuck's** (2126 Henry Tecklenburg Dr — one of only two
+   US locations of this O'Charley's-parent brand, nationwide corporate
+   closure confirmed via ABC News 4 and Post and Courier, 2026-09-10).
+   Net this pass: 2 of 8 candidates published (Bear E Patch Cafe West,
+   Annie O'Love's Cafe of Sweet Abundance), both PASS on audit.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
