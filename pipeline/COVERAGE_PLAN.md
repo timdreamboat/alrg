@@ -509,6 +509,49 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **Sixth cluster, MI/Detroit pass, 2026-10-04 — unusually high reject rate
+   (5 of 10 real candidates, 50%), four of them this exact pattern in one
+   12-candidate batch:**
+   - **Bucharest Grill** (candidate: "Bucharest Bar & Grill," 436 W Columbia
+     St, Detroit) — a confirmed 9-location Detroit-metro chain; the site's own
+     locations list shows this exact address under the brand's own
+     "Columbia Bar & Grill" naming for that location.
+   - **Wing Fellas** (same name, 5854 Schaefer Rd, Dearborn) — a confirmed
+     6-location MI chain (Dearborn, Belleville, Wyandotte, Flint, Ottawa
+     Lake, Dearborn Heights), one shared site/brand.
+   - **Yoshi Hibachi Grille** (same name, 14535 Fenkell Ave, Detroit) — a
+     confirmed 10-location chain (9 in MI, 1 in Atlanta GA), one standardized
+     build-your-own-hibachi-bowl menu format across locations.
+   - **Captain Jay's Fish and Chicken** (same name, 14205 Gratiot Ave,
+     Detroit) — a confirmed 20+ location Metro Detroit/Grand Rapids chain,
+     store-numbered locations (e.g. "Store 110"), one brand-wide menu.
+   - **Toast** (23144 Woodward Ave, Ferndale) — not a Toast-platform
+     confusion (this is the restaurant's actual name) but a confirmed
+     2-location group (Ferndale + Birmingham MI, same ownership since 2008),
+     shared standardized menu confirmed by direct PDF comparison of both
+     locations' current menus.
+
+   All 5 flagged as future chain-menu-importer candidates (full reasoning
+   in `ops_log`, event `pipeline_note`, since this pass's long-text writes
+   to `discovery_candidates.fetch_notes` were hitting a Supabase MCP
+   connector timeout on anything much longer than a short pointer sentence
+   — worth a look if this recurs; short updates and `ops_log` jsonb writes
+   of the same length both worked fine, so it looks column/table-specific
+   rather than a general connector slowdown), not actioned this pass —
+   growing the same backlog as Puerto Mazatlan/Ba Le/KFire/El Gallo
+   Bravo/Rosie's Coffee Cafe/Juicy Seafood/Indiana State Park Inns/Murphy's
+   Pubhouse/IA Des Moines cluster above. Two other Detroit-area leads
+   (Catalpa Club — a private members-only social club, not a public
+   restaurant at all; Mocha Bistro — confirmed closed, address now occupied
+   by unrelated businesses) were rejected for unrelated reasons, not this
+   pattern. Net this pass: 4 independents published (Baobab Fare, Alanos
+   Eatery, Southern Smokehouse, B.C.'s Pizza — the last one checked
+   carefully against a real, differently-founded Michigan "B.C. Pizza"
+   chain and confirmed unrelated) out of 12 candidates worked, plus one
+   still-blocked retry (Sin Limite Taqueria, `discovery_candidates` id
+   1058, now at 2 attempts — Cloudflare-blocked current website, needs a
+   manual/logged-in check or a phone call next).
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
