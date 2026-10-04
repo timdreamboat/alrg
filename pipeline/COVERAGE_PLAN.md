@@ -509,6 +509,43 @@ a `chain_id` set, regardless of `verified`.
    through this backlog is ever scheduled, since 3 of the ~15 candidates
    found there so far are groups, not one-offs.
 
+   **Sixth cluster, NM/Albuquerque pass, 2026-10-04 — three instances in one
+   12-candidate batch (25% reject rate, all caught before publish):**
+   - **El Dorado Bakery** (candidate: 2125 Broadway Blvd SE) — family-owned
+     Mexican panaderia operating under its own numbered naming convention
+     across at least 3 Albuquerque locations (2125 Broadway SE "#1", 3041
+     Isleta Blvd SW, 640 Coors Blvd NW; a possible unconfirmed 4th in Bosque
+     Farms), one standardized menu (burritos, menudo, tamales, pan dulce,
+     tortillas, aguas frescas). Lead website was a dead/parked domain.
+   - **Chicago Pizza Kitchen** (candidate: 4300 Eubank Blvd NE) — the
+     restaurant's own site discloses a second location under the same
+     brand/ownership (9250 Golf Course Rd NW), corroborated by a local
+     review (same two disabled-veteran owners, "2 Chicago Pizza Kitchen
+     restaurants in Albuquerque"). One shared menu/ordering link, no
+     location-specific variation. Not a national chain — name collision
+     only with unrelated similarly-named restaurants elsewhere.
+   - **Rose Garden** (candidate: 6541 Paradise Blvd NW Ste E) — lead
+     website (rosegardenfoods.net) was wrong (unrelated content-farm
+     domain); the real business ("Rose Garden Chinese Food and Wings,"
+     rosegardenabq.com) discloses a 2nd location (10401 Golf Course Rd NW
+     #103) under the same branding, one shared site/menu, associated name
+     "wing tyme."
+
+   All 3 flagged as future chain-menu-importer candidates (full detail in
+   each `discovery_candidates.fetch_notes`, ids 1598/1600/1599), not
+   actioned this pass — growing the same backlog as the clusters above.
+   Two other NM candidates this same pass were rejected for unrelated
+   reasons, not the sibling-group pattern: **Pacific Paradise Tropical
+   Grill & Sushi Bar** (3000 San Pedro Dr NE) is confirmed permanently
+   closed (lead domain resold to an unrelated NJ restaurant, review blog
+   tags it "CLOSED," a listing shows a new occupant at the address); and
+   **Foodtopia Restaurant Llc** (lead address 313 Central Ave NW) is a
+   real, still-operating restaurant that relocated to 4959 Pan American
+   Fwy NE by 2023 — the lead address is now vacant/for-lease, and even at
+   the correct address no priced menu/site/social/ordering-platform page
+   could be found, so it was not copied forward as a new candidate at the
+   right address this pass.
+
 ## Updated hourly priority order
 
 Supersedes the plain chains-then-metros order in `CLAUDE.md` — full
