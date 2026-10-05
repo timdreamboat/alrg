@@ -618,6 +618,26 @@ fabricated). SD restaurant count: 12 → 18.
    still-blocked retry (Sin Limite Taqueria, `discovery_candidates` id
    1058, now at 2 attempts — Cloudflare-blocked current website, needs a
    manual/logged-in check or a phone call next).
+   **Sixth and seventh instances, AR/Little Rock pass, 2026-10-02 — two in
+   one 12-candidate batch:**
+   - **Senor Tequila** (candidate: 1101 S Bowman Rd, Little Rock) — the
+     candidate's own website (senortequilaark.com) explicitly advertises
+     "seven locations" under the Senor Tequila Ark brand across central
+     Arkansas (Little Rock x3 incl. this one, Bryant, Conway/Maumelle,
+     Bauxite-area delivery) — the strongest version of the same-brand
+     signal seen yet (the site says so itself, not just inferred from
+     sibling-address matches). Rejected (`discovery_candidates` id 698).
+   - **Taqueria Jalisco'z** (candidate: 5412 Baseline Rd, Little Rock) —
+     at least 4 locations confirmed via aggregator/press sources: a
+     sibling "Taqueria Jalisco'z (Pit Stop Club)" 0.1 mile down the same
+     road (5506 Baseline Rd), plus North Little Rock locations at 4716
+     Camp Robinson Rd and 18715 MacArthur Dr. Rejected (`discovery_candidates`
+     id 699).
+
+   Both flagged as future chain-menu-importer candidates (full detail in
+   each row's `fetch_notes`), not actioned this pass — growing the same
+   backlog as the entries above. Neither hit a technical block — both were
+   real, findable restaurants; the reject was purely the chain/group test.
 
 ## Updated hourly priority order
 
