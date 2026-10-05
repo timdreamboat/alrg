@@ -58,6 +58,22 @@ Refuse to publish otherwise and say why.
     name strings ("Five Guys" vs "Five Guys - Denver") slipped through
     this exact gap once already (2026-09-22, fixed by deleting the
     duplicate rows) — the fix is checking by address, not by name.
+    **Happened again 2026-10-02/04, different cause: two overlapping
+    firings, not a name mismatch.** 4 real duplicate pairs found (Waffle
+    Rush/AK, Abuela's Tacos/NV, E & S Bakery/TX, Ming's Chinese/VA), each
+    pair created minutes to ~2 days apart — the address-dedup check above
+    is correct but only ever checks at one point in time; it can't see
+    an insert from a different firing that's in flight (or that happened
+    after a stale discovery_candidates read) at the moment it checks.
+    Found and fixed by an interactive session (duplicates can't be
+    cleaned up by the Routine itself — see the DELETE note at 3a).
+    Rather than trying to make the check perfectly race-proof, watch for
+    it periodically with
+    `select lower(trim(address)), city, state, array_agg(id) from
+    restaurants group by 1,2,3 having count(*)>1` and clean up any real
+    hits (as opposed to genuine same-address ghost-kitchen/virtual-brand
+    pairs — different names at one address is normal, check names before
+    assuming a match is a bug).
 2b. **Geocode every restaurant before insert.** The map is useless without
     lat/lng, and 85 of 91 published restaurants had none as of 2026-09-22
     (every chain import skipped this). Use Nominatim (free, no key,
@@ -73,6 +89,25 @@ Refuse to publish otherwise and say why.
     sweep for a later retry.
 3. Replace that restaurant's menu_items (delete by restaurant_id, insert new)
    so removed dishes disappear. Set audited=true only per the audit report.
+3a. **DELETE hangs indefinitely from an unattended Routine firing — confirmed
+    repeatedly (GitHub issue #216, 2026-10-03/04): every DELETE attempt
+    timed out at 60s+ regardless of row count, including a would-match-
+    zero-rows case, while INSERT/UPDATE/SELECT against the exact same rows
+    worked fine throughout.** Root cause: this tool's own "destructive
+    statements may require the user to confirm" gate has no one to answer
+    it in a scheduled session — same shape as the git-push wall. This only
+    bites the *replace* path above (a fresh restaurant's first publish is
+    insert-only, unaffected). Until this is resolved: a *new* restaurant
+    publishes normally; *re-publishing/updating an existing restaurant's
+    menu* (freshness-sweep maintenance mode, Step 4 of the priority order,
+    is the main place this would come up) should NOT attempt the
+    delete-then-insert replace from an unattended firing — stage it (same
+    pattern as `pipeline/pending_publish/` for the Supabase-outage case)
+    for a human/interactive session to run instead, or skip re-publishing
+    that restaurant this pass and log why via `ops_log` `pipeline_note`.
+    This hasn't blocked real work yet because maintenance mode hasn't
+    started (no state has reached 50 restaurants) — flagging now so it's
+    not a surprise when it does.
 4. Update metros status if this completes a metro.
 4a. **If this restaurant came from `discovery_candidates`** (its address
     matches a `pending` row there — check before every publish, see

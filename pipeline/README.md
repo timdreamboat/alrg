@@ -205,14 +205,28 @@ B) CLOUD ROUTINE — the default, since the owner has a Pro/Max plan. A saved
       Subagents report their findings back to the main thread; the main
       thread writes everything — including chain-block and
       structural-gap findings that used to go in BLOCKED_SOURCES.md or
-      COVERAGE_PLAN.md — to ops_log only, as a 'pipeline_note' event. Do
-      NOT attempt a git commit or push during a firing, not even once,
-      not even on a clean retry — this session type is permission-scoped
-      to its own branch only (confirmed repeatedly: 2026-09-30 through
-      2026-10-02, every attempt to push to main was denied by a
-      'Modify Shared Resources'/'Production Deployment'-style gate, no
-      exceptions found), so any attempt either creates an orphaned
-      branch nobody merges back or wastes the firing on a denied push.
+      COVERAGE_PLAN.md — to ops_log only, as a 'pipeline_note' event.
+      THIS REPO'S OWN GIT HISTORY IS FULL OF OLDER 'Hourly batch: X
+      Track B...' COMMIT MESSAGES FROM BEFORE THIS RULE EXISTED — reading
+      pipeline/README.md or CLAUDE.md for context does NOT mean follow
+      that older pattern; it was replaced by the rule in this sentence.
+      Do NOT run `git commit`, `git push`, or any git write during a
+      firing, not even once, not even on a clean retry — this session
+      type is permission-scoped to its own branch only (confirmed
+      repeatedly, 2026-09-30 through 2026-10-04, every attempt to push to
+      main was denied by a 'Modify Shared Resources'/'Production
+      Deployment'-style gate, no exceptions found across 10+ separate
+      firings that tried), so any attempt either creates an orphaned
+      branch nobody merges back or wastes the firing on a denied push. If
+      you find yourself about to type `git commit`, stop — log an
+      ops_log `pipeline_note` instead and move on. Also do NOT run any
+      SQL `DELETE` statement during a firing (GitHub issue #216 — DELETE
+      hangs 60s+ and never completes from this session type, confirmed
+      repeatedly; INSERT/UPDATE/SELECT are unaffected) — a *new*
+      restaurant's first publish is insert-only and fine, but
+      *replacing* an existing restaurant's menu_items (delete-then-
+      insert) is not; stage that case instead per
+      `skills/db-publisher/SKILL.md` 3a.
       Publish on PASS or PASS WITH CORRECTIONS with no owner review.
       Only open a needs-owner card on a second consecutive audit fail
       for the same target, or a safety-relevant community report.
