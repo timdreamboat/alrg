@@ -638,6 +638,35 @@ fabricated). SD restaurant count: 12 → 18.
    each row's `fetch_notes`), not actioned this pass — growing the same
    backlog as the entries above. Neither hit a technical block — both were
    real, findable restaurants; the reject was purely the chain/group test.
+   **Sixth cluster, DE/Wilmington pass, 2026-10-05 — 2 of 7 candidates
+   (29%):**
+   - **Mr Taco Mexican Grill 2** (2300 Carpenter Station Rd, Wilmington) —
+     a second DE location trading under the identical name "Mr Taco
+     Mexican Grill" was found at 101 E Hazeldell Ave, New Castle (UberEats
+     listing, different hours). The candidate's own site
+     (mrtacogrill.com) returned HTTP 503 on repeated attempts, so whether
+     one shared menu covers both stores couldn't be directly confirmed —
+     flagged on the strength of the identical-name/same-market signal
+     alone, same standard already applied to Puerto Mazatlan et al.
+     Rejected from Track B (`discovery_candidates` id 731, status
+     `rejected`, full detail in `fetch_notes`).
+   - **Sciarrino's Pizzeria** (2310 Carpenter Station Rd, Wilmington) — a
+     confirmed 3-location DE/PA group (this location, legal entity "Deans
+     Place LLC"; 19 N Brookside Rd, Springfield PA; 768 Saville Ave,
+     Eddystone PA). The Springfield and Eddystone locations' own ordering
+     pages (toasttab.com, slicelife.com) show a verbatim-identical "House
+     Special Stromboli" ingredient list and the same marketing phrasing
+     ("classic cheese or create your own pizza") — a centrally-produced
+     menu template, the clearest version of this pattern seen yet (full
+     text match, not just a shared category taxonomy). Rejected from Track
+     B (`discovery_candidates` id 732, status `rejected`, full detail in
+     `fetch_notes`).
+
+   Both flagged as future chain-menu-importer candidates, not actioned
+   this pass — growing the same backlog as every cluster above. Mr Taco
+   in particular should have its menu-sharing confirmed first (own site
+   was unreachable this pass) before it's worked as a 2-location chain
+   import.
 
 ## Updated hourly priority order
 
