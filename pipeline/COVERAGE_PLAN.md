@@ -720,6 +720,58 @@ fabricated). SD restaurant count: 12 → 18.
 
    Flagged as a future chain-menu-importer candidate, growing the same
    backlog as the groups above — not actioned this pass.
+   **Sixth cluster, NV/Las Vegas pass, 2026-10-04 — six instances in one
+   12-candidate batch (50% reject rate, the highest yet, all caught before
+   publish):**
+   - **Mimosas Gourmet** (candidate: 3455 S Durango Dr, Las Vegas) — the
+     brand's own site lists a second location in Lodi, CA, with one shared
+     menu explicitly noted as "some items vary by location." A secondary
+     source references a possible third, not-yet-open Las Vegas location
+     (Rainbow Blvd) — unconfirmed, not counted toward the reject itself.
+   - **Rise & Shine, A Steak And Egg Place** (candidate: 9827 W Flamingo
+     Rd, Las Vegas) — two confirmed Las Vegas locations (this one,
+     Summerlin West, and Southern Highlands) sharing one "CLASSIC MENU,"
+     identical hours and branding. A secondary source claims a third,
+     historical location — unconfirmed.
+   - **Elys Restaurant** (candidate: "Elys Breakfast Restaurant and
+     Burgers," 2855 N Green Valley Pkwy, Henderson) — the brand's own site
+     has five location-branded menu pages (Tropicana, Green Valley,
+     Nellis, Sahara, Fort Apache) under one shared nav/brand/Facebook
+     page; two are fully built out and open, three are stub/placeholder
+     pages for planned locations.
+   - **Birria Bite / Los Arcos** (candidate: "Los Arcos Birrieria y Taco
+     Shop," 2201 S Maryland Pkwy, Las Vegas) — confirmed sibling locations
+     at 6430 S Decatur Blvd and a third in licensing (per local news
+     coverage) under the "Birria Bite Mexican Grill" name. Separately,
+     the candidate's own domain (birrierialosarcos.com) is expired/parked
+     — no live first-party source exists regardless of the group finding.
+   - **Manhattan Pizza** (candidate: "Manhattan Pizza II," 4955 E Craig Rd
+     #14, Las Vegas) — the "II" naming was the tip-off per this file's own
+     numbered-naming pattern; confirmed siblings "Manhattan Pizza" (8550 W
+     Charleston Blvd) and "Manhattan Pizza IV" (3950 N Tenaya Way), all
+     sharing a 701 area code (North Dakota — centralized/shared ownership,
+     not local owner-operators) and a templated appetizer/dessert lineup.
+     The candidate's own domain (manhattanpizza2lv.com) is also dead/parked.
+   - **Peru Chicken** (candidate: 2055 E Tropicana Ave, Las Vegas) — a
+     confirmed second location (3886 W Sahara Ave, described by one
+     secondary source as "Peru Chicken #2" of "three locations") shares
+     identical rotisserie pricing, hours, and menu items with the
+     candidate address.
+
+   All 6 flagged as future chain-menu-importer candidates (full detail in
+   each `discovery_candidates.fetch_notes`, ids 1713/1716/1720/1721/1722/1723),
+   not actioned this pass — growing the same backlog as every cluster
+   above. Las Vegas now has the highest single-pass reject rate recorded
+   in this file (6/12, 50%) — worth a dedicated chain-menu-importer pass
+   through this metro specifically if one is ever scheduled, since it
+   alone accounts for 6 of the backlog's candidates. Of the remaining 6
+   candidates that pass this pass's Las Vegas batch, 3 published clean
+   (17 South Booze & Bites, Abuela's Tacos, Suzuya Patisserie — all PASS
+   WITH CORRECTIONS), 2 failed on data quality rather than a chain
+   pattern (Cake Designs: no standing menu, custom-order-only; Block 16
+   Urban Food Hall: unreachable source + active vendor rotation), and 1
+   (Spritz Restaurant Bar) was left `pending` for a retry — thin/empty
+   menu data, possibly a seasonal closure, not a chain issue.
 
 ## Updated hourly priority order
 
