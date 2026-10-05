@@ -710,6 +710,16 @@ fabricated). SD restaurant count: 12 → 18.
    closure confirmed via ABC News 4 and Post and Courier, 2026-09-10).
    Net this pass: 2 of 8 candidates published (Bear E Patch Cafe West,
    Annie O'Love's Cafe of Sweet Abundance), both PASS on audit.
+   **NC/Charlotte pass, 2026-10-03 — one instance in a 12-candidate
+   batch:**
+   - **Rico's Acai** (candidate: discovery_candidates id 1405) — confirmed
+     3-4 location standardized-menu chain/group across the Charlotte
+     metro, not a one-off independent. Rejected from Track B before
+     publish (not a transcription slip — flagged during candidate
+     screening).
+
+   Flagged as a future chain-menu-importer candidate, growing the same
+   backlog as the groups above — not actioned this pass.
 
 ## Updated hourly priority order
 
