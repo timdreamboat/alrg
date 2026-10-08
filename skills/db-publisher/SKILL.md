@@ -101,13 +101,42 @@ Refuse to publish otherwise and say why.
     publishes normally; *re-publishing/updating an existing restaurant's
     menu* (freshness-sweep maintenance mode, Step 4 of the priority order,
     is the main place this would come up) should NOT attempt the
-    delete-then-insert replace from an unattended firing — stage it (same
-    pattern as `pipeline/pending_publish/` for the Supabase-outage case)
-    for a human/interactive session to run instead, or skip re-publishing
-    that restaurant this pass and log why via `ops_log` `pipeline_note`.
-    This hasn't blocked real work yet because maintenance mode hasn't
-    started (no state has reached 50 restaurants) — flagging now so it's
-    not a surprise when it does.
+    delete-then-insert replace from an unattended firing — stage it (see
+    3b for where, now that the original pending_publish/ pattern is
+    broken) for a human/interactive session to run instead, or skip
+    re-publishing that restaurant this pass and log why via `ops_log`
+    `pipeline_note`. This hasn't blocked real work yet because
+    maintenance mode hasn't started (no state has reached 50
+    restaurants) — flagging now so it's not a surprise when it does.
+    **Update 2026-10-06 (issue #216) — it's not DELETE-only.** A bare
+    top-level `UPDATE` (no CTE, no RETURNING) hung the same way at least
+    once. The pattern that's held up every time so far: wrapping the
+    UPDATE as a CTE under a top-level INSERT runs instantly, e.g.
+    `with upd as (update ... returning id) insert into ops_log (event,
+    detail) select 'pipeline_note', jsonb_build_object(...) returning
+    id;` — the gate appears to key off the top-level statement type, not
+    scan the whole query for a destructive sub-statement. Use this
+    INSERT-wrapping pattern for any UPDATE from an unattended firing,
+    not just DELETE; a bare top-level UPDATE is not safely assumed fine
+    anymore.
+3b. **`pipeline/pending_publish/` (the git-file staging pattern) no
+    longer works and should not be used — found 2026-10-06/08, GitHub
+    issue #292.** It depended on committing a `.sql` file to a branch a
+    human could later recover, which was true before the 2026-10-02 fix
+    for the git-push wall (see pipeline/README.md). Now that firings
+    never touch git at all, a staged file written to a session's working
+    tree dies with that session — confirmed: New Jumbo House's fully
+    extracted/audited 191-item batch was lost this way, unrecoverable
+    even from the issue that described it (the file was never committed,
+    so nothing survived). **Stage anything that can't publish this pass
+    (an outage mid-batch, a replace blocked by 3a) as an `ops_log` row
+    instead** — `event: 'pipeline_note'`, with the full ready-to-run SQL
+    (or structured insert data) inlined in `detail`. That write always
+    survives (it's a plain INSERT, never hits either wall in this file),
+    and a human session can read it back out of `ops_log` and run it
+    whenever. Losing New Jumbo House cost one restaurant's redone
+    extraction, not any real data — but there's no reason to pay that
+    cost again now that the fix is this simple.
 4. Update metros status if this completes a metro.
 4a. **If this restaurant came from `discovery_candidates`** (its address
     matches a `pending` row there — check before every publish, see

@@ -578,17 +578,24 @@ already published cleanly before the drop; the 6th (fully extracted, audited,
 and geocoded, just not yet inserted) would otherwise have been lost work.
 
 **When this happens**: don't discard a subagent's finished, audited result
-just because the DB is unreachable. Write its ready-to-run INSERT statements
-(restaurant + menu_items + the `discovery_candidates` promotion + the
-`ops_log` entry) to `pipeline/pending_publish/<state>_<restaurant-slug>_<date>.sql`,
-commit and push it (this doesn't need Supabase), and say so plainly in the
-ops summary/issue comment — this is a genuine blocker needing the owner to
-re-authenticate the connector (via claude.ai connector settings or `/mcp` in
-an interactive session), not a routine retry. The next pass (or the owner,
-interactively) should run the staged file's steps in order, substituting the
-real `restaurants.id` the first INSERT returns for `<RESTAURANT_ID>`, then
-delete the file once published — it's a durable staging area for exactly this
-failure mode, not a permanent alternative to the database.
+just because the DB is unreachable — but see the 2026-10-08 update below
+before writing a `.sql` file; that part of this section no longer works.
+
+**2026-10-08 update — the `pending_publish/<file>.sql` + git-commit staging
+below is broken and must not be used anymore (GitHub issue #292).** It
+depended on committing the staged file to a branch a human could recover
+later, which stopped being possible once firings stopped touching git
+entirely (the 2026-10-02 fix for the branch-pileup problem — see "Why the
+Routine never touches git anymore"). A file written to a session's own
+working tree dies with that session now. Confirmed the hard way: New Jumbo
+House's fully extracted/audited 191-item batch, staged exactly as this
+section originally described, was unrecoverable two firings later — never
+committed, nothing left to resume from, redone from scratch instead.
+**Stage it in `ops_log` instead**: insert a row with `event:
+'pipeline_note'` and the ready-to-run SQL (or the structured insert data)
+in `detail` — that's a plain INSERT, survives the session, and a human can
+read it back out and run it. Still say so plainly in the ops
+summary/issue comment either way; only the storage location changed.
 
 **2026-09-30, next hourly firing after the above:** confirmed the predicted
 "every future firing will fail the same way" — this firing, the Supabase MCP
