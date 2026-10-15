@@ -45,6 +45,44 @@ Refuse to publish otherwise and say why.
     Before inserting, normalize every flag value to this exact four-value
     list the same way key normalization already works — never a synonym
     like `may_contain`, `possible`, or `cross_contact` for `may`/`shared`.
+1c. **Every insert/update to `menu_items.flags` must also set `flags_source`**
+    (added 2026-10-08) — it must be EXACTLY one of these four literal
+    strings, nothing else, ever: `ai_pipeline`, `chain_matrix`,
+    `owner_corrected`, `community_corrected`. This is provenance for the
+    *flag values themselves*, separate from `audited` (which only means
+    "passed qa-allergen-auditor," not "a human looked at this specific
+    item"). A normal pipeline publish writes `ai_pipeline` (independents) or
+    `chain_matrix` (chain imports) — **not** a free-text description of
+    which audit stage or retry number produced it (that detail belongs in
+    the batch's `ops_log` entry, which already captures it). **2026-10-15
+    update: this is now also a hard DB constraint**
+    (`flags_source_valid` check on `menu_items`) after the exact same
+    drift recurred a second time (new strings this round:
+    `"qa-allergen-auditor"`, `"pipeline_audit"`,
+    `"allergen-analyzer+qa-audit-retry"`, etc., ~2,600 more rows, plus
+    8,107 more left null) despite the tightened wording below — prose
+    alone wasn't holding across two separate recurrences in 5 days. A
+    write with any other value now fails outright at insert/update time
+    instead of silently landing; if you hit that constraint violation,
+    you used the wrong value, not a bug to work around. Found and
+    fixed 2026-10-13: within 5 days of this column existing, unattended
+    firings had already written 10+ distinct descriptive strings instead
+    (`"allergen-analyzer+qa-allergen-auditor (PASS WITH CORRECTIONS, retry
+    1)"`, `"self-audited subagent pass"`, etc.) across ~8,000 rows, plus
+    15,015 more rows where the column was left null altogether — same
+    instruction-drift bug class as the git-commit habit and the
+    may_contain recurrence documented elsewhere in this file. Fixed by
+    collapsing every non-canonical value back to `ai_pipeline` (all of it
+    sat on `ai_pipeline`-sourced restaurants, confirmed before collapsing)
+    and backfilling the nulls from `restaurants.data_source`. An
+    interactive session applying owner corrections (e.g. from a "Chain
+    Allergen Review" doc) sets `owner_corrected` and stamps
+    `flags_reviewed_at=now()` on exactly the rows it touched — never
+    backfill it onto sibling rows in the same batch that weren't actually
+    corrected. No UI surfaces this yet (owner decision 2026-10-08) but the
+    column exists precisely so a future UI pass doesn't have to guess
+    which items were ever actually reviewed by a person, the same
+    false-confidence gap as Category C in `docs/QA_VALIDATION.md`.
 2. Upsert restaurants on place_id (or name+zip when no place_id):
    POST /rest/v1/restaurants with Prefer: resolution=merge-duplicates.
    Set data_source, last_reviewed=now.

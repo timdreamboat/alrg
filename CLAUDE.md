@@ -95,9 +95,23 @@ if Routines are ever unavailable; don't mention it otherwise.
 Each firing, in priority order (superseded in full detail by
 `pipeline/COVERAGE_PLAN.md`, owner decisions 2026-09-23 and
 2026-09-28 — read that file, this is just the summary):
-1. Any chain in `chains` with `analyzed_at IS NULL`? Run chain-menu-importer
+1. Any chain in `chains` with `status='pending'`? Run chain-menu-importer
    on it — one-time menu analysis only, not location discovery (that's
-   step 3, gated and lower priority — see below for why).
+   step 3, gated and lower priority — see below for why). Set `status`
+   to `'analyzed'` on success. If the chain turns out to be permanently
+   unreachable (bot-blocked, or a structural per-item-only site with no
+   bulk matrix — see `pipeline/BLOCKED_SOURCES.md` for what qualifies and
+   the "2 separate clean attempts" rule before concluding this), set
+   `status='blocked'` instead of leaving it `'pending'` forever — a
+   `'pending'` chain is retried every firing, a `'blocked'` one is
+   excluded from step 4's "chains backlog empty" check below. Added
+   2026-10-15 after exactly this gap kept nationwide coverage from ever
+   auto-triggering maintenance mode: 10 chains (McDonald's, Starbucks,
+   Taco Bell, Burger King, Wendy's, Dairy Queen, Jack in the Box, Panda
+   Express, Pizza Hut, Jersey Mike's) are genuinely, permanently
+   unreachable, not just slow — `analyzed_at IS NULL` alone can never
+   reach zero with those sitting there, so `status` exists precisely so
+   "pending" and "permanently can't" aren't the same bucket.
 2. Else, any US state with `count(restaurants) < 50` and independent
    candidates still available (no logged `independent_well_dry` for
    that state)? Work it with the restaurant-menu-extractor →
@@ -117,8 +131,9 @@ Each firing, in priority order (superseded in full detail by
    this step to do close to nothing for a long stretch while
    independent candidates are still available almost everywhere — that
    is the intended effect, not a bug.
-4. Else — every state at 50+ and the chains backlog empty, nationwide
-   coverage reached for the current target — switch to maintenance mode:
+4. Else — every state at 50+ and no chain with `status='pending'`
+   (`'blocked'` chains don't count against this), nationwide coverage
+   reached for the current target — switch to maintenance mode:
    a freshness sweep on the oldest-`last_reviewed` restaurants. Report
    "coverage complete, entering maintenance mode" once; don't repeat that
    report every subsequent firing.

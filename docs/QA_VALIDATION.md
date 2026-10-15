@@ -124,6 +124,26 @@ each chain fix is one `chain-menu-importer` re-check, not 5–30 separate
 restaurant fixes. 3,679 more empty-flags items sit on independent
 restaurants, lower priority since each only affects one location.
 
+## Per-item review provenance (added 2026-10-08)
+
+`menu_items.flags_source` (`ai_pipeline` | `chain_matrix` | `owner_corrected`
+| `community_corrected`) and `flags_reviewed_at` now exist, prompted by the
+owner noticing there's still no UI indicator distinguishing "a human
+actually reviewed this item's flags" from "the pipeline guessed and nobody's
+checked." No UI surfaces this yet (owner decision 2026-10-08, deferred on
+purpose) — but once the Chain Allergen Review doc's corrections are applied,
+this is how to tell which Category C items are actually resolved vs. still
+an open AI guess:
+
+```sql
+select flags_source, count(*) from menu_items group by flags_source order by 2 desc;
+```
+
+Anything still `ai_pipeline`/`chain_matrix` with `flags='{}'::jsonb` is an
+unresolved Category C row; `owner_corrected` means a person looked at it,
+regardless of what value they landed on (including confirming it really is
+allergen-free).
+
 ## Suggested per-state QA procedure (once nationwide coverage is reached)
 
 1. Re-run Category A globally first (should already be clean if run
