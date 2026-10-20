@@ -46,6 +46,12 @@ create table restaurants (
   lat           double precision,
   lng           double precision,
   chain_id      bigint references chains(id),
+  status        text not null default 'active', -- active | closed | seasonal
+                          -- closed = confirmed permanently closed, excluded
+                          -- from the app's query (app/index.html) but never
+                          -- DELETEd (see skills/db-publisher/SKILL.md 3a/4b);
+                          -- seasonal = temporarily closed for the season,
+                          -- still shown. Added 2026-10-20.
   verified      boolean default false,    -- restaurant-confirmed data
   data_source   text default 'ai_pipeline', -- ai_pipeline | chain_matrix | restaurant_verified
   source_document text,  -- independents only (chains use chains.source_document instead) —

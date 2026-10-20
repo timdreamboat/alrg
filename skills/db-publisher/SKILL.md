@@ -186,6 +186,23 @@ Refuse to publish otherwise and say why.
     next to the real one. If a candidate turns out not viable during
     this pass (closed, duplicate, no real menu anywhere), set
     `status='rejected'` on it instead of leaving it pending.
+4b. **`restaurants.status`** (added 2026-10-20, after 5+ freshness-sweep
+    confirmed closures sat live on the map for months with no way to
+    reflect it): `active` | `closed` | `seasonal`. If a freshness-sweep
+    research pass finds strong independent confirmation a restaurant
+    permanently closed (2+ independent sources, e.g. local news +
+    owner's own announcement — a single stale aggregator tag is NOT
+    enough, see the many `needs-owner` closure-status cards for the
+    calibration bar), set `status='closed'` directly — this is a plain
+    UPDATE, not a DELETE, so it's safe from an unattended firing (see 3a)
+    and doesn't need to wait for a human session the way removing the
+    row would. A seasonal closure (restaurant's own site says so) gets
+    `status='seasonal'` instead — still shown on the map, just not
+    treated as a data error. Never set `status='closed'` on mere
+    ambiguity (conflicting signals, a dead website, "temporarily closed"
+    tags) — that stays `active` with a `needs-owner` card, same as
+    today. `app/index.html` excludes `status=eq.closed` from its query;
+    `seasonal` is not excluded.
 5. Insert ops_log entry: event=batch_published, detail={metro, restaurants,
    items, audit_stats}.
 6. Report to the user in one line:

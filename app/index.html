@@ -456,7 +456,14 @@ async function load(){
     // item bodies load lazily, scoped to wherever the user actually is —
     // see ensureItemsNear(), called once a location resolves.
     const [rests,chains,counts,candidates]=await Promise.all([
-      sbAll("restaurants?select=*&order=name"),
+      // status=eq.closed is excluded here, not filtered client-side — a
+      // confirmed-permanently-closed restaurant (see
+      // skills/db-publisher/SKILL.md, restaurants.status) should never
+      // reach the client at all, same "don't surface what you know is
+      // wrong" principle as the allergen flags themselves. 'seasonal'
+      // restaurants are NOT excluded — a seasonal closure is expected,
+      // not a data error, and still shows on the map.
+      sbAll("restaurants?select=*&status=neq.closed&order=name"),
       sbAll("chains?select=id,name,source_document"),
       sbAll("restaurant_item_counts?select=*"),
       // Discovered-but-not-yet-analyzed leads (see pipeline/COVERAGE_PLAN.md,
