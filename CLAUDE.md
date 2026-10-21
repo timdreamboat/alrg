@@ -134,8 +134,18 @@ Each firing, in priority order (superseded in full detail by
 4. Else — every state at 50+ and no chain with `status='pending'`
    (`'blocked'` chains don't count against this), nationwide coverage
    reached for the current target — switch to maintenance mode:
-   a freshness sweep on the oldest-`last_reviewed` restaurants. Report
-   "coverage complete, entering maintenance mode" once; don't repeat that
+   a freshness sweep on the oldest-`last_reviewed` restaurants **where
+   `status='active'`** (added 2026-10-21 — a `'closed'` restaurant's
+   `last_reviewed` is deliberately left frozen once confirmed, per
+   `skills/db-publisher/SKILL.md` 4b, which makes it permanently the
+   oldest row in the table; without this filter the sweep re-researches
+   the same confirmed closure every firing and opens a fresh duplicate
+   `needs-owner` issue for it each time — found via issues #655 and
+   #716 being the identical finding on restaurant 808 two firings
+   apart). `'seasonal'` restaurants ARE still swept — a seasonal
+   business's menu can genuinely go stale while it's closed for the
+   off-season, so it's not exempt the way a permanent closure is.
+   Report "coverage complete, entering maintenance mode" once; don't repeat that
    report every subsequent firing.
 
 A Routine run has no local files and no interactive permission prompts, so
