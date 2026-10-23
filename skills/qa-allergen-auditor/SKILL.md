@@ -28,10 +28,35 @@ or risks the allergen. Bias every judgment toward caution.
 ## Verdict thresholds
 - PASS: discrepancy rate < 3% and zero "clear→contains" discrepancies.
   Auto-publish. No owner review — this is the normal case.
-- PASS WITH CORRECTIONS: apply proposed flags, then publish. Allowed only when
-  all discrepancies are clear→may or clear→shared upgrades. Auto-publish. No
+- PASS WITH CORRECTIONS: apply proposed flags, then publish. Allowed whenever
+  **every** discrepancy only increases caution and **none** is clear→contains —
+  that is: clear→may, clear→shared, may→shared, may→contains, shared→contains
+  are all fine, in any combination, at any discrepancy rate. Auto-publish. No
   owner review — corrections applied are logged in ops_log, that's enough.
-- FAIL: any clear→contains discrepancy, or rate ≥ 3%. Do NOT publish.
+  **The rate threshold does NOT apply to this verdict** (corrected 2026-10-23,
+  see below) — rate only decides PASS vs PASS WITH CORRECTIONS, never whether
+  to escalate.
+  *Why these are safe and clear→contains is not:* an item already flagged
+  `may`/`shared` is already telling the user "don't assume this is safe," so
+  tightening it to `contains` cannot produce a false CLEAR — the single error
+  class this audit exists to catch. `clear→contains` is categorically
+  different: stored data called an item safe when it definitely isn't.
+  **This wording was too narrow until 2026-10-23** and listed only
+  clear→may/clear→shared. Because `may→contains` wasn't on the list, a single
+  routine tightening on an already-cautious item disqualified auto-publish and
+  forced a FAIL → retry → `needs-owner` escalation. Effect at scale: during the
+  2026-10-21/23 freshness sweeps that was escalating ~30 restaurants a day, and
+  57 of 146 sweeps in a two-day window reported **zero** clear→contains yet
+  still escalated and blocked (e.g. GitHub issues #875 Bonapita, #876
+  Bungalow10, #877 Phat Bites — all explicitly "zero clear→contains," all
+  held). Agents hitting the boundary kept citing "the Christi's Cafe
+  precedent" and resolving it conservatively, which was correct per the old
+  wording — the wording was the bug, not their judgment. Don't re-narrow this
+  without reading that history.
+- FAIL: any clear→contains discrepancy. Also FAIL if rate ≥ 3% **and** at least
+  one discrepancy is not caution-increasing (a genuine disagreement about
+  direction, not just degree). A high rate of purely caution-increasing
+  corrections is PASS WITH CORRECTIONS, not FAIL. Do NOT publish.
   Automatically return the batch to allergen-analyzer once with the
   discrepancy report attached, then re-audit. If the retry now PASSES or
   PASSES WITH CORRECTIONS, publish it — this was routine noise, not an
