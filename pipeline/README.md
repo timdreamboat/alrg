@@ -115,8 +115,37 @@ first pass. Recurring patterns actually caught on retry so far:
   explicit ingredient list (piccata → egg/dairy in the sauce base;
   "board"/charcuterie accompaniments → treenut from spreads or candied
   nuts commonly served alongside).
+- **Composite items inherit from their components (added 2026-10-23).**
+  A combo, bundle, platter, sampler, family meal, "build your own," or
+  any dish listing a selectable side/protein must carry the *worst case*
+  across everything it can contain. If a standalone item on the same
+  menu is already flagged, the composite that includes it cannot be
+  flagged lower. This was the single most-repeated audit miss in the
+  2026-10-22/23 sweeps — five separate restaurants, same bug: Holy
+  Sm(oaks) Combo Plate read egg:clear while its own selectable Meatloaf
+  and Deviled Egg Potato Salad were both egg:contains standalone; Sear
+  Black Hills Surf & Turf and Scallops both read egg:clear while their
+  Brussels-sprouts side was egg:contains standalone; California Mexican
+  Food's "Bean & Cheese Burrito & Enchilada Combo" read wheat:clear while
+  the standalone burrito it bundles was wheat:contains; Westside Slice's
+  Buckeye Bundle read egg:clear while the Cheesy Bread inside it was
+  egg:contains; Dragon Cafe's Combo Appetizers read fish absent while the
+  Crab Rangoon it lists was fish:contains. The audit retry never
+  self-corrected this anywhere in that cluster, which is why it belongs
+  here rather than being left to the auditor. Practical rule: before
+  finalizing a composite item, look up every component it names on the
+  same menu and take the max.
+- **Coconut is a tree nut for labeling purposes (added 2026-10-23).**
+  FDA/FALCPA classifies coconut as a tree nut, so when coconut, coconut
+  milk, coconut cream, coconut flakes, or coconut oil is a named
+  ingredient, default `treenut` to `contains` (not `clear`, not `may`).
+  This gap was found on three separate restaurants in one sweep and then
+  database-wide: 581 published items had coconut named explicitly in the
+  item name or note while carrying no `treenut` flag at all, i.e.
+  reading as fully clear. All 581 were corrected 2026-10-21; this note
+  exists so the analyzer stops reintroducing them.
 
-**When running allergen-analyzer for ALRG, apply these three patterns
+**When running allergen-analyzer for ALRG, apply these patterns
 during the first pass**, the same way the peanut-oil override above is
 applied — don't wait for the audit to catch them. This doesn't relax
 the auditor at all (it keeps re-deriving independently and catching
