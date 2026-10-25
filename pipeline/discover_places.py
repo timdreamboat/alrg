@@ -29,7 +29,7 @@ import json
 import urllib.request
 import urllib.parse
 
-OVERTURE_RELEASE = "2026-08-19.0"  # bump periodically; check docs.overturemaps.org for the current release
+OVERTURE_RELEASE = "2026-10-21.0"  # bump periodically; check docs.overturemaps.org for the current release
 RESTAURANT_CATEGORY_PATTERNS = [
     "%restaurant%", "%cafe%", "%diner%", "%pizzeria%",
     "%bar_and_grill%", "%bakery%", "%steakhouse%", "%bistro%",
@@ -76,9 +76,9 @@ def main():
     con.execute("LOAD httpfs; LOAD spatial;")
     con.execute("SET s3_region='us-west-2';")
 
-    cat_clause = " OR ".join(["categories.primary ILIKE ?"] * len(RESTAURANT_CATEGORY_PATTERNS))
+    cat_clause = " OR ".join(["basic_category ILIKE ?"] * len(RESTAURANT_CATEGORY_PATTERNS))
     query = f"""
-        SELECT id, names.primary as name, categories.primary as category,
+        SELECT id, names.primary as name, basic_category as category,
                addresses[1].freeform as address, addresses[1].locality as city,
                addresses[1].region as region, addresses[1].postcode as zip,
                bbox.ymin as lat, bbox.xmin as lng,
