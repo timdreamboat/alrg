@@ -157,6 +157,66 @@ working as intended, not a problem with this note.
 
 ---
 
+## Don't mistake a parsing failure for a JS-gated menu
+
+**Added 2026-10-26, after "entire section missing" / "only 1 of 8 sections
+captured" became the single most common freshness-sweep finding.** The
+recurring diagnosis in those cards — "the rest is rendered client-side and
+didn't come through a static fetch" — was usually *wrong*. In the cases
+actually re-checked, the full menu was already present in the HTML the
+static fetch returned; what failed was stripping tags and reading the
+leftover visible text, which on a tabbed menu shows only the default tab.
+
+Worked example: Jin Sushi and Ramen (restaurant 1274) was stored with 26
+items and carried a note saying 7 of its 8 sections were unreachable
+without JS rendering. The same `curl` of `jinsushiandramen.com/menus`
+contains **97 items with full ingredient descriptions across all 8
+sections** — they were in an embedded platform JSON payload, not in the
+rendered markup. No browser or JS renderer was needed.
+
+**So: before concluding a menu is JS-gated, look for embedded structured
+data.** Four patterns verified on real ALRG sources:
+
+1. **JSON-LD** — `<script type="application/ld+json">` containing
+   `MenuItem` / `hasMenuItem` records with `name`, `description`, `offers`.
+   Clean and directly parseable. Verified on Slice (`slicelife.com`), which
+   is where Ronny's Place's 10 missing cheese ingredients were finally read
+   from after the name-only extraction missed them.
+2. **Platform JSON escaped inside a JS string** — Wix Restaurants and
+   similar. Signature: the HTML contains `"sections"`, `"itemIds"` and
+   `"priceInfo"` with backslash-escaped quotes. Recipe: replace `\"` with
+   `"`, then brace-match outward from each `"priceInfo"` to recover item
+   records (`id`, `name`, `description`) and outward from each `"itemIds"`
+   to recover sections, then join items to sections by id. Note sections can
+   appear more than once (stale revisions) — keep the newest/longest per
+   section name and dedupe items by id, or you will double-count.
+3. **RDFa microdata with per-category URLs** — MenuDrive and similar.
+   Signature: `typeof="MenuItem"` or `property="hasMenuItem"` on anchors
+   whose `href` points at `/categories/<id>`. The landing page lists only
+   the *categories*; each category's items require following its own URL.
+   This is exactly the "gap confirmed at the category-listing level" finding
+   on Gino's of Manhasset (restaurant 1333) — the fix is to follow the links.
+4. **Plain server-rendered HTML** — allmenus.com and most aggregators.
+   Tag-stripping works fine, **but send `--compressed`**: without it the
+   response is raw gzip, which looks like a corrupt or blocked page and has
+   been misread as a dead source more than once. Hi-Tide (restaurant 1295)
+   went from 26 stored items to 124 this way.
+
+**Mandatory completeness check before publishing any extraction.** Count the
+section/category headers the page itself advertises, and compare against the
+sections you actually captured items for. If the page names eight sections
+and you have items from one, you have not extracted the menu — keep going or
+record the gap honestly. Publishing a one-section capture as though it were
+the whole menu is what produced the 26-vs-97 and 26-vs-124 cases above, and
+it is worse than an obvious failure: the app shows a short, confident menu
+with no indication that most of the restaurant's food is missing, and a
+diner filtering on an allergen never sees the dishes that would have
+excluded the place. If a section genuinely cannot be reached after trying
+the four patterns above, say so explicitly in `source_document` (naming the
+sections) rather than leaving the omission silent.
+
+---
+
 ## Capture real ingredients, not just allergen flags
 
 The owner wants menu items in the app to expand and show real ingredient
